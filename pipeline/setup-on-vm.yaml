@@ -1,0 +1,6 @@
+steps:
+  - bash: |
+      set -x
+      sudo usermod -aG docker ${USER}    
+    displayName: "Setup on VM"
+    continueOnError: false

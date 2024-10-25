@@ -1,0 +1,5 @@
+codelet_descriptor:
+  - codelet_name: simple_output
+    codelet_path: ${JBPF_PATH}/jbpf_tests/test_files/codelets/simple_output/simple_output.o
+    hook_name: hook404
+codeletset_id: error_codeletset

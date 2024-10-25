@@ -1,0 +1,5 @@
+codeletset_id: jbpf_stats_report
+jbpf_stats_report_codelet:
+  codelet: jbpf_stats_report.o
+  hook_name: report_stats
+  priority: 2

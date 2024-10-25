@@ -1,0 +1,29 @@
+steps:
+  - bash: |
+      echo "****************CPU Arch**********"
+      lscpu
+
+      echo "****************CPU***************"
+      cat /proc/cpuinfo
+
+      echo "****************MEM***************"
+      cat /proc/meminfo
+
+      echo "****************DISK**************"
+      df -h
+
+      echo "****************FREE**************"
+      free -m
+
+      echo "****************HOST**************"
+      echo "Agent.MachineName: $(Agent.MachineName)"
+      echo "Agent.Name: $(Agent.Name)"
+      echo "System.HostType: $(System.HostType)"
+
+      if [ "$requiredCpuModel" == "" ];then
+        exit 0
+      fi
+
+      echo "****************CPU Model*********"
+      lscpu
+    displayName: "Show Pipeline VM Information"

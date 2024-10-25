@@ -1,0 +1,14 @@
+codelet_descriptor:
+- codelet_name: example_codelet
+  codelet_path: ${JBPF_PATH}/examples/experimental/first_example_standalone_json_udp/example_codelet.o
+  hook_name: example
+  in_io_channel:
+  - name: inmap
+    stream_id: '11111111111111111111111111111111'
+  out_io_channel:
+  - name: outmap
+    stream_id: 00112233445566778899AABBCCDDEEFF
+    serde:
+      file_path: ./libserde_io_lib_example.so
+  priority: 1
+codeletset_id: example_codeletset

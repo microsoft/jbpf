@@ -1,0 +1,46 @@
+codelet_descriptor:
+  - codelet_name: max_input_shared
+    codelet_path: ${JBPF_PATH}/jbpf_tests/test_files/codelets/max_input_shared/max_input_shared.o
+    hook_name: test1
+    in_io_channel:
+      - name: input_map0
+        stream_id: "00000000000000000000000000000000"
+      - name: input_map1
+        stream_id: "00000000000000000000000000000001"
+      - name: input_map2
+        stream_id: "00000000000000000000000000000002"
+      - name: input_map3
+        stream_id: "00000000000000000000000000000003"
+      - name: input_map4
+        stream_id: "00000000000000000000000000000004"
+  - codelet_name: max_output_shared
+    codelet_path: ${JBPF_PATH}/jbpf_tests/test_files/codelets/max_output_shared/max_output_shared.o
+    hook_name: test1
+    linked_maps:
+      - linked_codelet_name: max_input_shared
+        linked_map_name: shared_map0
+        map_name: shared_map_output0
+      - linked_codelet_name: max_input_shared
+        linked_map_name: shared_map1
+        map_name: shared_map_output1
+      - linked_codelet_name: max_input_shared
+        linked_map_name: shared_map2
+        map_name: shared_map_output2
+      - linked_codelet_name: max_input_shared
+        linked_map_name: shared_map3
+        map_name: shared_map_output3
+      - linked_codelet_name: max_input_shared
+        linked_map_name: shared_map4
+        map_name: shared_map_output4
+    out_io_channel:
+      - name: output_map0
+        stream_id: "00000000000000000000000000000000"
+      - name: output_map1
+        stream_id: "00000000000000000000000000000001"
+      - name: output_map2
+        stream_id: "00000000000000000000000000000002"
+      - name: output_map3
+        stream_id: "00000000000000000000000000000003"
+      - name: output_map4
+        stream_id: "00000000000000000000000000000004"
+codeletset_id: max_linked_map_codeletset

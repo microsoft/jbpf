@@ -1,0 +1,12 @@
+## jbpf_io system tests
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)
+set(JBPF_MEM_SYSTEM_TESTS jbpf_mem_system_test)
+set(JBPF_MEM_SYSTEM_TESTS_SOURCE jbpf_mem_system_test.c ${TESTS_COMMON}/jbpf_test_lib.c)
+add_executable(${JBPF_MEM_SYSTEM_TESTS} ${JBPF_MEM_SYSTEM_TESTS_SOURCE})
+target_link_libraries(${JBPF_MEM_SYSTEM_TESTS} PUBLIC jbpf::core_lib)
+target_include_directories(${JBPF_MEM_SYSTEM_TESTS} PUBLIC ${JBPF_LIB_HEADER_FILES} ${TEST_HEADER_FILES})
+add_test(NAME unit_tests/${JBPF_MEM_SYSTEM_TESTS} COMMAND ${JBPF_MEM_SYSTEM_TESTS})
+list(APPEND JBPF_TESTS ${JBPF_MEM_SYSTEM_TESTS})
+add_clang_format_check(${JBPF_MEM_SYSTEM_TESTS} ${JBPF_MEM_SYSTEM_TESTS_SOURCE})
+add_cppcheck(${JBPF_MEM_SYSTEM_TESTS} ${JBPF_MEM_SYSTEM_TESTS_SOURCE})
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)

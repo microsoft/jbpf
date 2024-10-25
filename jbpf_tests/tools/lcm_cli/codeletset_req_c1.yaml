@@ -1,0 +1,8 @@
+codelet_descriptor:
+  - codelet_name: simple_output
+    codelet_path: ${JBPF_PATH}/jbpf_tests/test_files/codelets/simple_output/simple_output.o
+    hook_name: test1
+    out_io_channel:
+      - name: output_map
+        stream_id: 00112233445566778899AABBCCDDEEFF
+codeletset_id: simple_output_codeletset

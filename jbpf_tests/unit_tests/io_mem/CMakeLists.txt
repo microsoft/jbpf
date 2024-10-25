@@ -1,0 +1,12 @@
+## jbpf_io unit tests
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)
+set(JBPF_IO_MEM_UNIT_TESTS jbpf_io_mem_unit_test)
+set(JBPF_IO_MEM_UNIT_TESTS_SOURCE io_mem_unit_test.c ${TESTS_COMMON}/jbpf_test_lib.c ${JBPF_MEM_MGMT_SOURCES})
+add_executable(${JBPF_IO_MEM_UNIT_TESTS} ${JBPF_IO_MEM_UNIT_TESTS_SOURCE})
+target_link_libraries(${JBPF_IO_MEM_UNIT_TESTS} PUBLIC jbpf::core_lib jbpf::logger_lib jbpf::mem_mgmt_lib)
+target_include_directories(${JBPF_IO_MEM_UNIT_TESTS} PUBLIC ${JBPF_LIB_HEADER_FILES} ${TEST_HEADER_FILES} ${JBPF_MEM_MGMT_HEADER_FILES})
+add_test(NAME unit_tests/${JBPF_IO_MEM_UNIT_TESTS} COMMAND ${JBPF_IO_MEM_UNIT_TESTS})
+list(APPEND JBPF_TESTS ${JBPF_IO_MEM_UNIT_TESTS})
+add_clang_format_check(${JBPF_IO_MEM_UNIT_TESTS} ${JBPF_IO_MEM_UNIT_TESTS_SOURCE})
+add_cppcheck(${JBPF_IO_MEM_UNIT_TESTS} ${JBPF_IO_MEM_UNIT_TESTS_SOURCE})
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)

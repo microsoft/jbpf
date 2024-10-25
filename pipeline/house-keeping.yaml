@@ -1,0 +1,23 @@
+steps:
+  - template: environment/cloc.yaml@templates
+    parameters:
+      args: "--exclude-dir=3p,api,build,cmake_modules,out"
+
+  - bash: |
+      ## This checks the C/CPP source code to see if there are any code smells like #define A X*Y which should be fixed to #define A (X*Y)
+      ## The constant was defined as:
+      ##    #define JBPF_MAX_UE_SUPPORTED 16*5
+      ## it should be
+      ##    #define JBPF_MAX_UE_SUPPORTED (16*5)
+      ## Otherwise, expressions like i % JBPF_MAX_UE_SUPPORTED are producing unexpected outputs and tricky bugs.
+
+      echo "Checking C source code for code smells like #define X*Y"
+      c_code_smells=$(find ./src -name "*.c" -type f  -exec awk '/#define [A-Za-z0-9_]+ [0-9]+[*/+-][0-9]+([*/+-][0-9]+)*$/' {} \; | wc -l)
+      if [ "$c_code_smells" -gt 0 ]; then
+        echo "Please fix the following C Code Smells:"
+        find ./src -name "*.c" -type f  -exec awk '/#define [A-Za-z0-9_]+ [0-9]+[*/+-][0-9]+([*/+-][0-9]+)*$/' {} \;
+        exit 1
+      else
+        echo "No C Code Smells found."
+      fi
+    displayName: Check for C Code Smells

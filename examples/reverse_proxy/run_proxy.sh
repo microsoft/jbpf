@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sudo JBPF_PATH=$JBPF_PATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JBPF_PATH/out/lib ./proxy

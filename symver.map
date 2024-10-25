@@ -1,0 +1,4 @@
+jbpf_x.x {
+  global:
+    jbpf*;
+};
