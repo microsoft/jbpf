@@ -1,0 +1,12 @@
+[submodule "3p/ck"]
+	path = 3p/ck
+	url = https://github.com/concurrencykit/ck.git
+[submodule "3p/mimalloc"]
+	path = 3p/mimalloc
+	url = https://github.com/microsoft/mimalloc.git
+[submodule "3p/ubpf"]
+	path = 3p/ubpf
+	url = https://github.com/iovisor/ubpf.git
+[submodule "3p/ebpf-verifier"]
+	path = 3p/ebpf-verifier
+	url = https://github.com/vbpf/ebpf-verifier.git
