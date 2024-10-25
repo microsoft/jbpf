@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.16)
+
+include(ExternalProject)
+project(jbpf-tests-e2e)
+include(CTest)
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)
+
+set(JBPF_E2E_STANDALONE_TEST jbpf_e2e_standalone_test)
+set(JBPF_E2E_IPC_TEST jbpf_e2e_ipc_test)
+set(JBPF_E2E_STANDALONE_SOURCES jbpf_e2e_standalone_test.c)
+set(JBPF_E2E_IPC_SOURCES jbpf_e2e_ipc_test.c)
+set(JBPF_E2E_LCM_IPC_STANDALONE_TEST jbpf_e2e_lcm_ipc_standalone_test)
+set(JBPF_E2E_LCM_IPC_STANDALONE_SOURCES jbpf_e2e_lcm_ipc_standalone_test.c)
+
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)
+
+### jbpf_e2e_standalone_test
+add_executable(${JBPF_E2E_STANDALONE_TEST} ${JBPF_E2E_STANDALONE_SOURCES})
+target_link_libraries(${JBPF_E2E_STANDALONE_TEST} PUBLIC jbpf::core_lib)
+target_include_directories(${JBPF_E2E_STANDALONE_TEST} PUBLIC ${JBPF_LIB_HEADER_FILES} ${TEST_HEADER_FILES})
+add_test(NAME ${JBPF_E2E_STANDALONE_TEST} COMMAND ${JBPF_E2E_STANDALONE_TEST})
+list(APPEND JBPF_TESTS ${JBPF_E2E_STANDALONE_TEST})
+add_clang_format_check(${JBPF_E2E_STANDALONE_TEST} ${JBPF_E2E_STANDALONE_SOURCES})
+add_cppcheck(${JBPF_E2E_STANDALONE_TEST} ${JBPF_E2E_STANDALONE_SOURCES})
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)
+
+### jbpf_e2e_ipc_test
+add_executable(${JBPF_E2E_IPC_TEST} ${JBPF_E2E_IPC_SOURCES})
+target_link_libraries(${JBPF_E2E_IPC_TEST} PUBLIC jbpf::core_lib)
+target_include_directories(${JBPF_E2E_IPC_TEST} PUBLIC ${JBPF_LIB_HEADER_FILES} ${TEST_HEADER_FILES})
+add_test(NAME ${JBPF_E2E_IPC_TEST} COMMAND ${JBPF_E2E_IPC_TEST})
+list(APPEND JBPF_TESTS ${JBPF_E2E_IPC_TEST})
+add_clang_format_check(${JBPF_E2E_IPC_TEST} ${JBPF_E2E_IPC_SOURCES})
+add_cppcheck(${JBPF_E2E_IPC_TEST} ${JBPF_E2E_IPC_SOURCES})
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)
+
+### jbpf_e2e_lcm_ipc_standalone_test
+add_executable(${JBPF_E2E_LCM_IPC_STANDALONE_TEST} ${JBPF_E2E_LCM_IPC_STANDALONE_SOURCES})
+target_link_libraries(${JBPF_E2E_LCM_IPC_STANDALONE_TEST} PUBLIC jbpf::core_lib)
+target_include_directories(${JBPF_E2E_LCM_IPC_STANDALONE_TEST} PUBLIC ${JBPF_LIB_HEADER_FILES} ${TEST_HEADER_FILES})
+add_test(NAME ${JBPF_E2E_LCM_IPC_STANDALONE_TEST} COMMAND ${JBPF_E2E_LCM_IPC_STANDALONE_TEST})
+list(APPEND JBPF_TESTS ${JBPF_E2E_LCM_IPC_STANDALONE_TEST})
+add_clang_format_check(${JBPF_E2E_LCM_IPC_STANDALONE_TEST} ${JBPF_E2E_LCM_IPC_STANDALONE_SOURCES})
+add_cppcheck(${JBPF_E2E_LCM_IPC_STANDALONE_TEST} ${JBPF_E2E_LCM_IPC_STANDALONE_SOURCES})
+set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)

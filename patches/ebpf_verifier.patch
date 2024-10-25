@@ -1,0 +1,13 @@
+diff --git a/src/crab/ebpf_domain.cpp b/src/crab/ebpf_domain.cpp
+index 3f173cc..7c96b6d 100644
+--- a/src/crab/ebpf_domain.cpp
++++ b/src/crab/ebpf_domain.cpp
+@@ -61,7 +61,7 @@ static linear_constraint_t neq(variable_t a, variable_t b) {
+     return {a - b, constraint_kind_t::NOT_ZERO};
+ }
+ 
+-constexpr int MAX_PACKET_SIZE = 0xffff;
++constexpr int MAX_PACKET_SIZE = 0xffffff;
+ constexpr int64_t MY_INT_MAX = INT_MAX;
+ constexpr int64_t PTR_MAX = MY_INT_MAX - MAX_PACKET_SIZE;
+ 

@@ -1,0 +1,20 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: clang-format
+        name: clang-format
+        entry: ./git-hooks/clang-format-pre-commit.sh
+        language: system
+        files: \.(c|cpp|h|hpp)$
+        stages: [commit]
+    -   id: check-commit-message
+        name: Check Commit Message
+        entry: ./git-hooks/check-commit-message.sh
+        language: script
+        stages: [commit-msg]
+    -   id: cppcheck
+        name: cppcheck
+        entry: ./git-hooks/cppcheck-pre-commit.sh
+        language: system
+        files: \.(c|cpp|h|hpp)$
+        stages: [commit]

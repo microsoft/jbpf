@@ -1,33 +1,75 @@
-# Project
+# Introduction
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+Userspace eBPF instrumentation and control framework for deploying control and monitoring functions in a secure manner. It is part of [Project Janus](https://www.microsoft.com/en-us/research/project/programmable-ran-platform/) and provides probes for eBPF-like functionality outside of the Linux kernel.
 
-As the maintainer of this project, please make a few updates:
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+# Architectural overview
 
-## Contributing
+![Architectural overview](docs/jbpf_oss_architecture.png)
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+The overall jbpf architecture is shown in the figure above. It consists of the following main components:
+* **Application**: It is a user-provided executable that we want to instrument and control, built so that it is linked with the libjbpf library.
+* **jbpf library**: The library that provides the functionality of deploying and executing codeletes, sending output data (output API) and receiving control data (input API).
+* **Management framework**: This a framework to load/unload codelets (*codelet life-cycle management* and *secure codelet store*), collect telemetry and excert control (*data collection and control*) and build and deploy codelets (*codelet management*).
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+jbps is not prescriptive in how the management framework should be built. It provides several APIs in the form of libraries: [`libjbpf_lcm`](docs/life_cycle_management.md) (life-cycle management), [`libjbpf_io`](docs/data_io.md) (input and output API) and [`libjbpf_verifier`](docs/verifier.md) (extended verifier), and a sample implementation of the management framework using the APIs. It expects that each user will use the APIs to integrate jbpf into their own prodution environment. 
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+For a high-level overview of the framework functionality, please read [this](./docs/overview.md). 
 
-## Trademarks
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
+
+# Getting started
+
+To build the library, [install the dependencies](./docs/dependencies.md), and run the following:
+```
+source ./setup_jbpf_env.sh
+mkdir build
+cd build
+cmake ..
+make -j
+```
+Check [here](./CMakeLists.txt) to see build options. 
+
+Then follow [these](./examples/first_example_standalone/README.md) steps to run a simple example and read [here](./docs/understand_first_codelet.md) to understand the example better.
+Other variants of this example can be found [here](./examples/first_example_ipc/) and [here](./examples/reverse_proxy/).
+
+## Doxygen documentation
+You can generate the documentation using Doxygen. To do so, run the following:
+```
+make doc
+```
+
+The documentation will be generated in the `$OUT_DIR/docs/html` directory.
+
+# Further documentation
+
+To learn further, explore our documentation:
+
+* [High-level overview of *jbpf* instrumentation and control process](./docs/overview.md)
+* Developing codelets:
+  - [Writing your first codelet](./docs/understand_first_codelet.md)
+* Integrating jbpf with your own project: 
+  - [Install dependencies](./docs/dependencies.md)
+  - [Integrate libjbpf](./docs/integrate_lib.md)
+  - [Add new hook](./docs/add_new_hook.md)
+  - [Add new helper function](./docs/add_helper_function.md)
+  - [Add maps](./docs/maps.md)
+  - [Verification](./docs/verifier.md)
+  - [Data collection and control](./docs/data_io.md)
+  - [Codelet life-cycle management](./docs/life_cycle_management.md)
+  - [Best security principles](./docs/security.md)
+* Experimental features:
+  - [Serialization of IO messages](./docs/serde.md)
+* Contributing to the framework:
+  - [How to contribute?](./CONTRIBUTING.md)
+  - [How to add a test?](./tests/README.md)
+
+
+
+For more information, also consider:
+- [jbpf technical paper](https://www.microsoft.com/en-us/research/publication/taking-5g-ran-analytics-and-control-to-a-new-level/): A research paper that describe the motivation behind the framework. The paper is focused on 5G RAN instrumentation, but most concepts extend to arbitrary applications. 
+
+
+# License
+
+The jbpf framework is licensed under the [MIT license](LICENSE.md).

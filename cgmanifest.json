@@ -1,0 +1,116 @@
+{
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "version": 1,
+    "registrations": [
+        {
+            "component": {
+                "type": "git",
+                "git": {
+                    "repositoryUrl": "https://github.com/concurrencykit/ck",
+                    "commitHash": "471558111ff7c376450724945665cbf5033534a5"
+                }
+            },
+            "developmentDependency": false
+        },
+        {
+            "component": {
+                "type": "git",
+                "git": {
+                    "repositoryUrl": "https://github.com/microsoft/mimalloc.git",
+                    "commitHash": "7ea7296d3e71940cd11488d364a9c8a3618ecf63"
+                }
+            },
+            "developmentDependency": false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/vbpf/ebpf-samples.git",
+                    "CommitHash": "6ebfc5a7bb945af467a8c823dd5ff3d54e316d61"
+                }
+            },
+            "DevelopmentDependency": false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/4ast/bpf_cilium_test.git",
+                    "CommitHash": "9820a2f47a7b5e034fff3095f17041175b2e8b21"
+                }
+            },
+            "DevelopmentDependency": false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/iovisor/ubpf",
+                    "CommitHash": "0014f298be3e2a636fd6243908238fb027527e28"
+                }
+            },
+            "DevelopmentDependency":false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/vbpf/ebpf-verifier",
+                    "CommitHash": "e252d9cf72766084686567c1ef610b3864923ff6"
+                }
+            },
+            "DevelopmentDependency":false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/vbpf/ebpf-samples",
+                    "CommitHash": "3c54b07809f1e47bc43be3b4ff653efc57120c53"
+                }
+            },
+            "DevelopmentDependency": false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/ytakano/radix_tree",
+                    "CommitHash": "7ab942afd376a0bb3a54d6086bc98a085559a081"
+                }
+            },
+            "DevelopmentDependency": false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/serge1/ELFIO",
+                    "CommitHash": "a62b295d5156512967edc4d35e37547ddedbbaae"
+                }
+            },
+            "DevelopmentDependency": false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/Alan-Jowett/bpf_conformance",
+                    "CommitHash": "b8249f51f738b4cedc948d7bcc487f373bd77d02"
+                }
+            },
+            "DevelopmentDependency": false
+        },
+        {
+            "Component": {
+                "Type": "git",
+                "git": {
+                    "RepositoryUrl": "https://github.com/catchorg/Catch2",
+                    "CommitHash": "c359076e8ad5d8be45a56dee013f414a5485050b"
+                }
+            },
+            "DevelopmentDependency": false
+        }
+    ]
+}
