@@ -8,6 +8,9 @@ RUN tdnf -y install yaml-cpp-devel yaml-cpp-static boost-devel gcovr clang pytho
 RUN tdnf -y install doxygen
 ## clang-format
 RUN tdnf -y install clang-tools-extra
+## emulator
+RUN tdnf -y install python3-devel python3-pip
+RUN pip3 install ctypesgen
 
 WORKDIR /jbpf
 COPY . /jbpf

@@ -13,6 +13,10 @@ RUN apt update --fix-missing && \
 
 RUN apt install -y cppcheck
 
+## Emulator
+RUN apt install -y python-dev python3-pip
+RUN pip3 install ctypesgen
+
 # Install specific versions for CVEs
 ## CVE-2023-4016
 RUN apt install -y procps=2:3.3.16-1ubuntu2.4 --allow-downgrades
