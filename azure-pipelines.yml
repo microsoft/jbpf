@@ -1,6 +1,14 @@
 trigger:
-  - master
-  - stable
+  branches:
+    include:
+      - main
+      - stable
+
+pr:
+  branches:
+    include:
+      - main
+      - stable
 
 pool:
   name: agent-pool-onprem-ubuntu
@@ -11,7 +19,7 @@ schedules:
     displayName: Monthly scheduled build
     branches:
       include:
-        - master
+        - main
     always: true
   - cron: "0 0 * * *"
     displayName: Daily scheduled build
