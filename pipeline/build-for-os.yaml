@@ -136,21 +136,3 @@ stages:
 
                   - template: agentpool/cleanup.yaml@templates
 
-          - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-              - job: retagImage
-                dependsOn:
-                  - ${{ each testCase in parameters.testCases }}:
-                      - ${{ testCase.id }}_${{ dockerType.id }}
-                displayName: Tag lib as latest
-                workspace:
-                  clean: all
-                steps:
-                  - template: agentpool/cleanup.yaml@templates
-                  - template: setup-on-vm.yaml
-                  - template: print-debug-info.yaml
-                  - template: retag-lib-image.yaml
-                    parameters:
-                      dockerType: ${{ dockerType.value }}
-                      newTag: latest
-
-                  - template: agentpool/cleanup.yaml@templates
