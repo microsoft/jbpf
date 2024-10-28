@@ -1,0 +1,86 @@
+project(jbpf_emulator)
+
+option(JBPF_STATIC "Use jbpf as static library" OFF)
+
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif()
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+SET(CMAKE_CXX_FLAGS "-std=c++17")
+
+set(JBPF_EMULATOR jbpf_emulator)
+set(JBPF_EMULATOR_SRC_DIR ${PROJECT_SOURCE_DIR})
+set(JBPF_EMULATOR_SOURCES ${JBPF_EMULATOR_SRC_DIR}/emulator.cpp)
+
+## require ENV JBPF_OUT_DIR
+if(NOT DEFINED ENV{JBPF_OUT_DIR})
+    message(FATAL_ERROR "Please set the environment variable JBPF_OUT_DIR to the output directory")
+endif()
+
+set(JBPF_OUT_DIR $ENV{JBPF_OUT_DIR})
+
+## require ENV JBPF_PATH
+if(NOT DEFINED ENV{JBPF_PATH})
+    message(FATAL_ERROR "Please set the environment variable JBPF_PATH to the jbpf directory")
+endif()
+
+set(JBPF_PATH $ENV{JBPF_PATH})
+
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+
+message(STATUS "Python_EXECUTABLE: ${Python_EXECUTABLE}")
+message(STATUS "Python_VERSION: ${Python_VERSION}")
+message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES}")
+set(Python3_LINK_OPTIONS "-lpython${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+message(STATUS "Python3_LINK_OPTIONS: ${Python3_LINK_OPTIONS}")
+
+include_directories(${Python_INCLUDE_DIRS})
+
+add_executable(${JBPF_EMULATOR} ${JBPF_EMULATOR_SOURCES})
+target_include_directories(${JBPF_EMULATOR} PUBLIC 
+    ${JBPF_EMULATOR_HEADERS} 
+    ${JBPF_OUT_DIR}/inc
+    ${JBPF_OUT_DIR}/emulator/test
+    ${JBPF_PATH}/src/logger
+    ${JBPF_PATH}/src/core
+    ${CMAKE_SOURCE_DIR}/jbpf_tests/common
+    ${UBPF_INCLUDE_DIRS}
+    ${JBPF_LOGGER_HEADERS}
+)
+set_target_properties(${JBPF_EMULATOR} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_link_options(${JBPF_EMULATOR} PUBLIC ${Python3_LINK_OPTIONS} "-lutil" "-lm" "-lpthread" "-ldl" "-lrt")
+
+## link to libjbpf.a or libjbpf.so
+if (JBPF_STATIC)
+    target_link_libraries(${JBPF_EMULATOR}
+        ${JBPF_OUT_DIR}/lib/libjbpf_io.a
+        ${JBPF_OUT_DIR}/lib/libjbpf.a
+        ${JBPF_OUT_DIR}/lib/libjbpf_mem_mgmt.a
+        ${JBPF_OUT_DIR}/lib/libjbpf_verifier.a
+        ${JBPF_OUT_DIR}/lib/libjbpf_lcm.a
+        ${JBPF_OUT_DIR}/lib/libubpf.a
+        ${JBPF_OUT_DIR}/lib/libck.a
+        ${JBPF_CK_STATIC_LIB} pthread dl rt ${Python_LIBRARIES}
+    )
+else()
+    target_link_libraries(${JBPF_EMULATOR}
+        ${JBPF_OUT_DIR}/lib/libjbpf_io.a
+        ${JBPF_OUT_DIR}/lib/libjbpf.so
+        ${JBPF_OUT_DIR}/lib/libjbpf_mem_mgmt.a
+        ${JBPF_OUT_DIR}/lib/libjbpf_verifier.a
+        ${JBPF_OUT_DIR}/lib/libjbpf_lcm.a
+        ${JBPF_OUT_DIR}/lib/libubpf.a
+        ${JBPF_OUT_DIR}/lib/libck.a
+        ${JBPF_CK_STATIC_LIB} pthread dl rt ${Python_LIBRARIES}
+    )
+endif()
+
+set_target_properties(${JBPF_EMULATOR}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY  "${JBPF_OUT_DIR}/bin"
+)
