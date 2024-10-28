@@ -62,7 +62,7 @@ To learn further, explore our documentation:
   - [Serialization of IO messages](./docs/serde.md)
 * Contributing to the framework:
   - [How to contribute?](./CONTRIBUTING.md)
-  - [How to add a test?](./tests/README.md)
+  - [How to add a test?](./jbpf_tests/README.md)
 
 
 
