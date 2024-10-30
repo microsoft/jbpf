@@ -116,3 +116,14 @@ add_custom_command(TARGET ${JBPF_EMULATOR} POST_BUILD
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "copy the source files to the out/emulator directory..."
 )
+
+# convert C header to Python structures, require ctypesgen
+add_custom_command(TARGET ${JBPF_EMULATOR} POST_BUILD
+    COMMAND echo "typedef unsigned char uint8_t\;" > /tmp/tmp_jbpf_perf_ext.h
+    COMMAND echo "typedef unsigned int uint32_t\;" >> /tmp/tmp_jbpf_perf_ext.h
+    COMMAND echo "typedef unsigned long long uint64_t\;" >> /tmp/tmp_jbpf_perf_ext.h
+    COMMAND echo "" >> /tmp/tmp_jbpf_perf_ext.h
+    COMMAND cat ${JBPF_PATH}/src/core/jbpf_perf_ext.h >> /tmp/tmp_jbpf_perf_ext.h
+    COMMAND ctypesgen /tmp/tmp_jbpf_perf_ext.h --no-macro-warnings -o ${OUTPUT_DIR}/lib/jbpf_perf_ext.py
+    COMMENT "Building python APIs for tests using the C headers (jbpf_perf_ext.h)..."
+)
