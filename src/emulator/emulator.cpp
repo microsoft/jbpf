@@ -10,6 +10,7 @@
 #include "jbpf_logging.h"
 #include "jbpf_int.h"
 #include "jbpf_agent_hooks.h"
+#include <sys/queue.h>
 
 #define PY_SSIZE_T_CLEAN
 #undef _GNU_SOURCE
@@ -20,6 +21,45 @@ using namespace std;
 // user input
 #include "test/hooks.h"
 #include "test/helper_functions.hpp"
+
+TAILQ_HEAD(tailhead, time_event) head;
+
+struct time_event
+{
+    uint64_t tevent;
+    TAILQ_ENTRY(time_event) entries;
+};
+
+int
+add_time_event(uint64_t event)
+{
+    struct time_event* elem;
+    elem = (time_event*)malloc(sizeof(struct time_event));
+    if (elem) {
+        elem->tevent = event;
+    } else {
+        return -1;
+    }
+    TAILQ_INSERT_TAIL(&head, elem, entries);
+    return 0;
+}
+
+uint64_t
+get_time_event()
+{
+
+    struct time_event* elem;
+    uint64_t tevent;
+    if TAILQ_EMPTY (&head)
+        return 0;
+
+    elem = head.tqh_first;
+    TAILQ_REMOVE(&head, head.tqh_first, entries);
+    tevent = elem->tevent;
+    free(elem);
+
+    return tevent;
+}
 
 static PyObject*
 hook_report_stats_wrapper(PyObject* self, PyObject* args)
@@ -309,7 +349,48 @@ helper_jbpf_cleanup_thread(PyObject* self, PyObject* args)
     return Py_BuildValue("i", 0);
 }
 
+static PyObject*
+helper_add_time_event_wrapper(PyObject* self, PyObject* args)
+{
+    uint64_t time;
+
+    if (!PyArg_ParseTuple(args, "K", &time)) {
+        PyErr_SetString(PyExc_TypeError, "expecting a uint64_t");
+        return Py_BuildValue("i", 1);
+    }
+
+    int ret = add_time_event(time);
+    return Py_BuildValue("i", ret);
+}
+
+static PyObject*
+helper_get_time_event_wrapper(PyObject* self, PyObject* args)
+{
+    uint64_t ts = get_time_event();
+    return Py_BuildValue("K", ts);
+}
+
+static PyObject*
+helper_clear_time_event_wrapper(PyObject* self, PyObject* args)
+{
+    int ans = 0;
+    while (!TAILQ_EMPTY(&head)) {
+        struct time_event* elem;
+        elem = head.tqh_first;
+        ans++;
+        TAILQ_REMOVE(&head, head.tqh_first, entries);
+        free(elem);
+    }
+    return Py_BuildValue("i", ans);
+}
+
 static PyMethodDef jbpfHelperMethods[] = {
+    {"jbpf_add_time_event", helper_add_time_event_wrapper, METH_VARARGS, "Add time events in the emulated time queue"},
+    {"jbpf_get_time_event", helper_get_time_event_wrapper, METH_VARARGS, "Get time events in the emulated time queue"},
+    {"jbpf_clear_time_events",
+     helper_clear_time_event_wrapper,
+     METH_VARARGS,
+     "Reset time events in the emulated time queue"},
     {"jbpf_codeletset_load", helper_jbpf_load_codeletset, METH_VARARGS, "Load a codeletset"},
     {"jbpf_codeletset_unload", helper_jbpf_unload_codeletset, METH_VARARGS, "Unload a codeletset"},
     {"jbpf_send_input_msg", helper_jbpf_send_input_msg, METH_VARARGS, "Send input message"},
@@ -388,11 +469,21 @@ print_list_of_helper_functions()
 {
     int num_elems = sizeof(HelperFunctions) / sizeof(struct PyMethodDef);
 
-    jbpf_logger(JBPF_INFO, "Available Helper Functions: \n");
+    jbpf_logger(JBPF_INFO, "Available Custom Helper Functions: \n");
 
     // Skip the last element since it is NULL
     for (int i = 0; i < num_elems - 1; i++) {
         jbpf_logger(JBPF_INFO, "* %s : %s\n", HelperFunctions[i].ml_name, HelperFunctions[i].ml_doc);
+    }
+    jbpf_logger(JBPF_INFO, "\n");
+
+    num_elems = sizeof(jbpfHelperMethods) / sizeof(struct PyMethodDef);
+
+    jbpf_logger(JBPF_INFO, "Available Helper Functions @jbpf_helpers: \n");
+
+    // Skip the last element since it is NULL
+    for (int i = 0; i < num_elems - 1; i++) {
+        jbpf_logger(JBPF_INFO, "* %s : %s\n", jbpfHelperMethods[i].ml_name, jbpfHelperMethods[i].ml_doc);
     }
     jbpf_logger(JBPF_INFO, "\n");
 }
