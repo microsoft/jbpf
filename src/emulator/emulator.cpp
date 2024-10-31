@@ -531,6 +531,8 @@ main(int argc, char** argv)
         print_list_of_helper_functions();
         return 1;
     }
+
+    TAILQ_INIT(&head);
     char* path = argv[1];
     char* python_module = argv[2];
 
