@@ -19,20 +19,17 @@ def decode_capsule(capsule, name):
     return pointer
 
 def create_codeletset_load_req(data):
-
     def read_key(data, key, default=None):
-        if key not in data:
-            return default
-        return data[key]
+        return data.get(key, default)
 
     req = jbpf_lcm_api.jbpf_codeletset_load_req_s()
-    
+
     # Populate codeletset_id
     req.codeletset_id.name = bytes(data['codeletset_id'], 'utf-8')
-    
+
     # Set number of descriptors
     req.num_codelet_descriptors = read_key(data, 'num_codelet_descriptors', 0)
-    
+
     # Populate each codelet descriptor
     for i, descriptor_data in enumerate(data['codelet_descriptors']):
         descriptor = req.codelet_descriptor[i]
@@ -52,12 +49,35 @@ def create_codeletset_load_req(data):
             io_channel.stream_id = channel_data['stream_id']
             io_channel.has_serde = read_key(channel_data, 'has_serde', False)
 
+            # Populate serde if it exists
+            if 'serde' in channel_data:
+                io_channel.serde.file_path = bytes(channel_data['serde']['file_path'], 'utf-8')
+                if 'protobuf' in channel_data['serde']:
+                    protobuf = channel_data['serde']['protobuf']
+                    io_channel.serde.protobuf.package_path = bytes(protobuf['package_path'], 'utf-8')
+                    io_channel.serde.protobuf.msg_name = bytes(protobuf['msg_name'], 'utf-8')
+
         # Populate in_io_channel for each descriptor
         for j, channel_data in enumerate(descriptor_data.get('in_io_channel', [])):
             io_channel = descriptor.in_io_channel[j]
             io_channel.name = bytes(channel_data['name'], 'utf-8')
             io_channel.stream_id = channel_data['stream_id']
             io_channel.has_serde = read_key(channel_data, 'has_serde', False)
+
+            # Populate serde if it exists
+            if 'serde' in channel_data:
+                io_channel.serde.file_path = bytes(channel_data['serde']['file_path'], 'utf-8')
+                if 'protobuf' in channel_data['serde']:
+                    protobuf = channel_data['serde']['protobuf']
+                    io_channel.serde.protobuf.package_path = bytes(protobuf['package_path'], 'utf-8')
+                    io_channel.serde.protobuf.msg_name = bytes(protobuf['msg_name'], 'utf-8')
+
+        # Populate linked_maps for each descriptor
+        for j, map_data in enumerate(descriptor_data.get('linked_maps', [])):
+            linked_map = descriptor.linked_maps[j]
+            linked_map.map_name = bytes(map_data['map_name'], 'utf-8')
+            linked_map.linked_codelet_name = bytes(map_data['linked_codelet_name'], 'utf-8')
+            linked_map.linked_map_name = bytes(map_data['linked_map_name'], 'utf-8')
 
     return req
 
