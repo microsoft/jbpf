@@ -19,39 +19,45 @@ def decode_capsule(capsule, name):
     return pointer
 
 def create_codeletset_load_req(data):
+
+    def read_key(data, key, default=None):
+        if key not in data:
+            return default
+        return data[key]
+
     req = jbpf_lcm_api.jbpf_codeletset_load_req_s()
     
     # Populate codeletset_id
     req.codeletset_id.name = bytes(data['codeletset_id'], 'utf-8')
     
     # Set number of descriptors
-    req.num_codelet_descriptors = data['num_codelet_descriptors']
+    req.num_codelet_descriptors = read_key(data, 'num_codelet_descriptors', 0)
     
     # Populate each codelet descriptor
     for i, descriptor_data in enumerate(data['codelet_descriptors']):
         descriptor = req.codelet_descriptor[i]
-        descriptor.num_in_io_channel = descriptor_data['num_in_io_channel']
-        descriptor.num_out_io_channel = descriptor_data['num_out_io_channel']
-        descriptor.num_linked_maps = descriptor_data['num_linked_maps']
+        descriptor.num_in_io_channel = read_key(descriptor_data, 'num_in_io_channel', 0)
+        descriptor.num_out_io_channel = read_key(descriptor_data, 'num_out_io_channel', 0)
+        descriptor.num_linked_maps = read_key(descriptor_data, 'num_linked_maps', 0)
         descriptor.codelet_name = bytes(descriptor_data['codelet_name'], 'utf-8')
         descriptor.hook_name = bytes(descriptor_data['hook_name'], 'utf-8')
         descriptor.codelet_path = bytes(descriptor_data['codelet_path'], 'utf-8')
-        descriptor.priority = descriptor_data['priority']
-        descriptor.runtime_threshold = descriptor_data['runtime_threshold']
+        descriptor.priority = read_key(descriptor_data, 'priority', 1)
+        descriptor.runtime_threshold = read_key(descriptor_data, 'runtime_threshold', 1000000000)
 
         # Populate out_io_channel for each descriptor
         for j, channel_data in enumerate(descriptor_data.get('out_io_channel', [])):
             io_channel = descriptor.out_io_channel[j]
             io_channel.name = bytes(channel_data['name'], 'utf-8')
             io_channel.stream_id = channel_data['stream_id']
-            io_channel.has_serde = channel_data['has_serde']
+            io_channel.has_serde = read_key(channel_data, 'has_serde', False)
 
         # Populate in_io_channel for each descriptor
         for j, channel_data in enumerate(descriptor_data.get('in_io_channel', [])):
             io_channel = descriptor.in_io_channel[j]
             io_channel.name = bytes(channel_data['name'], 'utf-8')
             io_channel.stream_id = channel_data['stream_id']
-            io_channel.has_serde = channel_data['has_serde']
+            io_channel.has_serde = read_key(channel_data, 'has_serde', False)
 
     return req
 

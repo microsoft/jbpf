@@ -49,14 +49,13 @@ target_include_directories(${JBPF_EMULATOR} PUBLIC
     ${UBPF_INCLUDE_DIRS}
     ${JBPF_LOGGER_HEADERS}
 )
-set_target_properties(${JBPF_EMULATOR} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_dependencies(${JBPF_EMULATOR} jbpf jbpf_verifier jbpf_io jbpf_mem_mgmt jbpf_lcm)
 
 target_link_options(${JBPF_EMULATOR} PUBLIC ${Python3_LINK_OPTIONS} "-lutil" "-lm" "-lpthread" "-ldl" "-lrt")
 
 ## link to libjbpf.a or libjbpf.so
 if (JBPF_STATIC)
-    target_link_libraries(${JBPF_EMULATOR}
+    target_link_libraries(${JBPF_EMULATOR} PRIVATE
         ${JBPF_OUT_DIR}/lib/libjbpf_io.a
         ${JBPF_OUT_DIR}/lib/libjbpf.a
         ${JBPF_OUT_DIR}/lib/libjbpf_mem_mgmt.a
@@ -67,7 +66,7 @@ if (JBPF_STATIC)
         ${JBPF_CK_STATIC_LIB} pthread dl rt ${Python_LIBRARIES}
     )
 else()
-    target_link_libraries(${JBPF_EMULATOR}
+    target_link_libraries(${JBPF_EMULATOR} PRIVATE
         ${JBPF_OUT_DIR}/lib/libjbpf_io.a
         ${JBPF_OUT_DIR}/lib/libjbpf.so
         ${JBPF_OUT_DIR}/lib/libjbpf_mem_mgmt.a
@@ -80,7 +79,7 @@ else()
 endif()    
 
 add_clang_format_check(${JBPF_EMULATOR} ${JBPF_EMULATOR_SOURCES})
-#add_cppcheck(${JBPF_EMULATOR} ${JBPF_EMULATOR_SOURCES})
+add_cppcheck(${JBPF_EMULATOR} ${JBPF_EMULATOR_SOURCES})
 
 set_target_properties(${JBPF_EMULATOR}
     PROPERTIES
@@ -107,7 +106,10 @@ add_custom_command(TARGET ${JBPF_EMULATOR} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/emulator.cpp ${OUTPUT_DIR}/emulator/
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/hook_wrapper.h ${OUTPUT_DIR}/emulator/
     ## example test files
-    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/* ${OUTPUT_DIR}/emulator/test
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/helper_functions.hpp ${OUTPUT_DIR}/emulator/test
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/hooks.h ${OUTPUT_DIR}/emulator/test
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_1.py ${OUTPUT_DIR}/emulator/test
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_2.py ${OUTPUT_DIR}/emulator/test
     ## hook header files
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_PATH}/jbpf_tests/common/jbpf_test_def.h ${OUTPUT_DIR}/emulator/test
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_PATH}/src/lcm/jbpf_lcm_api.h ${OUTPUT_DIR}/emulator/test
@@ -124,6 +126,6 @@ add_custom_command(TARGET ${JBPF_EMULATOR} POST_BUILD
     COMMAND echo "typedef unsigned long long uint64_t\;" >> /tmp/tmp_jbpf_perf_ext.h
     COMMAND echo "" >> /tmp/tmp_jbpf_perf_ext.h
     COMMAND cat ${JBPF_PATH}/src/core/jbpf_perf_ext.h >> /tmp/tmp_jbpf_perf_ext.h
-    COMMAND ctypesgen /tmp/tmp_jbpf_perf_ext.h --no-macro-warnings -o ${OUTPUT_DIR}/lib/jbpf_perf_ext.py
+    COMMAND ctypesgen /tmp/tmp_jbpf_perf_ext.h -I ${JBPF_PATH}/src/common/ --no-macro-warnings -o ${OUTPUT_DIR}/lib/jbpf_perf_ext.py
     COMMENT "Building python APIs for tests using the C headers (jbpf_perf_ext.h)..."
 )

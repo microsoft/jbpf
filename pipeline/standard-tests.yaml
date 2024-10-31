@@ -64,6 +64,15 @@ steps:
 
   - bash: |
       set -x
+      docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g --mount type=tmpfs,destination=/dev/shm -v `pwd`:/jbpf_out_lib -v `pwd`/build:/jbpf/build ${{parameters.testCase['sanitizerBuildParam']}} ${{parameters.testCase['staticBuildParam']}} -e RUN_EMULATOR_TESTS=1 jbpf_lib
+
+    displayName: Test Emulator
+    continueOnError: false
+    ## TODO: Fix ASAN issues
+    condition: eq('${{parameters.testCase['sanitizerBuildParam']}}', '')
+
+  - bash: |
+      set -x
       docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g --mount type=tmpfs,destination=/dev/shm -v `pwd`:/jbpf_out_lib -v `pwd`/build:/jbpf/build ${{parameters.testCase['sanitizerBuildParam']}} ${{parameters.testCase['staticBuildParam']}} -e RUN_TESTS=1 jbpf_lib
       TEST_OUTCOME=$?
       cp ./build/Testing/Temporary/LastTest.log $(Build.ArtifactStagingDirectory)

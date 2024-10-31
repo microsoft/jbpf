@@ -47,11 +47,11 @@ add_time_event(uint64_t event)
 uint64_t
 get_time_event()
 {
-
     struct time_event* elem;
     uint64_t tevent;
-    if TAILQ_EMPTY (&head)
+    if (TAILQ_EMPTY(&head)) {
         return 0;
+    }
 
     elem = head.tqh_first;
     TAILQ_REMOVE(&head, head.tqh_first, entries);
@@ -412,21 +412,42 @@ static void
 run_benchmark_test(char* dir, char* python_file)
 {
     PyObject* pName;
+    PyObject* sysPath;
+    PyObject* pyDir;
+    PyObject* pyTempPath;
 
-    PyObject* sysPath = PySys_GetObject((char*)"path");
-    PyList_Append(sysPath, PyUnicode_FromString(dir));
+    sysPath = PySys_GetObject((char*)"path");
+
+    // Append the dir to sys.path
+    pyDir = PyUnicode_FromString(dir);
+    if (pyDir) {
+        if (PyList_Append(sysPath, pyDir) == -1) {
+            // Handle error, print, or log
+        }
+        Py_DECREF(pyDir); // Decrement reference count
+    }
 
     char* jbpf_path = getenv("JBPF_PATH");
     jbpf_logger(JBPF_INFO, "JBPF_PATH is %s\n", jbpf_path);
 
     char tempPath[255];
-    PyList_Append(sysPath, PyUnicode_FromString(tempPath));
-    sprintf(tempPath, "%s/out/", jbpf_path);
-    PyList_Append(sysPath, PyUnicode_FromString(tempPath));
+    sprintf(tempPath, "%s/out/", jbpf_path); // Make sure to format first
+    pyTempPath = PyUnicode_FromString(tempPath);
+    if (pyTempPath) {
+        if (PyList_Append(sysPath, pyTempPath) == -1) {
+            // Handle error, print, or log
+        }
+        Py_DECREF(pyTempPath); // Decrement reference count
+    }
+
     pName = PyUnicode_DecodeFSDefault(python_file);
-    PyImport_Import(pName);
-    PyErr_Print();
-    Py_DECREF(pName);
+    if (pName) {
+        PyObject* pModule = PyImport_Import(pName);
+        if (!pModule) {
+            PyErr_Print(); // Print error if module import fails
+        }
+        Py_DECREF(pName); // Decrement reference count
+    }
 }
 
 bool
@@ -488,6 +509,17 @@ print_list_of_helper_functions()
     jbpf_logger(JBPF_INFO, "\n");
 }
 
+void
+cleanup()
+{
+    while (!message_queue.empty()) {
+        message_t* message = message_queue.front();
+        message_queue.pop();
+        free(message->data);
+        free(message);
+    }
+}
+
 int
 main(int argc, char** argv)
 {
@@ -532,5 +564,9 @@ main(int argc, char** argv)
 
     jbpf_stop();
     cout << "Test " << tempPath << " completed successfully." << endl;
+
+    // cleanup
+    Py_Finalize();
+    cleanup();
     return 0;
 }
