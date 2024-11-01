@@ -4,6 +4,7 @@ import sys
 import jbpf_lcm_api
 import jbpf_helpers
 import datetime
+import random
 
 # Load the Python API
 python_api = ctypes.pythonapi
@@ -97,3 +98,10 @@ def jbpf_handle_out_bufs(stream_id, callback, num_of_messages=1, timeout=1):
 
 def jbpf_send_input_msg(stream_id, msg):
     return jbpf_helpers.jbpf_send_input_msg(bytes(stream_id), msg, ctypes.sizeof(msg))
+
+def create_random_stream_id():
+    stream_id = jbpf_lcm_api.struct_jbpf_io_stream_id()
+    sz = len(stream_id.id)
+    for i in range(sz):
+        stream_id.id[i] = random.randint(0, 255)
+    return stream_id
