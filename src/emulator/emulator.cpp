@@ -253,7 +253,7 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, int time
                 PyObject_CallFunctionObjArgs(py_callback, py_stream_id, py_bufs, py_num_bufs, py_ctx, NULL);
             if (!result) {
                 PyErr_Print();
-                fprintf(stderr, "Error: Python callback failed\n");
+                jbpf_logger(JBPF_ERROR, "Error: Python callback failed\n");
             }
 
             // Clean up Python objects
@@ -408,13 +408,14 @@ PyInit_jbpf_helpers(void)
     return PyModule_Create(&jbpfHelperModule);
 }
 
-static void
+static bool
 run_benchmark_test(char* dir, char* python_file)
 {
     PyObject* pName;
     PyObject* sysPath;
     PyObject* pyDir;
     PyObject* pyTempPath;
+    bool ok = true;
 
     sysPath = PySys_GetObject((char*)"path");
 
@@ -422,7 +423,8 @@ run_benchmark_test(char* dir, char* python_file)
     pyDir = PyUnicode_FromString(dir);
     if (pyDir) {
         if (PyList_Append(sysPath, pyDir) == -1) {
-            // Handle error, print, or log
+            jbpf_logger(JBPF_ERROR, "Error: Failed to append %s to sys.path\n", dir);
+            ok = false;
         }
         Py_DECREF(pyDir); // Decrement reference count
     }
@@ -435,7 +437,8 @@ run_benchmark_test(char* dir, char* python_file)
     pyTempPath = PyUnicode_FromString(tempPath);
     if (pyTempPath) {
         if (PyList_Append(sysPath, pyTempPath) == -1) {
-            // Handle error, print, or log
+            jbpf_logger(JBPF_ERROR, "Error: Failed to append %s to sys.path\n", tempPath);
+            ok = false;
         }
         Py_DECREF(pyTempPath); // Decrement reference count
     }
@@ -444,10 +447,13 @@ run_benchmark_test(char* dir, char* python_file)
     if (pName) {
         PyObject* pModule = PyImport_Import(pName);
         if (!pModule) {
+            ok = false;
             PyErr_Print(); // Print error if module import fails
         }
         Py_DECREF(pName); // Decrement reference count
     }
+
+    return ok;
 }
 
 bool
@@ -512,21 +518,30 @@ print_list_of_helper_functions()
 void
 cleanup()
 {
+    // Free the memory allocated for the messages
     while (!message_queue.empty()) {
         message_t* message = message_queue.front();
         message_queue.pop();
         free(message->data);
         free(message);
     }
+
+    // Free time events
+    while (!TAILQ_EMPTY(&head)) {
+        struct time_event* elem;
+        elem = head.tqh_first;
+        TAILQ_REMOVE(&head, head.tqh_first, entries);
+        free(elem);
+    }
 }
 
 int
 main(int argc, char** argv)
 {
-    cout << "Emulator Test (CPP)" << endl;
+    jbpf_logger(JBPF_INFO, "Starting JBPF Emulator Test (CPP) ...\n");
     if (argc != 3) {
-        cout << "Usage: " << argv[0] << " /path/to/tests test" << endl;
-        cout << "Example: " << argv[0] << " $JBPF_PATH/out/emulator/test test_1" << endl;
+        jbpf_logger(JBPF_INFO, "Usage: %s /path/to/tests test\n", argv[0]);
+        jbpf_logger(JBPF_INFO, "Example: %s $JBPF_PATH/out/emulator/test test_1\n", argv[0]);
         print_list_of_hooks();
         print_list_of_helper_functions();
         return 1;
@@ -536,13 +551,13 @@ main(int argc, char** argv)
     char* path = argv[1];
     char* python_module = argv[2];
 
-    printf("Loading the emulator %s/%s\n", path, python_module);
+    jbpf_logger(JBPF_INFO, "Loading the emulator %s/%s\n", path, python_module);
 
     // check if the path exists
     char tempPath[255];
     sprintf(tempPath, "%s/%s.py", path, python_module);
     if (!checkFileExists(tempPath)) {
-        cout << "File " << tempPath << " does not exist" << endl;
+        jbpf_logger(JBPF_ERROR, "File %s does not exist\n", tempPath);
         return 1;
     }
 
@@ -562,13 +577,17 @@ main(int argc, char** argv)
 
     Py_Initialize();
 
-    run_benchmark_test(path, python_module);
+    bool res = run_benchmark_test(path, python_module);
 
     jbpf_stop();
-    cout << "Test " << tempPath << " completed successfully." << endl;
+    if (res) {
+        jbpf_logger(JBPF_INFO, "Test %s completed successfully.\n", tempPath);
+    } else {
+        jbpf_logger(JBPF_ERROR, "Test %s failed.\n", tempPath);
+    }
 
     // cleanup
     Py_Finalize();
     cleanup();
-    return 0;
+    return res ? 0 : 1;
 }
