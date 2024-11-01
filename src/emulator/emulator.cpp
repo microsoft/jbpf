@@ -55,7 +55,7 @@ jbpf_get_xran_samples(XRAN_SAMPLE_DATA_TYPE* out_data, int count)
     int data_pt = 0;
     while (ans < count) {
         struct sample_event* elem;
-        if TAILQ_EMPTY (&sample_head) {
+        if (TAILQ_EMPTY(&sample_head)) {
             return ans;
         }
         elem = sample_head.tqh_first;
