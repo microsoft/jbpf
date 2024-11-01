@@ -26,7 +26,7 @@ using namespace std;
 typedef int16_t XRAN_SAMPLE_DATA_TYPE;
 
 // number of resource block size
-#define RB_SIZE (12*2)
+#define RB_SIZE (12 * 2)
 
 TAILQ_HEAD(sample_tailhead, sample_event) sample_head;
 
@@ -117,7 +117,6 @@ jbpf_write_xran_samples(XRAN_SAMPLE_DATA_TYPE* data, int len, int count)
     TAILQ_INSERT_TAIL(&sample_head, elem, entries);
     return 0;
 }
-
 
 static PyObject*
 helper_jbpf_write_xran_samples(PyObject* self, PyObject* args)
