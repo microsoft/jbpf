@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
 import re
 import os
 import argparse

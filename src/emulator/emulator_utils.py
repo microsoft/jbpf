@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
 import ctypes
 import sys
 import jbpf_lcm_api
@@ -52,10 +53,6 @@ def create_codeletset_load_req(data):
             # Populate serde if it exists
             if 'serde' in channel_data:
                 io_channel.serde.file_path = bytes(channel_data['serde']['file_path'], 'utf-8')
-                if 'protobuf' in channel_data['serde']:
-                    protobuf = channel_data['serde']['protobuf']
-                    io_channel.serde.protobuf.package_path = bytes(protobuf['package_path'], 'utf-8')
-                    io_channel.serde.protobuf.msg_name = bytes(protobuf['msg_name'], 'utf-8')
 
         # Populate in_io_channel for each descriptor
         for j, channel_data in enumerate(descriptor_data.get('in_io_channel', [])):
@@ -67,10 +64,6 @@ def create_codeletset_load_req(data):
             # Populate serde if it exists
             if 'serde' in channel_data:
                 io_channel.serde.file_path = bytes(channel_data['serde']['file_path'], 'utf-8')
-                if 'protobuf' in channel_data['serde']:
-                    protobuf = channel_data['serde']['protobuf']
-                    io_channel.serde.protobuf.package_path = bytes(protobuf['package_path'], 'utf-8')
-                    io_channel.serde.protobuf.msg_name = bytes(protobuf['msg_name'], 'utf-8')
 
         # Populate linked_maps for each descriptor
         for j, map_data in enumerate(descriptor_data.get('linked_maps', [])):
