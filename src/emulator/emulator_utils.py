@@ -9,6 +9,10 @@ import random
 # Load the Python API
 python_api = ctypes.pythonapi
 
+# Default values
+DEFAULT_RUNTIME_THRESHOLD = 1000000000
+DEFAULT_PRIORITY = 1
+
 # Define the function to get the pointer from a PyCapsule
 def decode_capsule(capsule, name):
     python_api.PyCapsule_GetPointer.argtypes = [ctypes.py_object, ctypes.c_char_p]
@@ -21,6 +25,7 @@ def decode_capsule(capsule, name):
     return pointer
 
 def create_codeletset_load_req(data):
+    global DEFAULT_RUNTIME_THRESHOLD, DEFAULT_PRIORITY
     def read_key(data, key, default=None):
         return data.get(key, default)
 
@@ -35,17 +40,22 @@ def create_codeletset_load_req(data):
     # Populate each codelet descriptor
     for i, descriptor_data in enumerate(data['codelet_descriptors']):
         descriptor = req.codelet_descriptor[i]
-        descriptor.num_in_io_channel = read_key(descriptor_data, 'num_in_io_channel', 0)
-        descriptor.num_out_io_channel = read_key(descriptor_data, 'num_out_io_channel', 0)
-        descriptor.num_linked_maps = read_key(descriptor_data, 'num_linked_maps', 0)
+
+        out_io_channel = descriptor_data.get('out_io_channel', [])
+        in_io_channel = descriptor_data.get('in_io_channel', [])
+        linked_maps = descriptor_data.get('linked_maps', [])
+
+        descriptor.num_in_io_channel = read_key(descriptor_data, 'num_in_io_channel', len(in_io_channel))
+        descriptor.num_out_io_channel = read_key(descriptor_data, 'num_out_io_channel', len(out_io_channel))
+        descriptor.num_linked_maps = read_key(descriptor_data, 'num_linked_maps', len(linked_maps))
         descriptor.codelet_name = bytes(descriptor_data['codelet_name'], 'utf-8')
         descriptor.hook_name = bytes(descriptor_data['hook_name'], 'utf-8')
         descriptor.codelet_path = bytes(descriptor_data['codelet_path'], 'utf-8')
-        descriptor.priority = read_key(descriptor_data, 'priority', 1)
-        descriptor.runtime_threshold = read_key(descriptor_data, 'runtime_threshold', 1000000000)
+        descriptor.priority = read_key(descriptor_data, 'priority', DEFAULT_PRIORITY)
+        descriptor.runtime_threshold = read_key(descriptor_data, 'runtime_threshold', DEFAULT_RUNTIME_THRESHOLD)
 
         # Populate out_io_channel for each descriptor
-        for j, channel_data in enumerate(descriptor_data.get('out_io_channel', [])):
+        for j, channel_data in enumerate(out_io_channel):
             io_channel = descriptor.out_io_channel[j]
             io_channel.name = bytes(channel_data['name'], 'utf-8')
             io_channel.stream_id = channel_data['stream_id']
@@ -56,7 +66,7 @@ def create_codeletset_load_req(data):
                 io_channel.serde.file_path = bytes(channel_data['serde']['file_path'], 'utf-8')
 
         # Populate in_io_channel for each descriptor
-        for j, channel_data in enumerate(descriptor_data.get('in_io_channel', [])):
+        for j, channel_data in enumerate(in_io_channel):
             io_channel = descriptor.in_io_channel[j]
             io_channel.name = bytes(channel_data['name'], 'utf-8')
             io_channel.stream_id = channel_data['stream_id']
@@ -67,7 +77,7 @@ def create_codeletset_load_req(data):
                 io_channel.serde.file_path = bytes(channel_data['serde']['file_path'], 'utf-8')
 
         # Populate linked_maps for each descriptor
-        for j, map_data in enumerate(descriptor_data.get('linked_maps', [])):
+        for j, map_data in enumerate(linked_maps):
             linked_map = descriptor.linked_maps[j]
             linked_map.map_name = bytes(map_data['map_name'], 'utf-8')
             linked_map.linked_codelet_name = bytes(map_data['linked_codelet_name'], 'utf-8')
