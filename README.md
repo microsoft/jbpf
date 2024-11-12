@@ -1,5 +1,5 @@
 # Introduction
-[![Build Status](https://belgrade.visualstudio.com/janus/_apis/build/status%2Fjbpf-all?repoName=microsoft%2Fjbpf&branchName=refs%2Fpull%2F4%2Fmerge)](https://belgrade.visualstudio.com/janus/_build/latest?definitionId=143&repoName=microsoft%2Fjbpf&branchName=refs%2Fpull%2F4%2Fmerge)
+[![Build Status](https://belgrade.visualstudio.com/janus/_apis/build/status%2Fjbpf-all?repoName=microsoft%2Fjbpf&branchName=main)](https://belgrade.visualstudio.com/janus/_build/latest?definitionId=143&repoName=microsoft%2Fjbpf&branchName=main)
 
 Userspace eBPF instrumentation and control framework for deploying control and monitoring functions in a secure manner. It is part of [Project Janus](https://www.microsoft.com/en-us/research/project/programmable-ran-platform/) and provides probes for eBPF-like functionality outside of the Linux kernel.
 
