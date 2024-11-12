@@ -276,7 +276,6 @@ add_custom_command(TARGET copy-common-headers POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy  ${JBPF_COMMON_HEADERS}/jbpf_helper_api_defs_ext.h ${OUTPUT_DIR}/inc/  
   COMMAND ${CMAKE_COMMAND} -E copy  ${JBPF_COMMON_HEADERS}/jbpf_common.h ${OUTPUT_DIR}/inc/
   COMMAND ${CMAKE_COMMAND} -E copy  ${JBPF_COMMON_HEADERS}/jbpf_common_types.h ${OUTPUT_DIR}/inc/
-  COMMAND ${CMAKE_COMMAND} -E copy  ${JBPF_COMMON_HEADERS}/jbpf_common_types.h ${OUTPUT_DIR}/inc/
 )
 
 ################ Common files ################
