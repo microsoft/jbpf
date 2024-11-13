@@ -24,16 +24,22 @@ using namespace std;
 
 /* Compiler magic to make address sanitizer ignore
    memory leaks originating from libpython */
-__attribute__((used)) const char *__asan_default_options() {
-  return "detect_leaks=1";
+__attribute__((used)) const char*
+__asan_default_options()
+{
+    return "detect_leaks=1";
 }
 
-__attribute__((used)) const char *__lsan_default_options() {
-  return "print_suppressions=0";
+__attribute__((used)) const char*
+__lsan_default_options()
+{
+    return "print_suppressions=0";
 }
 
-__attribute__((used)) const char *__lsan_default_suppressions() {
-  return "leak:libpython";
+__attribute__((used)) const char*
+__lsan_default_suppressions()
+{
+    return "leak:libpython";
 }
 
 // sample events;
