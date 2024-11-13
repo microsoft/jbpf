@@ -30,6 +30,8 @@ main(int argc, char** argv)
     struct jbpf_config config = {0};
     struct test_packet data = {0};
 
+    JBPF_UNUSED(codeletset_unload_req_c1);
+
     jbpf_set_default_config_options(&config);
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;

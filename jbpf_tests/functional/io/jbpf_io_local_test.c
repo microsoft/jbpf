@@ -237,6 +237,8 @@ main(int argc, char* argv[])
         assert(buf != NULL);
         assert(memcmp(&stream_id_deserialized, &stream_id1, JBPF_IO_STREAM_ID_LEN) == 0);
 
+        JBPF_IO_UNUSED(buf);
+
         // Check that serialization will fail if we don't give big enough buffer
         assert(jbpf_io_channel_pack_msg(io_ctx, test_data1, serialized, 4) == -1);
 #endif

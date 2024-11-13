@@ -145,11 +145,13 @@ main(int argc, char** argv)
         params[i]->stream_id = &stream_id_c1;
         params[i]->thread_id = i;
         int ret = pthread_create(&control_threads[i], NULL, control_thread_func, params[i]);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
 
     for (int i = 0; i < NUM_THREADS_CONTROL; i++) {
         int ret = pthread_join(control_threads[i], NULL);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
 

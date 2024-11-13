@@ -25,6 +25,8 @@ main(int argc, char** argv)
     jbpf_codeletset_load_error_s err_msg = {0};
     jbpf_set_default_config_options(&config);
 
+    JBPF_UNUSED(err_msg);
+
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
     assert(jbpf_init(&config) == 0);
