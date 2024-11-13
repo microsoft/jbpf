@@ -22,6 +22,20 @@ using namespace std;
 #include "test/hooks.h"
 #include "test/helper_functions.hpp"
 
+/* Compiler magic to make address sanitizer ignore
+   memory leaks originating from libpython */
+__attribute__((used)) const char *__asan_default_options() {
+  return "detect_leaks=1";
+}
+
+__attribute__((used)) const char *__lsan_default_options() {
+  return "print_suppressions=0";
+}
+
+__attribute__((used)) const char *__lsan_default_suppressions() {
+  return "leak:libpython";
+}
+
 // sample events;
 typedef int16_t XRAN_SAMPLE_DATA_TYPE;
 
@@ -75,27 +89,6 @@ jbpf_get_xran_samples(XRAN_SAMPLE_DATA_TYPE* out_data, int count)
             }
         }
     }
-    return ans;
-}
-
-// one resource block size is 12*2
-static int
-jbpf_ran_decode_xran_samples_wrapper(
-    const struct jbpf_ran_spectral_ctx* ctx, void* out, uint32_t len, uint16_t start_rb, uint16_t rb_size)
-{
-    // make ctx unused
-    (void)ctx;
-
-    // the out should be allocated by the caller
-    // so we just need to copy the data
-    int ans = jbpf_get_xran_samples((XRAN_SAMPLE_DATA_TYPE*)out, len / sizeof(XRAN_SAMPLE_DATA_TYPE));
-    // keep the data between index [start_rb, start_rb + rb_size], zero out the rest
-    int right = (start_rb + rb_size) * RB_SIZE * sizeof(XRAN_SAMPLE_DATA_TYPE);
-    if (right >= len) {
-        return ans;
-    }
-    memset(out, 0, start_rb * RB_SIZE * sizeof(XRAN_SAMPLE_DATA_TYPE));
-    memset(static_cast<char*>(out) + right, 0, len - right);
     return ans;
 }
 

@@ -68,8 +68,6 @@ steps:
 
     displayName: Test Emulator
     continueOnError: false
-    ## TODO: Fix ASAN issues
-    condition: eq('${{parameters.testCase['sanitizerBuildParam']}}', '')
 
   - bash: |
       set -x
