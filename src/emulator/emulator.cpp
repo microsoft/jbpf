@@ -19,10 +19,6 @@
 
 using namespace std;
 
-// user input
-#include "test/hooks.h"
-#include "test/helper_functions.hpp"
-
 const int EMULATOR_RETURN_SUCC = 0;
 const int EMULATOR_RETURN_FILE_NOT_EXIST = 1;
 const int EMULATOR_RETURN_PYTHON_ERROR = 2;
@@ -71,6 +67,26 @@ struct sample_event
 };
 
 TAILQ_HEAD(tailhead, time_event) head;
+
+struct time_event
+{
+    uint64_t tevent;
+    TAILQ_ENTRY(time_event) entries;
+};
+
+typedef struct message_t
+{
+    jbpf_io_stream_id_t* stream_id;
+    void** data;
+    int nbuf;
+    void* ctx;
+} message_t;
+
+static std::queue<message_t*> message_queue;
+
+// user input
+#include "test/hooks.h"
+#include "test/helper_functions.hpp"
 
 // we take count items from the queue and copy it to out_data
 // and return the number of items copied (may be less than count)
@@ -176,12 +192,6 @@ helper_jbpf_get_xran_samples(PyObject* self, PyObject* args)
     return py_out_data;
 }
 
-struct time_event
-{
-    uint64_t tevent;
-    TAILQ_ENTRY(time_event) entries;
-};
-
 int
 add_time_event(uint64_t event)
 {
@@ -256,16 +266,6 @@ PyInit_helper_functions(void)
 {
     return PyModule_Create(&HelperFunctionModules);
 }
-
-typedef struct message_t
-{
-    jbpf_io_stream_id_t* stream_id;
-    void** data;
-    int nbuf;
-    void* ctx;
-} message_t;
-
-static std::queue<message_t*> message_queue;
 
 static void
 io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_bufs, void* ctx)
