@@ -13,6 +13,7 @@
 #include "jbpf_test_lib.h"
 #include "jbpf_helper_impl.h"
 #include "jbpf_perf.h"
+#include "jbpf_utils.h"
 
 int
 group_test_setup(void** state)
@@ -27,6 +28,7 @@ test_jbpf_get_sys_time_diff_ns_same_time(void** state)
     uint64_t start_time = 1000000000; // 1 second in nanoseconds
     uint64_t end_time = 1000000000;   // Same time
     uint64_t result = __jbpf_get_sys_time_diff_ns(start_time, end_time);
+    JBPF_UNUSED(result);
     assert(result == 0); // The difference should be 0
 }
 
@@ -36,6 +38,7 @@ test_jbpf_get_sys_time_diff_ns_positive_diff(void** state)
     uint64_t start_time = 1000000000; // 1 second in nanoseconds
     uint64_t end_time = 2000000000;   // 2 seconds in nanoseconds
     uint64_t result = __jbpf_get_sys_time_diff_ns(start_time, end_time);
+    JBPF_UNUSED(result);
     assert(result > 0); // The difference should be positive.
 }
 
@@ -45,6 +48,7 @@ test_jbpf_get_sys_time_diff_ns_inverted_times(void** state)
     uint64_t start_time = 2000000000; // 2 seconds in nanoseconds
     uint64_t end_time = 1000000000;   // 1 second in nanoseconds
     uint64_t result = __jbpf_get_sys_time_diff_ns(start_time, end_time);
+    JBPF_UNUSED(result);
     assert(result > 0); // The difference should be positive.
 }
 
@@ -54,6 +58,7 @@ test_jbpf_get_sys_time_diff_ns_zero_times(void** state)
     uint64_t start_time = 0;
     uint64_t end_time = 0;
     uint64_t result = __jbpf_get_sys_time_diff_ns(start_time, end_time);
+    JBPF_UNUSED(result);
     assert(result == 0); // The difference should be 0
 }
 

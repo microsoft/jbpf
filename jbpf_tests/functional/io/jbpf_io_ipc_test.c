@@ -336,6 +336,8 @@ run_secondary(char* serde1, char* serde2)
     struct test_struct* tmp_s = (struct test_struct*)buf;
     assert(tmp_s->counter_a == 200);
     assert(tmp_s->counter_b == 400);
+
+    JBPF_IO_UNUSED(tmp_s);
 #endif
 
     assert(jbpf_io_channel_submit_buf(io_channel) == 0);

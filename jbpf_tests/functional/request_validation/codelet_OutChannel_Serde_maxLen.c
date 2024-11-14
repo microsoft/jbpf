@@ -31,6 +31,8 @@ main(int argc, char** argv)
     struct jbpf_config config = {0};
     jbpf_codeletset_load_error_s err_msg = {0};
 
+    JBPF_UNUSED(err_msg);
+
     jbpf_set_default_config_options(&config);
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;

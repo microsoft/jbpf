@@ -118,6 +118,9 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
     if (processed == (ACTUAL_IN_CHANNEL_SIZE * NUM_OUT_CHANNELS)) {
         for (int i = 0; i < OUTPUT_BIN_SIZE; i++) {
             int expected = (i < ACTUAL_IN_CHANNEL_SIZE) ? 1 : 0;
+
+            JBPF_UNUSED(expected);
+
             assert(output0_bins[i] == expected);
             assert(output1_parameter1_bins[i] == expected);
             assert(output1_parameter2_bins[i] == expected);
@@ -218,6 +221,9 @@ main(int argc, char** argv)
         int ret = jbpf_send_input_msg(&stream_in_ids[0], &control_input, sizeof(control_input));
         int expected_ret = (i < ACTUAL_IN_CHANNEL_SIZE) ? 0 : -1;
         assert(ret == expected_ret);
+
+        JBPF_UNUSED(ret);
+        JBPF_UNUSED(expected_ret);
 
         // send to input channel 2
         custom_api2 control_input2 = {
