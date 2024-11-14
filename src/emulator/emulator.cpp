@@ -10,6 +10,7 @@
 #include "jbpf_logging.h"
 #include "jbpf_int.h"
 #include "jbpf_agent_hooks.h"
+#include "jbpf_helper_impl.h"
 #include <sys/queue.h>
 
 #define PY_SSIZE_T_CLEAN
@@ -21,6 +22,12 @@ using namespace std;
 // user input
 #include "test/hooks.h"
 #include "test/helper_functions.hpp"
+
+const int EMULATOR_RETURN_SUCC = 0;
+const int EMULATOR_RETURN_FILE_NOT_EXIST = 1;
+const int EMULATOR_RETURN_PYTHON_ERROR = 2;
+const int EMULATOR_RETURN_HELPER_FUNCTION_ERROR = 3;
+const int EMULATOR_RETURN_NO_TEST_FILE = 4;
 
 /* Compiler magic to make address sanitizer ignore
    memory leaks originating from libpython */
@@ -701,41 +708,72 @@ cleanup()
     }
 }
 
+void
+print_registered_functions()
+{
+    jbpf_logger(JBPF_INFO, "Registered functions: \n");
+    jbpf_helper_func_def_t* helper_funcs = __get_custom_helper_functions();
+    for (int i = 0; i < MAX_HELPER_FUNC; i++) {
+        if (helper_funcs[i].reloc_id != 0) {
+            jbpf_logger(
+                JBPF_INFO, "* %s registered with reloc_id %d\n", helper_funcs[i].name, helper_funcs[i].reloc_id);
+        }
+    }
+    jbpf_logger(JBPF_INFO, "\n");
+}
+
 int
 main(int argc, char** argv)
 {
-    jbpf_logger(JBPF_INFO, "Starting JBPF Emulator Test (CPP) ...\n");
-    if (argc != 3) {
-        jbpf_logger(JBPF_INFO, "Usage: %s /path/to/tests test\n", argv[0]);
-        jbpf_logger(JBPF_INFO, "Example: %s $JBPF_PATH/out/emulator/test test_1\n", argv[0]);
-        print_list_of_hooks();
-        print_list_of_helper_functions();
-        return 1;
-    }
-
-    // init the queues
-    TAILQ_INIT(&head);
-    TAILQ_INIT(&sample_head);
-
-    char* path = argv[1];
-    char* python_module = argv[2];
-
-    jbpf_logger(JBPF_INFO, "Loading the emulator %s/%s\n", path, python_module);
-
-    // check if the path exists
+    int ret = EMULATOR_RETURN_SUCC;
+    char* path;
+    char* python_module;
     char tempPath[255];
-    sprintf(tempPath, "%s/%s.py", path, python_module);
-    if (!checkFileExists(tempPath)) {
-        jbpf_logger(JBPF_ERROR, "File %s does not exist\n", tempPath);
-        return 1;
-    }
+
+    jbpf_logger(JBPF_INFO, "Starting JBPF Emulator Test (CPP) ...\n");
 
     struct jbpf_config config = {0};
     jbpf_set_default_config_options(&config);
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
     assert(jbpf_init(&config) == 0);
+
+    // calling the custom helper functions
+    jbpf_logger(JBPF_INFO, "Registering custom helper functions\n");
+    if (!register_functions()) {
+        jbpf_logger(JBPF_ERROR, "Failed to register functions\n");
+        ret = EMULATOR_RETURN_HELPER_FUNCTION_ERROR;
+        goto cleanup;
+    }
+
     jbpf_register_thread();
+
+    if (argc != 3) {
+        jbpf_logger(JBPF_INFO, "Usage: %s /path/to/tests test\n", argv[0]);
+        jbpf_logger(JBPF_INFO, "Example: %s $JBPF_PATH/out/emulator/test test_1\n\n", argv[0]);
+        print_list_of_hooks();
+        print_list_of_helper_functions();
+        print_registered_functions();
+        ret = EMULATOR_RETURN_NO_TEST_FILE;
+        goto cleanup;
+    }
+
+    // init the queues
+    TAILQ_INIT(&head);
+    TAILQ_INIT(&sample_head);
+
+    path = argv[1];
+    python_module = argv[2];
+
+    jbpf_logger(JBPF_INFO, "Loading the emulator %s/%s\n", path, python_module);
+
+    // check if the path exists
+    sprintf(tempPath, "%s/%s.py", path, python_module);
+    if (!checkFileExists(tempPath)) {
+        jbpf_logger(JBPF_ERROR, "File %s does not exist\n", tempPath);
+        ret = EMULATOR_RETURN_FILE_NOT_EXIST;
+        goto cleanup;
+    }
 
     jbpf_register_io_output_cb(io_channel_check_output);
 
@@ -746,17 +784,17 @@ main(int argc, char** argv)
 
     Py_Initialize();
 
-    bool res = run_benchmark_test(path, python_module);
-
-    jbpf_stop();
-    if (res) {
+    if (run_benchmark_test(path, python_module)) {
         jbpf_logger(JBPF_INFO, "Test %s completed successfully.\n", tempPath);
     } else {
         jbpf_logger(JBPF_ERROR, "Test %s failed.\n", tempPath);
+        ret = EMULATOR_RETURN_PYTHON_ERROR;
     }
 
+cleanup:
     // cleanup
+    jbpf_stop();
     Py_Finalize();
     cleanup();
-    return res ? 0 : 1;
+    return ret;
 }

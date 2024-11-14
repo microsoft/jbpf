@@ -2,6 +2,7 @@
 #define JBPF_HELPER_IMPL_H
 
 #include "ubpf.h"
+#include "jbpf.h"
 
 void
 jbpf_register_helper_functions(struct ubpf_vm* vm);
@@ -21,5 +22,21 @@ void
 __jbpf_mark_runtime_init(void);
 int
 __jbpf_runtime_limit_exceeded(void);
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+// emulator
+jbpf_helper_func_def_t*
+__get_custom_helper_functions(void);
+
+const jbpf_helper_func_def_t*
+__get_default_helper_functions(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

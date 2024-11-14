@@ -5,9 +5,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 SET(CMAKE_CXX_FLAGS "-std=c++17")
 
+## require ENV JBPF_PATH
+if(NOT DEFINED ENV{JBPF_PATH})
+    message(FATAL_ERROR "Please set the environment variable JBPF_PATH to the jbpf directory")
+endif()
+
+set(JBPF_PATH $ENV{JBPF_PATH})
+
 set(JBPF_EMULATOR jbpf_emulator)
 set(JBPF_EMULATOR_SRC_DIR ${PROJECT_SOURCE_DIR})
-set(JBPF_EMULATOR_SOURCES ${JBPF_EMULATOR_SRC_DIR}/emulator.cpp)
+set(JBPF_EMULATOR_SOURCES ${JBPF_EMULATOR_SRC_DIR}/emulator.cpp ${JBPF_PATH}/src/core/jbpf_helper_impl.c)
 
 ## require ENV JBPF_OUT_DIR
 if(NOT DEFINED ENV{JBPF_OUT_DIR})
@@ -15,13 +22,6 @@ if(NOT DEFINED ENV{JBPF_OUT_DIR})
 endif()
 
 set(JBPF_OUT_DIR $ENV{JBPF_OUT_DIR})
-
-## require ENV JBPF_PATH
-if(NOT DEFINED ENV{JBPF_PATH})
-    message(FATAL_ERROR "Please set the environment variable JBPF_PATH to the jbpf directory")
-endif()
-
-set(JBPF_PATH $ENV{JBPF_PATH})
 
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
