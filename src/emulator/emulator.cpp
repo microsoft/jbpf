@@ -45,27 +45,6 @@ __lsan_default_suppressions()
     return "leak:libpython";
 }
 
-// sample events;
-typedef int16_t XRAN_SAMPLE_DATA_TYPE;
-
-// number of resource block size
-#define RB_SIZE (12 * 2)
-
-TAILQ_HEAD(sample_tailhead, sample_event) sample_head;
-
-struct sample_event
-{
-    // pointer to the sample data
-    int pt;
-    // actual data
-    XRAN_SAMPLE_DATA_TYPE* data;
-    // length of the data
-    int len;
-    // repeat count
-    int count;
-    TAILQ_ENTRY(sample_event) entries;
-};
-
 TAILQ_HEAD(tailhead, time_event) head;
 
 struct time_event
@@ -87,110 +66,6 @@ static std::queue<message_t*> message_queue;
 // user input
 #include "test/hooks.h"
 #include "test/helper_functions.hpp"
-
-// we take count items from the queue and copy it to out_data
-// and return the number of items copied (may be less than count)
-// NOTE: This is not thread safe *yet* (need to add lock
-int
-jbpf_get_xran_samples(XRAN_SAMPLE_DATA_TYPE* out_data, int count)
-{
-    int ans = 0;
-    int data_pt = 0;
-    while (ans < count) {
-        struct sample_event* elem;
-        if (TAILQ_EMPTY(&sample_head)) {
-            return ans;
-        }
-        elem = sample_head.tqh_first;
-        // we can still take one item from the current array
-        if (elem->pt < elem->len) {
-            out_data[data_pt++] = elem->data[elem->pt++];
-            ans++;
-        } else {
-            // if we exhaust the count, we need to free current array
-            // and move one to the next one
-            elem->pt = 0;
-            elem->count--;
-            if (elem->count == 0) {
-                TAILQ_REMOVE(&sample_head, sample_head.tqh_first, entries);
-                free(elem->data);
-                free(elem);
-            }
-        }
-    }
-    return ans;
-}
-
-// we enqueue the data of size len and mark it repeat=count times
-int
-jbpf_write_xran_samples(XRAN_SAMPLE_DATA_TYPE* data, int len, int count)
-{
-    struct sample_event* elem;
-    elem = static_cast<struct sample_event*>(malloc(sizeof(struct sample_event)));
-    if (elem) {
-        elem->pt = 0;
-        elem->count = count;
-        elem->len = len;
-        elem->data = static_cast<XRAN_SAMPLE_DATA_TYPE*>(malloc(len * sizeof(XRAN_SAMPLE_DATA_TYPE)));
-        memcpy(elem->data, data, len * sizeof(XRAN_SAMPLE_DATA_TYPE));
-    } else {
-        return -1;
-    }
-    TAILQ_INSERT_TAIL(&sample_head, elem, entries);
-    return 0;
-}
-
-static PyObject*
-helper_jbpf_write_xran_samples(PyObject* self, PyObject* args)
-{
-    Py_buffer view;
-    int count;
-    if (!PyArg_ParseTuple(args, "y*i", &view, &count)) {
-        PyErr_SetString(PyExc_TypeError, "expecting bytearray/bytes, count");
-        return Py_BuildValue("i", 1);
-    }
-    XRAN_SAMPLE_DATA_TYPE* data = (XRAN_SAMPLE_DATA_TYPE*)view.buf;
-    Py_ssize_t len = view.len / sizeof(XRAN_SAMPLE_DATA_TYPE);
-    int ret = jbpf_write_xran_samples(data, len, count);
-    PyBuffer_Release(&view);
-    return Py_BuildValue("i", ret);
-}
-
-static PyObject*
-helper_jbpf_clear_xran_samples(PyObject* self, PyObject* args)
-{
-    int ans = 0;
-    while (!TAILQ_EMPTY(&sample_head)) {
-        struct sample_event* elem;
-        elem = sample_head.tqh_first;
-        ans += elem->len - elem->pt + elem->len * (elem->count - 1);
-        TAILQ_REMOVE(&sample_head, sample_head.tqh_first, entries);
-        free(elem->data);
-        free(elem);
-    }
-    return Py_BuildValue("i", ans);
-}
-
-static PyObject*
-helper_jbpf_get_xran_samples(PyObject* self, PyObject* args)
-{
-    int count;
-    if (!PyArg_ParseTuple(args, "i", &count)) {
-        PyErr_SetString(PyExc_TypeError, "expecting count");
-        Py_RETURN_NONE;
-    }
-    int size_in_bytes = count * sizeof(XRAN_SAMPLE_DATA_TYPE);
-    XRAN_SAMPLE_DATA_TYPE* out_data;
-    out_data = static_cast<XRAN_SAMPLE_DATA_TYPE*>(malloc(size_in_bytes));
-    int ret = jbpf_get_xran_samples(out_data, count);
-    if (ret == 0) {
-        free(out_data);
-        Py_RETURN_NONE;
-    }
-    PyObject* py_out_data = PyByteArray_FromStringAndSize((char*)out_data, ret * sizeof(XRAN_SAMPLE_DATA_TYPE));
-    free(out_data);
-    return py_out_data;
-}
 
 int
 add_time_event(uint64_t event)
@@ -537,18 +412,6 @@ helper_clear_time_event_wrapper(PyObject* self, PyObject* args)
 }
 
 static PyMethodDef jbpfHelperMethods[] = {
-    {"jbpf_write_xran_samples",
-     helper_jbpf_write_xran_samples,
-     METH_VARARGS,
-     "Add sample data in the emulated xran sample queue"},
-    {"jbpf_clear_xran_samples",
-     helper_jbpf_clear_xran_samples,
-     METH_VARARGS,
-     "Reset sample data in the emulated xran sample queue"},
-    {"jbpf_get_xran_samples",
-     helper_jbpf_get_xran_samples,
-     METH_VARARGS,
-     "Get sample data in the emulated xran sample queue"},
     {"jbpf_add_time_event", helper_add_time_event_wrapper, METH_VARARGS, "Add time events in the emulated time queue"},
     {"jbpf_get_time_event", helper_get_time_event_wrapper, METH_VARARGS, "Get time events in the emulated time queue"},
     {"jbpf_clear_time_events",
@@ -697,15 +560,6 @@ cleanup()
         TAILQ_REMOVE(&head, head.tqh_first, entries);
         free(elem);
     }
-
-    // Free sample events
-    while (!TAILQ_EMPTY(&sample_head)) {
-        struct sample_event* elem;
-        elem = sample_head.tqh_first;
-        TAILQ_REMOVE(&sample_head, sample_head.tqh_first, entries);
-        free(elem->data);
-        free(elem);
-    }
 }
 
 void
@@ -760,7 +614,6 @@ main(int argc, char** argv)
 
     // init the queues
     TAILQ_INIT(&head);
-    TAILQ_INIT(&sample_head);
 
     path = argv[1];
     python_module = argv[2];
