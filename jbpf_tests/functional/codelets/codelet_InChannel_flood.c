@@ -120,7 +120,7 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
             int expected = (i < ACTUAL_IN_CHANNEL_SIZE) ? 1 : 0;
 
             JBPF_UNUSED(expected);
-            
+
             assert(output0_bins[i] == expected);
             assert(output1_parameter1_bins[i] == expected);
             assert(output1_parameter2_bins[i] == expected);
