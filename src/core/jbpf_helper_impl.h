@@ -28,12 +28,12 @@ extern "C"
 {
 #endif
 
-// emulator
-jbpf_helper_func_def_t*
-__get_custom_helper_functions(void);
+    // emulator
+    jbpf_helper_func_def_t*
+    __get_custom_helper_functions(void);
 
-const jbpf_helper_func_def_t*
-__get_default_helper_functions(void);
+    const jbpf_helper_func_def_t*
+    __get_default_helper_functions(void);
 
 #ifdef __cplusplus
 }
