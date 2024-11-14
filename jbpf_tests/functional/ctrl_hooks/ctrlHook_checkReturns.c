@@ -68,6 +68,8 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
         assert(memcmp(stream_id, &out_stream_id, sizeof(jbpf_io_stream_id_t)) == 0);
 
         custom_api* output = bufs[i];
+
+        JBPF_UNUSED(output);
         // printf("%d %d: output->command = %d\n", i, processed, output->command);
         assert(output->command >= ((processed * 2) + 1));
 
@@ -156,12 +158,18 @@ main(int argc, char** argv)
     for (int i = 0; i < NUM_IN_MESSAGES; i++) {
         // send to input channel 1
         custom_api control_input = {0};
+
+        JBPF_UNUSED(control_input);
+
         assert(jbpf_send_input_msg(&in_stream_id, &control_input, sizeof(control_input)) == 0);
     }
 
     // Call the hooks NUM_ITERATIONS times and check that we got the expected data
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         uint32_t ret = (uint32_t)ctrl_hook_ctrl_test0(&cv, 1);
+
+        JBPF_UNUSED(ret);
+
         if (i < NUM_IN_MESSAGES) {
             if (i % 2 == 0) {
                 // if u32_counter is even, the codelet sends this value in the output

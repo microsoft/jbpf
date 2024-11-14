@@ -17,6 +17,7 @@
 #include <string.h>
 #include "jbpf_test_lib.h"
 #include "jbpf_helper_impl.h"
+#include "jbpf_utils.h"
 
 static void
 test_jbpf_hash_empty_item(void** state)
@@ -24,6 +25,7 @@ test_jbpf_hash_empty_item(void** state)
     void* item = NULL;
     uint64_t size = 0;
     uint32_t result = __jbpf_hash(item, size);
+    JBPF_UNUSED(result);
     assert(result == 3735928559);
 }
 
@@ -34,6 +36,8 @@ test_jbpf_hash_single_byte(void** state)
     uint64_t size = 1;
     uint32_t result = __jbpf_hash(&item, size);
     uint32_t expected_hash = 16862113;
+    JBPF_UNUSED(expected_hash);
+    JBPF_UNUSED(result);
     assert(result == expected_hash);
 }
 
@@ -44,6 +48,8 @@ test_jbpf_hash_string(void** state)
     uint64_t size = strlen(item); // Hash only the characters of the string
     uint32_t result = __jbpf_hash(item, size);
     uint32_t expected_hash = 2542796865;
+    JBPF_UNUSED(expected_hash);
+    JBPF_UNUSED(result);
     assert(result == expected_hash);
 }
 
@@ -54,6 +60,8 @@ test_jbpf_hash_binary_data(void** state)
     uint64_t size = sizeof(item);
     uint32_t result = __jbpf_hash(item, size);
     uint32_t expected_hash = 370203305;
+    JBPF_UNUSED(expected_hash);
+    JBPF_UNUSED(result);
     assert(result == expected_hash);
 }
 
@@ -65,6 +73,8 @@ test_jbpf_hash_large_data(void** state)
     uint64_t size = sizeof(item);
     uint32_t result = __jbpf_hash(item, size);
     uint32_t expected_hash = 1918934519;
+    JBPF_UNUSED(expected_hash);
+    JBPF_UNUSED(result);
     assert(result == expected_hash);
 }
 
@@ -75,6 +85,8 @@ test_jbpf_hash_non_null_pointer_zero_size(void** state)
     uint64_t size = 0;
     uint32_t result = __jbpf_hash(&item, size);
     uint32_t expected_hash = 3735928559;
+    JBPF_UNUSED(expected_hash);
+    JBPF_UNUSED(result);
     assert(result == expected_hash);
 }
 
@@ -85,6 +97,8 @@ test_jbpf_hash_consistency(void** state)
     uint64_t size = strlen(item);
     uint32_t result1 = __jbpf_hash(item, size);
     uint32_t result2 = __jbpf_hash(item, size);
+    JBPF_UNUSED(result1);
+    JBPF_UNUSED(result2);
     assert(result1 == result2); // Hash should be consistent for the same input
 }
 
@@ -98,6 +112,8 @@ test_jbpf_hash_different_inputs(void** state)
 
     uint32_t result1 = __jbpf_hash(item1, size1);
     uint32_t result2 = __jbpf_hash(item2, size2);
+    JBPF_UNUSED(result1);
+    JBPF_UNUSED(result2);
     assert(result1 != result2); // Hashes should differ for different inputs
 }
 
