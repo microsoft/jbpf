@@ -7,7 +7,6 @@
 #include <iomanip>
 #include <regex>
 #include "stream_id.hpp"
-#include "jbpf_verifier.hpp"
 
 namespace jbpf_lcm_cli {
 namespace parser {
@@ -140,12 +139,6 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, v
     }
     codelet_path.copy(dest->codelet_path, JBPF_PATH_LEN - 1);
     dest->codelet_path[codelet_path.length()] = '\0';
-
-    auto result = jbpf_verify(codelet_path.c_str(), nullptr, nullptr);
-    if (!result.verification_pass) {
-        cout << "Codelet verification failed: " << result.err_msg << endl;
-        return JBPF_LCM_PARSE_VERIFIER_FAILED;
-    }
 
     if (cfg["priority"].IsDefined()) {
         auto priority = cfg["priority"].as<uint32_t>();
