@@ -592,6 +592,12 @@ main(int argc, char** argv)
 
     assert(jbpf_init(&config) == 0);
 
+    // init the queues
+    TAILQ_INIT(&head);
+
+    // init custom code
+    custom_init();
+
     // calling the custom helper functions
     jbpf_logger(JBPF_INFO, "Registering custom helper functions\n");
     if (!register_functions()) {
@@ -611,9 +617,6 @@ main(int argc, char** argv)
         ret = EMULATOR_RETURN_NO_TEST_FILE;
         goto cleanup;
     }
-
-    // init the queues
-    TAILQ_INIT(&head);
 
     path = argv[1];
     python_module = argv[2];

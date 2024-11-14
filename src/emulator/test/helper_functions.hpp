@@ -20,6 +20,13 @@ helper_list_of_hooks(PyObject* self, PyObject* args)
     return lst;
 }
 
+void
+custom_init()
+{
+    // Custom initialization code here ...
+    cout << "Custom initialization code here ..." << endl;
+}
+
 static int
 jbpf_sample_function(int a, int b, int c)
 {
