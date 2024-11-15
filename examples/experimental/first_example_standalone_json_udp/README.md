@@ -10,7 +10,7 @@ A UDP receiver collects the messages, parses them and prints the JSON message on
 
 ## How to build and run
 
-For the example to work, you need to make sure that `$JANUS_PATH` is correctly set. 
+For the example to work, you need to make sure that `$JBPF_PATH` is correctly set.
 
 The example is automatically built through the cmake build system.
 It can also be built by running `make` in the root directory. 
