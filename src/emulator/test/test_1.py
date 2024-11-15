@@ -13,7 +13,6 @@ import jbpf_test_def
 import jbpf_hooks
 import emulator_utils
 
-
 def io_channel_check_output(bufs, num_bufs, ctx):
     for i in range(num_bufs):
         # Get each buffer pointer from the void ** array
@@ -29,9 +28,8 @@ def io_channel_check_output(bufs, num_bufs, ctx):
         buffer_array = ctypes.cast(buf_pointer, int_array_type)
         print(f"data received: {buffer_array.contents[0]}")
 
-
 codelet_descriptors = emulator_utils.yaml_to_json(
-    emulator_path + "test/test.yaml", placeholders={"JBPF_PATH": JBPF_PATH}
+    JBPF_PATH + "/src/emulator/test/test.yaml", placeholders={"JBPF_PATH": JBPF_PATH}
 )
 stream_id = codelet_descriptors["codelet_descriptors"][0]["out_io_channel"][0][
     "stream_id"
