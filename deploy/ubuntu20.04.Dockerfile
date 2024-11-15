@@ -15,7 +15,7 @@ RUN apt install -y cppcheck
 
 ## Emulator
 RUN apt install -y python-dev python3-pip
-RUN pip3 install ctypesgen
+RUN pip3 install ctypesgen pyyaml
 
 # Install specific versions for CVEs
 ## CVE-2023-4016

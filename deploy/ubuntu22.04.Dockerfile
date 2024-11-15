@@ -16,7 +16,7 @@ RUN apt install -y libyaml-cpp-dev
 
 ## Emulator
 RUN apt install -y python3-dev python3-pip
-RUN pip3 install ctypesgen
+RUN pip3 install ctypesgen pyyaml
 
 WORKDIR /jbpf
 COPY . /jbpf

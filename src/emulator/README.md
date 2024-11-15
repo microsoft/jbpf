@@ -62,6 +62,9 @@ python3 patch.py $OUTPUT_DIR/lib/jbpf_lcm_api.py
 ### Define custom helper functions
 You can add custom helper functions such as xran decoder to the `$JBPF_PATH/out/emulator/test/helper_functions.hpp`
 
+### Define registered functions to Jbpf
+You can register the custom jbpf helper function, see example `$JBPF_PATH/out/emulator/test/helper_functions.hpp`
+
 ### Build the custom emulator
 You would need to define the env variable `JBPF_PATH` and `JBPF_OUT_DIR` to point to the JBPF library path and the output directory respectively. For example:
 
@@ -85,8 +88,11 @@ make -j$(nproc)
 
 On success, the `jbpf_emulator` will be found at `$JBPF_PATH/out/bin`.
 
+## Example Tests
+There are 3 example tests in the `$JBPF_PATH/out/emulator/test` directory.
+
 ## Run tests
-Once emulator is built, you can run it to see the available hooks and helper functions:
+Once emulator is built, you can run it to see the available hooks, registered functions and helper functions:
 
 ```bash
 $JBPF_PATH/out/bin/jbpf_emulator
@@ -95,7 +101,7 @@ $JBPF_PATH/out/bin/jbpf_emulator
 To run a test, follow the syntax:
 
 ```bash
-$JBPF_PATH/out/bin/jbpf_emulator PATH_TO_PYTHON_SCRIPT NAME_OF_PYTHON_SCRIPT
+$JBPF_PATH/out/bin/jbpf_emulator DIRECTORY NAME_OF_PYTHON_SCRIPT
 ```
 
 For example:

@@ -1,0 +1,14 @@
+codeletset_id: test_codeletset
+codelet_descriptors:
+  - num_in_io_channel: 0
+    num_out_io_channel: 1
+    num_linked_maps: 0
+    codelet_name: simple_output
+    hook_name: test1
+    codelet_path: "{{JBPF_PATH}}/jbpf_tests/test_files/codelets/simple_output/simple_output.o"
+    priority: 1
+    runtime_threshold: 1000000000
+    out_io_channel:
+      - name: output_map
+        stream_id: "0123456789ABCDEF"
+        has_serde: false
