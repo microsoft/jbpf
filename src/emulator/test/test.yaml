@@ -1,5 +1,5 @@
 codeletset_id: test_codeletset
-codelet_descriptors:
+codelet_descriptor:
   - num_in_io_channel: 0
     num_out_io_channel: 1
     num_linked_maps: 0

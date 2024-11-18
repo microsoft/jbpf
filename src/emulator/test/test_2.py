@@ -30,10 +30,10 @@ def io_channel_check_output(bufs, num_bufs, ctx):
         buffer_array = ctypes.cast(buf_pointer, int_array_type)
         print(f"data received: {buffer_array.contents[0]}")
 
-codelet_descriptors = {
+codelet_descriptor = {
     'codeletset_id': 'simple_input_output_codeletset',
     'num_codelet_descriptors': 1,
-    'codelet_descriptors': [
+    'codelet_descriptor': [
         {
             'num_in_io_channel': 1,
             'num_out_io_channel': 1,
@@ -61,7 +61,7 @@ codelet_descriptors = {
     ]
 }
 
-codeletset_req_c1 = emulator_utils.create_codeletset_load_req(codelet_descriptors)
+codeletset_req_c1 = emulator_utils.create_codeletset_load_req(codelet_descriptor)
 
 if jbpf_helpers.jbpf_codeletset_load(codeletset_req_c1) != 0:
     print("Failed to load codeletset")

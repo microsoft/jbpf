@@ -28,21 +28,21 @@ def io_channel_check_output(bufs, num_bufs, ctx):
         buffer_array = ctypes.cast(buf_pointer, int_array_type)
         print(f"data received: {buffer_array.contents[0]}")
 
-codelet_descriptors = emulator_utils.yaml_to_json(
+codelet_descriptor = emulator_utils.yaml_to_json(
     JBPF_PATH + "/src/emulator/test/test.yaml", placeholders={"JBPF_PATH": JBPF_PATH}
 )
-stream_id = codelet_descriptors["codelet_descriptors"][0]["out_io_channel"][0][
+stream_id = codelet_descriptor["codelet_descriptor"][0]["out_io_channel"][0][
     "stream_id"
 ]
 ## convert the stream_id to the correct type
 stream_id_c1 = emulator_utils.convert_string_to_stream_id(stream_id)
-codelet_descriptors["codelet_descriptors"][0]["out_io_channel"][0]["stream_id"] = (
+codelet_descriptor["codelet_descriptor"][0]["out_io_channel"][0]["stream_id"] = (
     stream_id_c1
 )
 
 ## load the jbpf_stats_report codelet
 stream_id_c2 = emulator_utils.create_random_stream_id()
-codelet_descriptors["codelet_descriptors"].append(
+codelet_descriptor["codelet_descriptor"].append(
     {
         "codelet_name": "jbpf_stats_report",
         "codelet_path": f"{JBPF_PATH}/tools/stats_report/jbpf_stats_report.o",
@@ -58,7 +58,7 @@ codelet_descriptors["codelet_descriptors"].append(
     }
 )
 
-codeletset_req_c1 = emulator_utils.create_codeletset_load_req(codelet_descriptors)
+codeletset_req_c1 = emulator_utils.create_codeletset_load_req(codelet_descriptor)
 
 if jbpf_helpers.jbpf_codeletset_load(codeletset_req_c1) != 0:
     print("Failed to load codeletset")

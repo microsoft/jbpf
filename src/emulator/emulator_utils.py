@@ -40,15 +40,15 @@ def create_codeletset_load_req(data):
     req.codeletset_id.name = bytes(data["codeletset_id"], "utf-8")
 
     # Descriptor array
-    codelet_descriptors = read_key(data, "codelet_descriptors", [])
+    codelet_descriptor = read_key(data, "codelet_descriptor", [])
 
     # Set number of descriptors
     req.num_codelet_descriptors = read_key(
-        data, "num_codelet_descriptors", len(codelet_descriptors)
+        data, "num_codelet_descriptors", len(codelet_descriptor)
     )
 
     # Populate each codelet descriptor
-    for i, descriptor_data in enumerate(codelet_descriptors):
+    for i, descriptor_data in enumerate(codelet_descriptor):
         descriptor = req.codelet_descriptor[i]
 
         out_io_channel = descriptor_data.get("out_io_channel", [])
