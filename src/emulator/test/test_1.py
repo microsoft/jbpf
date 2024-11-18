@@ -75,8 +75,11 @@ for i in range(3):
         sys.exit(-1)
 
 ## handle output bufs
+stream_id_c2 = emulator_utils.create_random_stream_id()
+print(f"stream_id_c1: {list(stream_id_c1.id)}")
+print(f"stream_id_c2: {list(stream_id_c2.id)}")
 emulator_utils.jbpf_handle_out_bufs(
-    stream_id_c1, io_channel_check_output, num_of_messages=3, timeout=3
+    stream_id_c1, io_channel_check_output, num_of_messages=3, timeout=3, debug=True
 )
 
 ## unload codeletset

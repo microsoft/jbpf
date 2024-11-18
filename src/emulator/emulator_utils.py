@@ -110,7 +110,7 @@ def create_codeletset_load_req(data):
     return req
 
 
-def filter_stream_id(the_stream_id, callback):
+def filter_stream_id(the_stream_id, callback, debug):
     def wrapper_func(stream_id, bufs, num_bufs, ctx):
         # Decode the stream_id
         stream_id_pointer = decode_capsule(stream_id, b"jbpf_io_stream_id_t")
@@ -122,6 +122,10 @@ def filter_stream_id(the_stream_id, callback):
         if list(the_stream_id.id) == list(decoded_stream_id):
             return callback(bufs, num_bufs, ctx)
         else:
+            if debug:
+                print(
+                    f"Skipping callback for stream_id {list(decoded_stream_id)} (expected {list(the_stream_id.id)})"
+                )
             return -1
 
     return wrapper_func
@@ -133,9 +137,11 @@ def jbpf_codeletset_unload(codeletset_id):
     return jbpf_helpers.jbpf_codeletset_unload(req)
 
 
-def jbpf_handle_out_bufs(stream_id, callback, num_of_messages=1, timeout=1):
+def jbpf_handle_out_bufs(
+    stream_id, callback, num_of_messages=1, timeout=1, debug=False
+):
     return jbpf_helpers.jbpf_handle_out_bufs(
-        filter_stream_id(stream_id, callback), num_of_messages, timeout
+        filter_stream_id(stream_id, callback, debug), num_of_messages, timeout
     )
 
 
