@@ -19,6 +19,9 @@
 
 using namespace std;
 
+DEFINE_JBPF_AGENT_HOOK(report_stats)
+DEFINE_JBPF_AGENT_HOOK(periodic_call)
+
 const int EMULATOR_RETURN_SUCC = 0;
 const int EMULATOR_RETURN_FILE_NOT_EXIST = 1;
 const int EMULATOR_RETURN_PYTHON_ERROR = 2;
