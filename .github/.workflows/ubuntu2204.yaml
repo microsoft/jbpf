@@ -1,0 +1,44 @@
+# .github/workflows/build.yml
+name: Build and Test with CMake
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake make g++  # Add any other required dependencies here
+
+      # Step 3: Configure with CMake
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
+
+      # Step 4: Build the project
+      - name: Build the project
+        run: |
+          cd build
+          make -j$(nproc)
+
+      # Step 5: Run tests (if applicable)
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure
