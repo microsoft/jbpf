@@ -70,9 +70,9 @@ handle_channel_bufs(
             // Send an acknowledgement message back to the codelet using IPC API
             PacketResp resp = {p.seq_no};
             jbpf_io_channel_send_msg(io_ctx, &control_input_stream_id, &resp, sizeof(resp));
-        
-	    jbpf_io_channel_release_buf(bufs[i]);
-	}
+
+            jbpf_io_channel_release_buf(bufs[i]);
+        }
     }
 }
 
