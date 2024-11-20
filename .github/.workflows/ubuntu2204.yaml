@@ -1,5 +1,5 @@
-# .github/workflows/build.yml
-name: Build and Test with CMake
+# .github/workflows/ubuntu2204.yaml
+name: Ubuntu 22.04
 
 on:
   push:
