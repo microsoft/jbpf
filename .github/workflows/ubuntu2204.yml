@@ -21,23 +21,38 @@ jobs:
       # Step 2: Install dependencies
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake make g++  # Add any other required dependencies here
+          sudo apt-get update --fix-missing
+          sudo apt-get install -y cmake make g++
+          export CLANG_FORMAT_CHECK=1
+          export CPP_CHECK=1
 
-      # Step 3: Configure with CMake
+          sudo apt install -y cmake build-essential libboost-dev git libboost-program-options-dev \
+              wget gcovr doxygen libboost-filesystem-dev libasan6 python3
+
+          sudo apt install -y clang-format cppcheck
+          sudo apt install -y clang gcc-multilib
+          sudo apt install -y libyaml-cpp-dev          
+
+      # Step 3: Submodules
+      - name: Submodules
+        run: |
+          ./init_and_patch_submodules.sh
+          source setup_jbpf_env.sh
+
+      # Step 4: Configure with CMake
       - name: Configure CMake
         run: |
           mkdir -p build
           cd build
           cmake ..
 
-      # Step 4: Build the project
+      # Step 5: Build the project
       - name: Build the project
         run: |
           cd build
           make -j$(nproc)
 
-      # Step 5: Run tests (if applicable)
+      # Step 6: Run tests (if applicable)
       - name: Run tests
         run: |
           cd build
