@@ -232,11 +232,11 @@ helper_jbpf_unload_codeletset(PyObject* self, PyObject* args)
 }
 
 // C wrapper that calls the Python callback
-void
+int
 c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, int timeout)
 {
     if (!py_callback) {
-        return;
+        return 0;
     }
 
     // start time
@@ -246,6 +246,7 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, int time
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 
+    int count = 0;
     while (num_of_messages > 0) {
         if (timeout > 0) {
             struct timespec now;
@@ -281,6 +282,7 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, int time
             if (!result) {
                 PyErr_Print();
                 jbpf_logger(JBPF_ERROR, "Error: Python callback failed\n");
+                break;
             }
 
             // Clean up Python objects
@@ -291,6 +293,7 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, int time
             Py_XDECREF(py_ctx);
 
             num_of_messages -= message->nbuf;
+            count += message->nbuf;
 
             // Free dynamically allocated memory
             free(message->data); // Free the buffer pointers array
@@ -299,6 +302,7 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, int time
     }
 
     PyGILState_Release(gstate);
+    return count;
 }
 
 static PyObject*
@@ -323,12 +327,12 @@ helper_jbpf_handle_out_bufs(PyObject* self, PyObject* args)
     Py_XINCREF(cb);
 
     // Call the emulator with the C wrapper, not the Python object
-    c_io_output_handler_wrapper(cb, num_of_messages, timeout);
+    int count = c_io_output_handler_wrapper(cb, num_of_messages, timeout);
 
     // Cleanup
     Py_XDECREF(cb);
 
-    return Py_BuildValue("i", 0);
+    return Py_BuildValue("i", count);
 }
 
 static PyObject*

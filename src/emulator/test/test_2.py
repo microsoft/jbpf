@@ -81,7 +81,8 @@ for _ in range(10):
     jbpf_hooks.hook_test1(p, 1)
 
 ## handle output bufs
-emulator_utils.jbpf_handle_out_bufs(stream_id_c1, io_channel_check_output, num_of_messages=5, timeout=3)
+count = emulator_utils.jbpf_handle_out_bufs(stream_id_c1, io_channel_check_output, num_of_messages=5, timeout=3)
+assert(count == 5)
 
 ## unload codeletset
 res = emulator_utils.jbpf_codeletset_unload(codeletset_req_c1.codeletset_id)
