@@ -55,5 +55,6 @@ jobs:
       # Step 6: Run tests (if applicable)
       - name: Run tests
         run: |
+          source setup_jbpf_env.sh
           cd build
           sudo -E ctest --output-on-failure
