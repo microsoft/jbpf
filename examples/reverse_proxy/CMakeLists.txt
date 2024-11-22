@@ -69,3 +69,4 @@ set_target_properties(${BINARY_NAME}
 # Link the static library and additional libraries with the executable
 target_link_libraries(${BINARY_NAME} ${LIBRARY_NAME} ${LINK_LIBS} ${LINK_FLAGS})
 
+add_library(jbpf::reverse_proxy_lib ALIAS ${LIBRARY_NAME})
