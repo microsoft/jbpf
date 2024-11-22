@@ -62,7 +62,7 @@ main(int argc, char** argv)
     snprintf(
         codeletset_req_c1.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
-        "%s/jbpf_tests/test_files/codelets/helper-function-janus-hash/jbpf_helper_example.o",
+        "%s/jbpf_tests/test_files/codelets/helper-function-jbpf-hash/jbpf_helper_example.o",
         jbpf_path);
     strcpy(codeletset_req_c1.codelet_descriptor[0].codelet_name, "jbpf-hash-example");
 
