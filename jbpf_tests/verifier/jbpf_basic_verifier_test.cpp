@@ -22,7 +22,7 @@ std::string correct_codelets[] = {
     "/jbpf_tests/test_files/codelets/simple_test1_shared/simple_test1_shared.o",
     "/jbpf_tests/test_files/codelets/simple_test2_shared/simple_test2_shared.o",
     "/jbpf_tests/test_files/codelets/simple_input_output/simple_input_output.o",
-    "/jbpf_tests/test_files/codelets/helper-function-janus-hash/jbpf_helper_example.o",
+    "/jbpf_tests/test_files/codelets/helper-function-jbpf-hash/jbpf_helper_example.o",
     "/tools/stats_report/jbpf_stats_report.o"};
 
 std::string error_codelets[] = {
