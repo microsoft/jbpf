@@ -1,13 +1,13 @@
-diff --git a/src/crab/ebpf_domain.cpp b/src/crab/ebpf_domain.cpp
-index 3f173cc..7c96b6d 100644
---- a/src/crab/ebpf_domain.cpp
-+++ b/src/crab/ebpf_domain.cpp
-@@ -61,7 +61,7 @@ static linear_constraint_t neq(variable_t a, variable_t b) {
-     return {a - b, constraint_kind_t::NOT_ZERO};
- }
- 
+diff --git a/src/crab/ebpf_domain.hpp b/src/crab/ebpf_domain.hpp
+index 1981536..d252dfa 100644
+--- a/src/crab/ebpf_domain.hpp
++++ b/src/crab/ebpf_domain.hpp
+@@ -21,7 +21,7 @@ namespace crab {
+ // the offsets get replaced with 64-bit address pointers.  However, we currently
+ // need to do pointer arithmetic on 64-bit numbers so for now we cap the interval
+ // to 32 bits.
 -constexpr int MAX_PACKET_SIZE = 0xffff;
 +constexpr int MAX_PACKET_SIZE = 0xffffff;
- constexpr int64_t MY_INT_MAX = INT_MAX;
- constexpr int64_t PTR_MAX = MY_INT_MAX - MAX_PACKET_SIZE;
+ constexpr int64_t PTR_MAX = std::numeric_limits<int32_t>::max() - MAX_PACKET_SIZE;
  
+ class ebpf_domain_t;
