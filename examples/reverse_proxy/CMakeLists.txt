@@ -4,10 +4,9 @@ cmake_minimum_required(VERSION 3.16)
 project(ProxyProject LANGUAGES CXX)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-SET(CMAKE_CXX_FLAGS "-std=c++17")
 
 # Binary name
 set(BINARY_NAME proxy)

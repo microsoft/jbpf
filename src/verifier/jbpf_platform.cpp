@@ -17,6 +17,8 @@
 #include "specs/spec_type_descriptors.hpp"
 #include "jbpf_defs.h"
 
+#include <asm_files.hpp>
+
 static int
 create_map_jbpf(
     uint32_t map_type, uint32_t key_size, uint32_t value_size, uint32_t max_entries, ebpf_verifier_options_t options);
@@ -109,31 +111,44 @@ void
 jbpf_verifier_parse_maps_section(
     std::vector<EbpfMapDescriptor>& map_descriptors,
     const char* data,
-    size_t map_def_size,
-    int map_count,
+    const size_t map_def_size,
+    const int map_count,
     const ebpf_platform_t* platform,
-    ebpf_verifier_options_t options)
+    const ebpf_verifier_options_t options)
 {
+
+    // Copy map definitions from the ELF section into a local list.
     auto mapdefs = std::vector<jbpf_load_map_def>();
     for (int i = 0; i < map_count; i++) {
         jbpf_load_map_def def = {0};
         memcpy(&def, data + i * map_def_size, std::min(map_def_size, sizeof(def)));
         mapdefs.emplace_back(def);
     }
-    for (auto const& s : mapdefs) {
+
+    // Add map definitions into the map_descriptors list.
+    for (const auto& s : mapdefs) {
         EbpfMapType type = jbpf_verifier_get_map_type(s.type);
         map_descriptors.emplace_back(EbpfMapDescriptor{
             .original_fd = create_map_jbpf(s.type, s.key_size, s.value_size, s.max_entries, options),
             .type = s.type,
             .key_size = s.key_size,
             .value_size = s.value_size,
-            .max_entries = s.max_entries});
+            .max_entries = s.max_entries,
+            .inner_map_fd = s.inner_map_idx // Temporarily fill in the index. This will be replaced in the
+                                            // resolve_inner_map_references pass.
+        });
     }
-    for (size_t i = 0; i < mapdefs.size(); i++) {
-        unsigned int inner = mapdefs[i].inner_map_idx;
-        if (inner >= map_descriptors.size())
-            throw std::runtime_error(
-                std::string("bad inner map index ") + std::to_string(inner) + " for map " + std::to_string(i));
+}
+
+// Initialize the inner_map_fd in each map descriptor.
+void
+resolve_inner_map_references_jbpf(std::vector<EbpfMapDescriptor>& map_descriptors)
+{
+    for (size_t i = 0; i < map_descriptors.size(); i++) {
+        const unsigned int inner = map_descriptors[i].inner_map_fd; // Get the inner_map_idx back.
+        if (inner >= map_descriptors.size()) {
+            throw UnmarshalError("bad inner map index " + std::to_string(inner) + " for map " + std::to_string(i));
+        }
         map_descriptors[i].inner_map_fd = map_descriptors.at(inner).original_fd;
     }
 }
@@ -176,4 +191,5 @@ const ebpf_platform_t g_ebpf_platform_jbpf = {
     jbpf_verifier_parse_maps_section,
     jbpf_verifier_get_map_descriptor,
     jbpf_verifier_get_map_type,
-};
+    resolve_inner_map_references_jbpf,
+    bpf_conformance_groups_t::default_groups | bpf_conformance_groups_t::packet};

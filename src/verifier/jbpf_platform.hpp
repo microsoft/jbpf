@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 #pragma once
 
-extern const ebpf_platform_t g_ebpf_platform_jbpf;
+#include "helpers.hpp"
 
 /**
  * Get the platform for the JIT compiler.
@@ -17,3 +17,5 @@ jbpf_verifier_get_helper_prototype(int32_t n);
  */
 bool
 jbpf_verifier_is_helper_usable(int32_t n);
+
+extern const ebpf_platform_t g_ebpf_platform_jbpf;

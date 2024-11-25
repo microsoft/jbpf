@@ -20,7 +20,7 @@ set(JBPF_VERIFIER_HEADERS ${JBPF_VERIFIER_SRC_DIR}
 
 
 ######## jbpf verifier library ########
-add_library(${JBPF_VERIFIER_LIB} ${JBPF_VERIFIER_SOURCES} $<TARGET_OBJECTS:ebpfverifier>)
+add_library(${JBPF_VERIFIER_LIB} ${JBPF_VERIFIER_SOURCES} $<TARGET_OBJECTS:ebpfverifier> $<TARGET_OBJECTS:libbtf>)
 add_library(jbpf::verifier_lib ALIAS ${JBPF_VERIFIER_LIB})
 target_include_directories(${JBPF_VERIFIER_LIB} PUBLIC ${JBPF_VERIFIER_HEADERS} 
                                                         ${EBPF_VERIFIER_HEADERS}

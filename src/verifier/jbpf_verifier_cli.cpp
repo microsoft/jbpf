@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-#include "CLI11.hpp"
+#include "CLI11/CLI11.hpp"
 
 #include "jbpf_verifier.hpp"
 
@@ -39,7 +39,7 @@ main(int argc, char** argv)
     if (result.verification_pass) {
         res = 1;
         std::cout << result.verification_pass << "," << result.runtime_seconds << std::endl;
-        std::cout << "Program terminates within " << result.max_instruction_count << " instructions\n";
+        std::cout << "Program terminates within " << result.max_loop_count << " loop iterations\n";
     } else {
         res = 0;
         std::cout << "Failure: " << result.err_msg << std::endl;

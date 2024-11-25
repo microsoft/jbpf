@@ -14,7 +14,7 @@ extern "C"
      * @brief JBPF verifier result
      * @param verification_pass whether the verification passed
      * @param runtime_seconds the runtime of the verification
-     * @param max_instruction_count Maximum instruction count of the program
+     * @param max_loop_count Maximum loop count of the program
      * @param err_msg Error message if any
      * @ingroup verifier
      */
@@ -22,7 +22,7 @@ extern "C"
     {
         bool verification_pass;
         float runtime_seconds;
-        unsigned long max_instruction_count;
+        unsigned long max_loop_count;
         char err_msg[ERROR_MSG_LEN];
     } jbpf_verifier_result_t;
 
