@@ -1,8 +1,10 @@
 /*
  * This test does the following:
  * 1. It creates a process that uses the LCM IPC API to load a single codelet (C1) to a jbpf agent.
- * 2. The codelet has a single hook (report_stats) that is called by the agent internally at the interval of MAINTENANCE_CHECK_INTERVAL (see jbpf_perf.c).
- * 3. Then we check if the codelet (attached to report_stats hook) has been actually called by the agent. If it has been called, we should get the output from the codelet.
+ * 2. The codelet has a single hook (report_stats) that is called by the agent internally at the interval of
+ * MAINTENANCE_CHECK_INTERVAL (see jbpf_perf.c).
+ * 3. Then we check if the codelet (attached to report_stats hook) has been actually called by the agent. If it has been
+ * called, we should get the output from the codelet.
  * 4. It uses the LCM IPC API to unload the codelet.
  */
 
@@ -53,7 +55,7 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
     for (int i = 0; i < num_bufs; i++) {
         if (memcmp(stream_id, &stream_id_c1, sizeof(stream_id_c1)) == 0) {
             // Output from C1. Check that the counter has the expected value
-            count ++;
+            count++;
         } else {
             // Unexpected output. Fail the test
             assert(false);
