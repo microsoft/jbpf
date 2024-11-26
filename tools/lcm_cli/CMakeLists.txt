@@ -21,7 +21,7 @@ target_include_directories(${JBPF_LCM_IPC_CLI} PUBLIC ${JBPF_LCM_HEADER_FILES}
                                                         ${HEADER_FILES}
                                                         ${JBPF_LCM_IPC_CLI_HEADER_FILES}
                                                         ${JBPF_VERIFIER_HEADERS})
-target_link_libraries(${JBPF_LCM_IPC_CLI} PUBLIC jbpf::core_lib jbpf::verifier_lib ${YAML_CPP_LIBRARIES} jbpf::lcm_ipc_lib)
+target_link_libraries(${JBPF_LCM_IPC_CLI} PUBLIC jbpf::core_lib ${YAML_CPP_LIBRARIES} jbpf::lcm_ipc_lib)
 
 set_target_properties(${JBPF_LCM_IPC_CLI}
     PROPERTIES

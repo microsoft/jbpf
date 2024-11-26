@@ -24,6 +24,7 @@
 #include "jbpf_helper_impl.h"
 #include "jbpf_int.h"
 #include "jbpf_bpf_hashmap.h"
+#include "jbpf_utils.h"
 
 #define TEST_HASHMAP_SIZE 1000
 
@@ -64,6 +65,7 @@ test_setup(void** state)
         int key = i;
         int val = i;
         int ret = __jbpf_map_update_elem(hashmap, &key, &val, 0);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
     *state = hashmap;
@@ -83,6 +85,7 @@ test_setup_full_map_single(void** state)
     int key = 0;
     int val = 0;
     int ret = __jbpf_map_update_elem(hashmap, &key, &val, 0);
+    JBPF_UNUSED(ret);
     assert(ret == 0);
     *state = hashmap;
     return 0;
@@ -102,6 +105,7 @@ test_setup_full_map(void** state)
         int key = i;
         int val = i;
         int ret = __jbpf_map_update_elem(hashmap, &key, &val, 0);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
     *state = hashmap;
@@ -115,6 +119,7 @@ test_hashmap_access(void** state)
     for (int i = 0; i < TEST_HASHMAP_SIZE; ++i) {
         int key = i;
         int* val = (int*)__jbpf_map_lookup_elem((struct jbpf_map*)hashmap, &key);
+        JBPF_UNUSED(val);
         assert(val);
         assert(*val == i);
     }
@@ -141,6 +146,7 @@ test_setup_single_entry(void** state)
     int key = 0;
     int val = 999;
     int ret = __jbpf_map_update_elem((struct jbpf_map*)hashmap, &key, &val, 0);
+    JBPF_UNUSED(ret);
     assert(ret == 0);
     *state = hashmap;
     return 0;
@@ -152,6 +158,7 @@ test_hashmap_access_single_entry(void** state)
     struct jbpf_map* hashmap = (struct jbpf_map*)*state;
     int key = 0;
     int* val = (int*)__jbpf_map_lookup_elem((struct jbpf_map*)hashmap, &key);
+    JBPF_UNUSED(val);
     assert(val);
     assert(*val == 999);
 }
@@ -163,6 +170,7 @@ test_hashmap_access_key_not_exist(void** state)
     for (int i = 0; i < TEST_HASHMAP_SIZE; ++i) {
         int key = i + 9999;
         int* val = (int*)__jbpf_map_lookup_elem((struct jbpf_map*)hashmap, &key);
+        JBPF_UNUSED(val);
         assert(!val);
     }
 }
@@ -174,6 +182,7 @@ test_hashmap_access_key_not_exist_single_entry(void** state)
     for (int i = 0; i < 999; ++i) {
         int key = i + 9999;
         int* val = (int*)__jbpf_map_lookup_elem((struct jbpf_map*)hashmap, &key);
+        JBPF_UNUSED(val);
         assert(!val);
     }
 }
@@ -185,6 +194,7 @@ test_hashmap_remove_key_not_exist(void** state)
     for (int i = 0; i < TEST_HASHMAP_SIZE; ++i) {
         int key = i + 999999;
         int ret = __jbpf_map_delete_elem((struct jbpf_map*)hashmap, &key);
+        JBPF_UNUSED(ret);
         assert(ret == -1);
     }
 }
@@ -196,6 +206,7 @@ test_hashmap_add_key_to_a_full_map(void** state)
     int key = 9999;
     int val = 9999;
     int ret = __jbpf_map_update_elem((struct jbpf_map*)hashmap, &key, &val, 0);
+    JBPF_UNUSED(ret);
     assert(ret == JBPF_MAP_FULL);
 }
 
@@ -205,12 +216,15 @@ test_hashmap_remove_key_exist_and_then_check(void** state)
     struct jbpf_map* hashmap = (struct jbpf_map*)*state;
     int key = 0;
     int ret = __jbpf_map_delete_elem((struct jbpf_map*)hashmap, &key);
+    JBPF_UNUSED(ret);
     assert(ret == 0);
     int* val = (int*)__jbpf_map_lookup_elem((struct jbpf_map*)hashmap, &key);
+    JBPF_UNUSED(val);
     assert(!val);
     // then we can add
     int val2 = 9999;
     int ret2 = __jbpf_map_update_elem((struct jbpf_map*)hashmap, &key, &val2, 0);
+    JBPF_UNUSED(ret2);
     assert(ret2 == 0);
 }
 

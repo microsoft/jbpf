@@ -59,6 +59,7 @@ test_setup(void** state)
         int key = i;
         int val = i;
         int ret = __jbpf_map_update_elem(array, &key, &val, 0);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
     *state = array;
@@ -72,6 +73,7 @@ test_array_access(void** state)
     for (int i = 0; i < TEST_ARRAY_SIZE; ++i) {
         int key = i;
         int* val = (int*)__jbpf_map_lookup_elem(array, &key);
+        JBPF_UNUSED(val);
         assert(val);
         assert(*val == i);
     }
@@ -98,6 +100,7 @@ test_setup_single_entry(void** state)
     int key = 0;
     int val = 999;
     int ret = __jbpf_map_update_elem(array, &key, &val, 0);
+    JBPF_UNUSED(ret);
     assert(ret == 0);
     *state = array;
     return 0;
@@ -109,6 +112,7 @@ test_array_access_single_entry(void** state)
     struct jbpf_map* array = (struct jbpf_map*)*state;
     int key = 0;
     int* val = (int*)__jbpf_map_lookup_elem(array, &key);
+    JBPF_UNUSED(val);
     assert(val);
     assert(*val == 999);
 }
@@ -120,6 +124,7 @@ test_array_access_out_of_bounds(void** state)
     for (int i = 0; i < TEST_ARRAY_SIZE; ++i) {
         int key = i + 9999;
         int* val = (int*)__jbpf_map_lookup_elem(array, &key);
+        JBPF_UNUSED(val);
         assert(!val);
     }
 }
@@ -131,6 +136,7 @@ test_array_access_out_of_bounds_single_entry(void** state)
     for (int i = 0; i < 999; ++i) {
         int key = i + 9999;
         int* val = (int*)__jbpf_map_lookup_elem(array, &key);
+        JBPF_UNUSED(val);
         assert(!val);
     }
 }

@@ -118,12 +118,14 @@ main(int argc, char** argv)
         params[i]->stream_id = &stream_id_c1;
         params[i]->thread_id = i;
         int ret = pthread_create(&control_threads[i], NULL, control_thread_func, params[i]);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
 
     // join the control threads
     for (int i = 0; i < NUM_THREADS_CONTROL; i++) {
         int ret = pthread_join(control_threads[i], NULL);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
 
@@ -133,12 +135,14 @@ main(int argc, char** argv)
     pthread_t hook_threads[NUM_THREAD_HOOK];
     for (int i = 0; i < NUM_THREAD_HOOK; i++) {
         int ret = pthread_create(&hook_threads[i], NULL, hook_thread_func, &data);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
 
     // join the hook threads
     for (int i = 0; i < NUM_THREAD_HOOK; i++) {
         int ret = pthread_join(hook_threads[i], NULL);
+        JBPF_UNUSED(ret);
         assert(ret == 0);
     }
 

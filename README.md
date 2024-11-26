@@ -13,7 +13,7 @@ The overall jbpf architecture is shown in the figure above. It consists of the f
 * **jbpf library**: The library that provides the functionality of deploying and executing codeletes, sending output data (output API) and receiving control data (input API).
 * **Management framework**: This a framework to load/unload codelets (*codelet life-cycle management* and *secure codelet store*), collect telemetry and excert control (*data collection and control*) and build and deploy codelets (*codelet management*).
 
-jbps is not prescriptive in how the management framework should be built. It provides several APIs in the form of libraries: [`libjbpf_lcm`](docs/life_cycle_management.md) (life-cycle management), [`libjbpf_io`](docs/data_io.md) (input and output API) and [`libjbpf_verifier`](docs/verifier.md) (extended verifier), and a sample implementation of the management framework using the APIs. It expects that each user will use the APIs to integrate jbpf into their own prodution environment. 
+jbpf is not prescriptive in how the management framework should be built. It provides several APIs in the form of libraries: [`libjbpf_lcm`](docs/life_cycle_management.md) (life-cycle management), [`libjbpf_io`](docs/data_io.md) (input and output API) and [`libjbpf_verifier`](docs/verifier.md) (extended verifier), and a sample implementation of the management framework using the APIs. It expects that each user will use the APIs to integrate jbpf into their own prodution environment. 
 
 For a high-level overview of the framework functionality, please read [this](./docs/overview.md). 
 
