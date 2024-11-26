@@ -6,6 +6,8 @@
 The library is agnostic to the serialization method used to pack the data. Instead, it allows the developers of codelets to define their own 
 serialization/deserialization functions for their codelets, in the form of callbacks bundled in a shared `.so` library. 
 
+In this document, we explain how the serde mechanism works, using JSON as a concrete serialization format.
+You can also view the [jbpf-protobuf](https://github.com/microsoft/jbpf-protobuf) tool, as an alternative serialization method based on protobuf.
 
 ## Example
 
