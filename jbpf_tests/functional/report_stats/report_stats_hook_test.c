@@ -2,7 +2,7 @@
  * This test does the following:
  * 1. It creates a process that uses the LCM IPC API to load a single codelet (C1) to a jbpf agent.
  * 2. The codelet has a single hook (report_stats) that is called by the agent internally at the interval of MAINTENANCE_CHECK_INTERVAL (see jbpf_perf.c).
- * 3. Then we check if the codelet (attached to report_stats hook) has been actually called by the agent.
+ * 3. Then we check if the codelet (attached to report_stats hook) has been actually called by the agent. If it has been called, we should get the output from the codelet.
  * 4. It uses the LCM IPC API to unload the codelet.
  */
 
