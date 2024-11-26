@@ -156,5 +156,6 @@ jbpf_report_perf_stats()
     }
 
     // Run stats hook
+    jbpf_logger(JBPF_INFO, "Running report_stats hook ...\n");
     hook_report_stats(&jbpf_s, MAINTENANCE_CHECK_INTERVAL);
 }
