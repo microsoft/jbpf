@@ -127,7 +127,7 @@ extern "C"
         struct jbpf_hook_codelet* hook_codelet_ptr;                                                                 \
         hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                        \
         if (hook_codelet_ptr) {                                                                                     \
-            printf("hook_codelet_ptr is valid.\n"); \
+            printf("hook_codelet_ptr is valid %s.\n", #name); \
             JBPF_REGISTER_THREAD()                                                                                  \
             ck_epoch_begin(e_record, NULL);                                                                         \
             hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                    \
@@ -137,10 +137,10 @@ extern "C"
                 printf("__RUN_JBPF_HOOK: %s\n", #name);\
                     __RUN_JBPF_HOOK(name, HOOK_ARGS((void*)&ctx_arg, sizeof(ctx_arg))) JBPF_STOP_MEASURE_TIME(name) \
             }                                                                                                       \
-            else { printf("hook_codelet_ptr is null.\n");}\
+            else { printf("hook_codelet_ptr is null %s.\n", #name);}\
             ck_epoch_end(e_record, NULL);                                                                           \
         }                                                                                                           \
-        else { printf("hook_codelet_ptr is invalid.\n");}\
+        else { printf("hook_codelet_ptr is invalid %s.\n", #name);}\
     }                                                                                                               \
     JBPF_CODELET_MGMT_FUNCS(name)
 
