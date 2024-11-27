@@ -67,8 +67,11 @@ To learn further, explore our documentation:
 
 
 For more information, also consider:
-- [jbpf technical paper](https://www.microsoft.com/en-us/research/publication/taking-5g-ran-analytics-and-control-to-a-new-level/): A research paper that describe the motivation behind the framework. The paper is focused on 5G RAN instrumentation, but most concepts extend to arbitrary applications. 
+- [jbpf technical paper](https://www.microsoft.com/en-us/research/publication/taking-5g-ran-analytics-and-control-to-a-new-level/): A research paper that describes the motivation behind the framework. The paper is focused on 5G RAN instrumentation, but most concepts extend to arbitrary applications. 
 
+# Related projects
+
+- [jbpf-protobuf](https://github.com/microsoft/jbpf-protobuf): jbpf extension, demonstrating how to utilize protobuf serialization for sending and receiving data from codelets loaded in jbpf applications.
 
 # License
 
