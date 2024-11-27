@@ -73,6 +73,7 @@ extern "C"
     {                                                            \
         do {                                                     \
             e_runtime_threshold = hook_codelet_ptr->time_thresh; \
+            printf("calling %s\n", #name);\
             hook_codelet_ptr->jbpf_codelet(args);                \
         } while ((++hook_codelet_ptr)->jbpf_codelet);            \
     }
@@ -126,16 +127,20 @@ extern "C"
         struct jbpf_hook_codelet* hook_codelet_ptr;                                                                 \
         hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                        \
         if (hook_codelet_ptr) {                                                                                     \
+            printf("hook_codelet_ptr is valid.\n"); \
             JBPF_REGISTER_THREAD()                                                                                  \
             ck_epoch_begin(e_record, NULL);                                                                         \
             hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                    \
             if (hook_codelet_ptr) {                                                                                 \
                 ctx_proto;                                                                                          \
                 assign JBPF_START_MEASURE_TIME(name)                                                                \
+                printf("__RUN_JBPF_HOOK: %s\n", #name);\
                     __RUN_JBPF_HOOK(name, HOOK_ARGS((void*)&ctx_arg, sizeof(ctx_arg))) JBPF_STOP_MEASURE_TIME(name) \
             }                                                                                                       \
+            else { printf("hook_codelet_ptr is null.\n");}\
             ck_epoch_end(e_record, NULL);                                                                           \
         }                                                                                                           \
+        else { printf("hook_codelet_ptr is invalid.\n");}\
     }                                                                                                               \
     JBPF_CODELET_MGMT_FUNCS(name)
 
