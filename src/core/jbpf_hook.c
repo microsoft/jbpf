@@ -58,6 +58,8 @@ jbpf_register_codelet_hook(
             }
             /* The program already exists. Abort */
             if (old_codelets[nr_codelets].jbpf_codelet == codelet) {
+                jbpf_logger(JBPF_INFO, "Codelet already registered to %s\n", hook->name);
+                ck_pr_store_ptr(&hook->codelets, old_codelets);
                 ck_epoch_end(e_record, NULL);
                 goto out;
             }
