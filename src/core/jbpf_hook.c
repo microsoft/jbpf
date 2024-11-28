@@ -106,7 +106,6 @@ jbpf_register_codelet_hook(
     jbpf_logger(JBPF_INFO, "Codelet %p registered to %s: %ld\n", codelet, hook->name, (u_int64_t)&hook->codelets);
     jbpf_logger(JBPF_INFO, "The number of codelets registered to %s: %d\n", hook->name, nr_codelets + 1);
 
-
     ck_epoch_end(e_record, NULL);
     if (old_codelets) {
         ck_epoch_call_strict(e_record, &old_codelets->epoch_entry, free_codelet_list);
@@ -182,7 +181,7 @@ jbpf_remove_codelet_hook(struct jbpf_hook* hook, jbpf_jit_fn codelet)
 
     ret = 0;
 
-out: 
+out:
     pthread_mutex_unlock(&hook_mutex);
     return ret;
 }
