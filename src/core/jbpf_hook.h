@@ -119,30 +119,32 @@ extern "C"
     }                                                                                                     \
     JBPF_CODELET_MGMT_FUNCS(name)
 
-#define DECLARE_JBPF_HOOK(name, ctx_proto, ctx_arg, fields_proto, assign)                                       \
-    static inline void hook_##name(fields_proto);                                                               \
-    extern struct jbpf_hook __jbpf_hook_##name;                                                                 \
-    static inline void hook_##name(fields_proto)                                                                \
-    {                                                                                                           \
-        struct jbpf_hook_codelet* hook_codelet_ptr;                                                             \
-        hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                    \
-        if (hook_codelet_ptr) {                                                                                 \
-            printf("hook_codelet_ptr is valid %s.\n", #name);                                                   \
-            JBPF_REGISTER_THREAD()                                                                              \
-            ck_epoch_begin(e_record, NULL);                                                                     \
-            hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                \
-            if (hook_codelet_ptr) {                                                                             \
-                ctx_proto;                                                                                      \
-                assign JBPF_START_MEASURE_TIME(name) printf("__RUN_JBPF_HOOK: %s\n", #name);                    \
-                __RUN_JBPF_HOOK(name, HOOK_ARGS((void*)&ctx_arg, sizeof(ctx_arg))) JBPF_STOP_MEASURE_TIME(name) \
-            } else {                                                                                            \
-                printf("hook_codelet_ptr is null %s.\n", #name);                                                \
-            }                                                                                                   \
-            ck_epoch_end(e_record, NULL);                                                                       \
-        } else {                                                                                                \
-            printf("hook_codelet_ptr is invalid %s.\n", #name);                                                 \
-        }                                                                                                       \
-    }                                                                                                           \
+#define DECLARE_JBPF_HOOK(name, ctx_proto, ctx_arg, fields_proto, assign)                                              \
+    static inline void hook_##name(fields_proto);                                                                      \
+    extern struct jbpf_hook __jbpf_hook_##name;                                                                        \
+    static inline void hook_##name(fields_proto)                                                                       \
+    {                                                                                                                  \
+        struct jbpf_hook_codelet* hook_codelet_ptr;                                                                    \
+        hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                           \
+        printf(                                                                                                        \
+            "hook_codelet_ptr %s = %p = %ld", #name, hook_codelet_ptr, (u_int64_t) & (&__jbpf_hook_##name)->codelets); \
+        if (hook_codelet_ptr) {                                                                                        \
+            printf("hook_codelet_ptr is valid %s.\n", #name);                                                          \
+            JBPF_REGISTER_THREAD()                                                                                     \
+            ck_epoch_begin(e_record, NULL);                                                                            \
+            hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                       \
+            if (hook_codelet_ptr) {                                                                                    \
+                ctx_proto;                                                                                             \
+                assign JBPF_START_MEASURE_TIME(name) printf("__RUN_JBPF_HOOK: %s\n", #name);                           \
+                __RUN_JBPF_HOOK(name, HOOK_ARGS((void*)&ctx_arg, sizeof(ctx_arg))) JBPF_STOP_MEASURE_TIME(name)        \
+            } else {                                                                                                   \
+                printf("hook_codelet_ptr is null %s.\n", #name);                                                       \
+            }                                                                                                          \
+            ck_epoch_end(e_record, NULL);                                                                              \
+        } else {                                                                                                       \
+            printf("hook_codelet_ptr is invalid %s.\n", #name);                                                        \
+        }                                                                                                              \
+    }                                                                                                                  \
     JBPF_CODELET_MGMT_FUNCS(name)
 
 /* Here we assing the various information about the hook
