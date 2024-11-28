@@ -127,7 +127,7 @@ extern "C"
         struct jbpf_hook_codelet* hook_codelet_ptr;                                                                    \
         hook_codelet_ptr = ck_pr_load_ptr(&(&__jbpf_hook_##name)->codelets);                                           \
         printf(                                                                                                        \
-            "hook_codelet_ptr %s = %p = %ld", #name, hook_codelet_ptr, (u_int64_t) & (&__jbpf_hook_##name)->codelets); \
+            "hook_codelet_ptr %s = %ld = %ld\n", #name, (uint64_t)hook_codelet_ptr, (u_int64_t)(&(&__jbpf_hook_##name)->codelets)); \
         if (hook_codelet_ptr) {                                                                                        \
             printf("hook_codelet_ptr is valid %s.\n", #name);                                                          \
             JBPF_REGISTER_THREAD()                                                                                     \
