@@ -1020,6 +1020,11 @@ jbpf_load_codelet(struct jbpf_codelet* codelet)
         if (hook == NULL)
             continue;
         jbpf_logger(JBPF_INFO, "Hook name: %s\n", hook->name);
+    }
+    for (int i = 0; i < jbpf_hook_list.num_hooks; i++) {
+        hook = jbpf_hook_list.jbpf_hook_p[i];
+        if (hook == NULL)
+            continue;
         if (strcmp(codelet->hook_name, hook->name) == 0) {
             ret =
                 jbpf_register_codelet_hook(hook, codelet->codelet_fn, codelet->e_runtime_threshold, codelet->priority);

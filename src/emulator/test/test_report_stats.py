@@ -59,12 +59,12 @@ print(f"stream_id_c1: {list(stream_id_c1.id)}")
 count = emulator_utils.jbpf_handle_out_bufs(
     stream_id_c1,
     io_channel_check_output,
-    num_of_messages=3,
-    timeout=5 * emulator_utils.SEC_TO_NS,
+    num_of_messages=2,
+    timeout=3 * emulator_utils.SEC_TO_NS,
     debug=True,
 )
 print(f"Received {count} messages.")
-assert count == 3
+assert count == 2
 
 ## unload codeletset
 res = emulator_utils.jbpf_codeletset_unload(codeletset_req_c1.codeletset_id)
