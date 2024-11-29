@@ -111,6 +111,8 @@ add_custom_command(TARGET ${JBPF_EMULATOR} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_0.py ${OUTPUT_DIR}/emulator/test
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_1.py ${OUTPUT_DIR}/emulator/test
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_2.py ${OUTPUT_DIR}/emulator/test
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_report_stats.py ${OUTPUT_DIR}/emulator/test
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_periodic_call.py ${OUTPUT_DIR}/emulator/test
     ## hook header files
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_PATH}/jbpf_tests/common/jbpf_test_def.h ${OUTPUT_DIR}/emulator/test
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_PATH}/src/lcm/jbpf_lcm_api.h ${OUTPUT_DIR}/emulator/test
