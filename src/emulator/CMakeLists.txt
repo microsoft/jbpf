@@ -49,7 +49,7 @@ target_include_directories(${JBPF_EMULATOR} PUBLIC
     ${UBPF_INCLUDE_DIRS}
     ${JBPF_LOGGER_HEADERS}
 )
-add_dependencies(${JBPF_EMULATOR} jbpf jbpf_verifier jbpf_io jbpf_mem_mgmt jbpf_lcm)
+add_dependencies(${JBPF_EMULATOR} jbpf::core_lib jbpf::logger_lib jbpf::mem_mgmt_lib jbpf_verifier jbpf_io jbpf_lcm)
 
 target_link_options(${JBPF_EMULATOR} PUBLIC ${Python3_LINK_OPTIONS} "-lutil" "-lm" "-lpthread" "-ldl" "-lrt")
 
@@ -59,12 +59,12 @@ set(COMMON_LIBS
     ${JBPF_OUT_DIR}/lib/libjbpf_mem_mgmt.a
     ${JBPF_OUT_DIR}/lib/libjbpf_verifier.a
     ${JBPF_OUT_DIR}/lib/libjbpf_lcm.a
-    # ${JBPF_OUT_DIR}/lib/libubpf.a
-    # ${JBPF_OUT_DIR}/lib/libck.a
-    # ${JBPF_CK_STATIC_LIB}
-    # pthread
-    # dl
-    # rt    
+    ${JBPF_OUT_DIR}/lib/libubpf.a
+    ${JBPF_OUT_DIR}/lib/libck.a
+    ${JBPF_CK_STATIC_LIB}
+    pthread
+    dl
+    rt    
     ${Python_LIBRARIES}
 )
 

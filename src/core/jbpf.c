@@ -1014,10 +1014,12 @@ jbpf_load_codelet(struct jbpf_codelet* codelet)
 
     struct jbpf_hook* hook;
 
+    jbpf_logger(JBPF_INFO, "The number of hooks %d\n", jbpf_hook_list.num_hooks);
     for (int i = 0; i < jbpf_hook_list.num_hooks; i++) {
         hook = jbpf_hook_list.jbpf_hook_p[i];
         if (hook == NULL)
             continue;
+        jbpf_logger(JBPF_INFO, "Hook name: %s\n", hook->name);
         if (strcmp(codelet->hook_name, hook->name) == 0) {
             ret =
                 jbpf_register_codelet_hook(hook, codelet->codelet_fn, codelet->e_runtime_threshold, codelet->priority);
@@ -1025,10 +1027,8 @@ jbpf_load_codelet(struct jbpf_codelet* codelet)
                 jbpf_logger(JBPF_INFO, "Failed to register codelet %s to hook %s\n", codelet->name, hook->name);
             } else {
                 jbpf_logger(JBPF_INFO, "Registered codelet %s to hook %s\n", codelet->name, hook->name);
-                jbpf_logger(
-                    JBPF_INFO, "Codelet %s loaded successfully: %ld\n", codelet->name, (u_int64_t)hook->codelets);
-                jbpf_logger(
-                    JBPF_INFO, "Codelet %s loaded successfully: %ld\n", codelet->name, (u_int64_t)&hook->codelets);
+                jbpf_logger(JBPF_INFO, "Codelet %s loaded successfully: %p\n", codelet->name, (void*)hook->codelets);
+                jbpf_logger(JBPF_INFO, "Codelet %s loaded successfully: %p\n", codelet->name, (void*)&hook->codelets);
                 codelet->loaded = true;
             }
             break;
