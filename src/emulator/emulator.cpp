@@ -314,7 +314,8 @@ helper_jbpf_handle_out_bufs(PyObject* self, PyObject* args)
 
     // parse the arguments
     if (!PyArg_ParseTuple(args, "OiK", &cb, &num_of_messages, &timeout)) {
-        PyErr_SetString(PyExc_TypeError, "Expected arguments: cb (callable), num_of_messages (int), timeout in ns (int64)");
+        PyErr_SetString(
+            PyExc_TypeError, "Expected arguments: cb (callable), num_of_messages (int), timeout in ns (int64)");
         return Py_BuildValue("i", 1);
     }
 
