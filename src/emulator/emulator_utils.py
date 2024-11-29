@@ -14,6 +14,8 @@ python_api = ctypes.pythonapi
 # Default values
 DEFAULT_RUNTIME_THRESHOLD = 1000000000
 DEFAULT_PRIORITY = 1
+SEC_TO_NS = 1000000000
+DEFAULT_TIMEOUT = 3 * SEC_TO_NS
 
 
 # Define the function to get the pointer from a PyCapsule
@@ -138,7 +140,7 @@ def jbpf_codeletset_unload(codeletset_id):
 
 
 def jbpf_handle_out_bufs(
-    stream_id, callback, num_of_messages=1, timeout=1, debug=False
+    stream_id, callback, num_of_messages=1, timeout=DEFAULT_TIMEOUT, debug=False
 ):
     return jbpf_helpers.jbpf_handle_out_bufs(
         filter_stream_id(stream_id, callback, debug), num_of_messages, timeout

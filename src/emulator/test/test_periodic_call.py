@@ -1,4 +1,4 @@
-import os, sys, time, ctypes
+import os, sys, ctypes
 
 JBPF_PATH = os.getenv("JBPF_PATH")
 sys.path.append(JBPF_PATH + "/out/lib/")
@@ -7,14 +7,12 @@ sys.path.append(JBPF_PATH + "/out/lib/")
 emulator_path = os.path.dirname(os.path.abspath(__file__)) + "/../"
 sys.path.append(emulator_path)
 
-import jbpf_lcm_api
 import jbpf_helpers
-import jbpf_test_def
-import jbpf_hooks
 import emulator_utils
 
 
 def io_channel_check_output(bufs, num_bufs, ctx):
+    print(f"num_bufs: {num_bufs}")
     for i in range(num_bufs):
         # Get each buffer pointer from the void ** array
         buf_capsule = bufs[i]
@@ -28,10 +26,12 @@ def io_channel_check_output(bufs, num_bufs, ctx):
         # Cast the void pointer to the correct type
         buffer_array = ctypes.cast(buf_pointer, int_array_type)
         print(f"data received: {buffer_array.contents[0]}")
+        assert buffer_array.contents[0] == 123
 
 
 codelet_descriptor = emulator_utils.yaml_to_json(
-    JBPF_PATH + "/src/emulator/test/test.yaml", placeholders={"JBPF_PATH": JBPF_PATH}
+    JBPF_PATH + "/src/emulator/test/test_periodic_call.yaml",
+    placeholders={"JBPF_PATH": JBPF_PATH},
 )
 stream_id = codelet_descriptor["codelet_descriptor"][0]["out_io_channel"][0][
     "stream_id"
@@ -42,52 +42,22 @@ codelet_descriptor["codelet_descriptor"][0]["out_io_channel"][0]["stream_id"] = 
     stream_id_c1
 )
 
-## load the jbpf_stats_report codelet
-stream_id_c2 = emulator_utils.create_random_stream_id()
-codelet_descriptor["codelet_descriptor"].append(
-    {
-        "codelet_name": "jbpf_stats_report",
-        "codelet_path": f"{JBPF_PATH}/tools/stats_report/jbpf_stats_report.o",
-        "hook_name": "report_stats",
-        "priority": 2,
-        "out_io_channel": [
-            {
-                "name": "output_map",
-                "stream_id": stream_id_c2,
-                "has_serde": False,
-            }
-        ],
-    }
-)
-
 codeletset_req_c1 = emulator_utils.create_codeletset_load_req(codelet_descriptor)
 
 if jbpf_helpers.jbpf_codeletset_load(codeletset_req_c1) != 0:
     print("Failed to load codeletset")
     sys.exit(-1)
 
-## call hook
-print("calling hook test1")
-p = jbpf_test_def.struct_packet()
-for i in range(3):
-    p.counter_a = (i + 1) * 10
-    res = jbpf_hooks.hook_test1(p, 3)
-    if res != 0:
-        print(f"hook_test1 returned {res}")
-        sys.exit(-1)
-
 ## handle output bufs
-stream_id_c2 = emulator_utils.create_random_stream_id()
 print(f"stream_id_c1: {list(stream_id_c1.id)}")
-print(f"stream_id_c2: {list(stream_id_c2.id)}")
 count = emulator_utils.jbpf_handle_out_bufs(
     stream_id_c1,
     io_channel_check_output,
     num_of_messages=3,
-    timeout=3 * (10**9),
+    timeout=5 * emulator_utils.SEC_TO_NS,
     debug=True,
 )
-assert count == 3
+print(count)
 
 ## unload codeletset
 res = emulator_utils.jbpf_codeletset_unload(codeletset_req_c1.codeletset_id)

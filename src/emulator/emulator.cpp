@@ -233,7 +233,7 @@ helper_jbpf_unload_codeletset(PyObject* self, PyObject* args)
 
 // C wrapper that calls the Python callback
 int
-c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, int timeout)
+c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, uint64_t timeout_ns)
 {
     if (!py_callback) {
         return 0;
@@ -248,10 +248,10 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, int time
 
     int count = 0;
     while (num_of_messages > 0) {
-        if (timeout > 0) {
+        if (timeout_ns > 0) { // unit is nano second
             struct timespec now;
             clock_gettime(CLOCK_REALTIME, &now);
-            if (now.tv_sec - start.tv_sec > timeout) {
+            if (now.tv_sec - start.tv_sec >= timeout_ns / 1000000000) {
                 break;
             }
         }
@@ -310,11 +310,11 @@ helper_jbpf_handle_out_bufs(PyObject* self, PyObject* args)
 {
     PyObject* cb;
     int num_of_messages;
-    int timeout;
+    uint64_t timeout;
 
     // parse the arguments
-    if (!PyArg_ParseTuple(args, "Oii", &cb, &num_of_messages, &timeout)) {
-        PyErr_SetString(PyExc_TypeError, "Expected arguments: cb (callable), num_of_messages (int), timeout (int)");
+    if (!PyArg_ParseTuple(args, "OiK", &cb, &num_of_messages, &timeout)) {
+        PyErr_SetString(PyExc_TypeError, "Expected arguments: cb (callable), num_of_messages (int), timeout in ns (int64)");
         return Py_BuildValue("i", 1);
     }
 

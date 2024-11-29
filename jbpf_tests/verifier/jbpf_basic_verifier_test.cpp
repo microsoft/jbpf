@@ -14,6 +14,7 @@ std::string correct_codelets[] = {
     "/jbpf_tests/test_files/codelets/codelet-per-thread/codelet-per-thread.o",
     "/jbpf_tests/test_files/codelets/simple_input_shared/simple_input_shared.o",
     "/jbpf_tests/test_files/codelets/simple_output/simple_output.o",
+    "/jbpf_tests/test_files/codelets/simple_output2/simple_output2.o",
     "/jbpf_tests/test_files/codelets/simple_output_shared/simple_output_shared.o",
     "/jbpf_tests/test_files/codelets/simple_test_shared_multiple_maps/simple_test1_shared_multiple_maps.o",
     "/jbpf_tests/test_files/codelets/simple_test_shared_multiple_maps/simple_test2_shared_multiple_maps.o",

@@ -60,6 +60,7 @@ jbpf_register_codelet_hook(
             if (old_codelets[nr_codelets].jbpf_codelet == codelet) {
                 jbpf_logger(JBPF_INFO, "Codelet already registered to %s\n", hook->name);
                 ck_pr_store_ptr(&hook->codelets, old_codelets);
+                jbpf_logger(JBPF_INFO, "codelet ptr = %p\n", (void*)&hook->codelets);
                 ck_epoch_end(e_record, NULL);
                 goto out;
             }
@@ -103,7 +104,7 @@ jbpf_register_codelet_hook(
     ck_pr_store_ptr(&hook->codelets, new_codelets);
 
     // debug prints
-    jbpf_logger(JBPF_INFO, "Codelet %p registered to %s: %ld\n", codelet, hook->name, (u_int64_t)&hook->codelets);
+    jbpf_logger(JBPF_INFO, "Codelet %p registered to %s: %p\n", codelet, hook->name, (void*)&hook->codelets);
     jbpf_logger(JBPF_INFO, "The number of codelets registered to %s: %d\n", hook->name, nr_codelets + 1);
 
     ck_epoch_end(e_record, NULL);

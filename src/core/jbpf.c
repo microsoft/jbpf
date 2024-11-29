@@ -1666,7 +1666,6 @@ jbpf_maintenance_thread_start(void* arg)
             jbpf_report_perf_stats();
         }
 
-        jbpf_logger(JBPF_INFO, "Maintenance thread running ...\n");
         hook_periodic_call(MAINTENANCE_MEM_CHECK_INTERVAL);
 
         for (int i = 0; i < JBPF_MAX_NUM_REG_THREADS; i++) {
