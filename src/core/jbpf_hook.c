@@ -58,9 +58,6 @@ jbpf_register_codelet_hook(
             }
             /* The program already exists. Abort */
             if (old_codelets[nr_codelets].jbpf_codelet == codelet) {
-                jbpf_logger(JBPF_INFO, "Codelet already registered to %s\n", hook->name);
-                ck_pr_store_ptr(&hook->codelets, old_codelets);
-                jbpf_logger(JBPF_INFO, "codelet ptr = %p\n", (void*)&hook->codelets);
                 ck_epoch_end(e_record, NULL);
                 goto out;
             }
@@ -78,8 +75,6 @@ jbpf_register_codelet_hook(
     new_codelets = (struct jbpf_hook_codelet*)jbpf_calloc_mem(nr_codelets + 2, sizeof(struct jbpf_hook_codelet));
 
     if (!new_codelets) {
-        ck_epoch_end(e_record, NULL);
-        jbpf_logger(JBPF_ERROR, "Failed to allocate memory for new codelets\n");
         goto out;
     }
 
@@ -102,10 +97,6 @@ jbpf_register_codelet_hook(
     new_codelets[nr_codelets + 1].jbpf_codelet = NULL;
 
     ck_pr_store_ptr(&hook->codelets, new_codelets);
-
-    // debug prints
-    jbpf_logger(JBPF_INFO, "Codelet %p registered to %s: %p\n", codelet, hook->name, (void*)&hook->codelets);
-    jbpf_logger(JBPF_INFO, "The number of codelets registered to %s: %d\n", hook->name, nr_codelets + 1);
 
     ck_epoch_end(e_record, NULL);
     if (old_codelets) {

@@ -1032,7 +1032,6 @@ jbpf_load_codelet(struct jbpf_codelet* codelet)
                 jbpf_logger(JBPF_INFO, "Failed to register codelet %s to hook %s\n", codelet->name, hook->name);
             } else {
                 jbpf_logger(JBPF_INFO, "Registered codelet %s to hook %s\n", codelet->name, hook->name);
-                jbpf_logger(JBPF_INFO, "Codelet %s loaded successfully: %p\n", codelet->name, (void*)hook->codelets);
                 jbpf_logger(JBPF_INFO, "Codelet %s loaded successfully: %p\n", codelet->name, (void*)&hook->codelets);
                 codelet->loaded = true;
             }
