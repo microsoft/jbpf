@@ -71,7 +71,6 @@ jbpf_register_codelet_hook(
         }
     }
 
-    // +2 to add the new codelet and the NULL terminator
     new_codelets = (struct jbpf_hook_codelet*)jbpf_calloc_mem(nr_codelets + 2, sizeof(struct jbpf_hook_codelet));
 
     if (!new_codelets) {
@@ -97,7 +96,6 @@ jbpf_register_codelet_hook(
     new_codelets[nr_codelets + 1].jbpf_codelet = NULL;
 
     ck_pr_store_ptr(&hook->codelets, new_codelets);
-
     ck_epoch_end(e_record, NULL);
     if (old_codelets) {
         ck_epoch_call_strict(e_record, &old_codelets->epoch_entry, free_codelet_list);
