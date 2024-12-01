@@ -9,7 +9,6 @@
 #include "jbpf_test_def.h"
 #include "jbpf_logging.h"
 #include "jbpf_int.h"
-//#include "jbpf_agent_hooks.h"
 #include "jbpf_helper_impl.h"
 #include <sys/queue.h>
 
@@ -19,14 +18,14 @@
 
 using namespace std;
 
+void (*hook_report_stats)(void* hook_perfs, uint32_t meas_period) = nullptr;
+void (*hook_periodic_call)(uint32_t meas_period) = nullptr;
+
 const int EMULATOR_RETURN_SUCC = 0;
 const int EMULATOR_RETURN_FILE_NOT_EXIST = 1;
 const int EMULATOR_RETURN_PYTHON_ERROR = 2;
 const int EMULATOR_RETURN_HELPER_FUNCTION_ERROR = 3;
 const int EMULATOR_RETURN_NO_TEST_FILE = 4;
-
-// DEFINE_JBPF_AGENT_HOOK(periodic_call);
-// DEFINE_JBPF_AGENT_HOOK(report_stats);
 
 /* Compiler magic to make address sanitizer ignore
    memory leaks originating from libpython */
@@ -101,40 +100,40 @@ get_time_event()
     return tevent;
 }
 
-// static PyObject*
-// hook_report_stats_wrapper(PyObject* self, PyObject* args)
-// {
-//     struct jbpf_perf_hook_list* hook_perfs;
-//     size_t size;
-//     uint32_t meas_period;
-//     if (!PyArg_ParseTuple(args, "y#I", &hook_perfs, &size, &meas_period)) {
-//         PyErr_SetString(PyExc_TypeError, "wrong argument type");
-//         return Py_BuildValue("i", 1);
-//     }
-//     if (size != sizeof(struct jbpf_perf_hook_list)) {
-//         PyErr_SetString(PyExc_TypeError, "wrong buffer size");
-//         return Py_BuildValue("i", 2);
-//     }
-//     hook_report_stats(hook_perfs, meas_period);
-//     return Py_BuildValue("i", 0);
-// }
+static PyObject*
+hook_report_stats_wrapper(PyObject* self, PyObject* args)
+{
+    struct jbpf_perf_hook_list* hook_perfs;
+    size_t size;
+    uint32_t meas_period;
+    if (!PyArg_ParseTuple(args, "y#I", &hook_perfs, &size, &meas_period)) {
+        PyErr_SetString(PyExc_TypeError, "wrong argument type");
+        return Py_BuildValue("i", 1);
+    }
+    if (size != sizeof(struct jbpf_perf_hook_list)) {
+        PyErr_SetString(PyExc_TypeError, "wrong buffer size");
+        return Py_BuildValue("i", 2);
+    }
+    hook_report_stats(hook_perfs, meas_period);
+    return Py_BuildValue("i", 0);
+}
 
-// static PyObject*
-// hook_periodic_call_wrapper(PyObject* self, PyObject* args)
-// {
-//     uint32_t meas_period;
-//     if (!PyArg_ParseTuple(args, "I", &meas_period)) {
-//         PyErr_SetString(PyExc_TypeError, "wrong argument type");
-//         return Py_BuildValue("i", 1);
-//     }
-//     hook_periodic_call(meas_period);
-//     return Py_BuildValue("i", 0);
-// }
+static PyObject*
+hook_periodic_call_wrapper(PyObject* self, PyObject* args)
+{
+    uint32_t meas_period;
+    if (!PyArg_ParseTuple(args, "I", &meas_period)) {
+        PyErr_SetString(PyExc_TypeError, "wrong argument type");
+        return Py_BuildValue("i", 1);
+    }
+    hook_periodic_call(meas_period);
+    return Py_BuildValue("i", 0);
+}
 
-// static PyMethodDef jbpfAgentHookMethods[] = {
-//     {"hook_report_stats", hook_report_stats_wrapper, METH_VARARGS, "report_stats"},
-//     {"hook_periodic_call", hook_periodic_call_wrapper, METH_VARARGS, "periodic_call"},
-//     {NULL, NULL, 0, NULL}};
+static PyMethodDef jbpfAgentHookMethods[] = {
+    {"hook_report_stats", hook_report_stats_wrapper, METH_VARARGS, "report_stats"},
+    {"hook_periodic_call", hook_periodic_call_wrapper, METH_VARARGS, "periodic_call"},
+    {NULL, NULL, 0, NULL}};
 
 static PyModuleDef HelperFunctionModules = {
     PyModuleDef_HEAD_INIT, "helper_functions", NULL, -1, HelperFunctions, NULL, NULL, NULL, NULL};
@@ -171,8 +170,8 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
 static PyModuleDef jbpfHookModule = {
     PyModuleDef_HEAD_INIT, "jbpf_hooks", NULL, -1, jbpfHookMethods, NULL, NULL, NULL, NULL};
 
-// static PyModuleDef jbpfAgentHookModule = {
-//     PyModuleDef_HEAD_INIT, "jbpf_agent_hooks", NULL, -1, jbpfAgentHookMethods, NULL, NULL, NULL, NULL};
+static PyModuleDef jbpfAgentHookModule = {
+    PyModuleDef_HEAD_INIT, "jbpf_agent_hooks", NULL, -1, jbpfAgentHookMethods, NULL, NULL, NULL, NULL};
 
 static PyObject*
 PyInit_jbpf_hooks(void)
@@ -180,11 +179,11 @@ PyInit_jbpf_hooks(void)
     return PyModule_Create(&jbpfHookModule);
 }
 
-// static PyObject*
-// PyInit_jbpf_agent_hooks(void)
-// {
-//     return PyModule_Create(&jbpfAgentHookModule);
-// }
+static PyObject*
+PyInit_jbpf_agent_hooks(void)
+{
+    return PyModule_Create(&jbpfAgentHookModule);
+}
 
 static PyObject*
 helper_jbpf_load_codeletset(PyObject* self, PyObject* args)
@@ -513,16 +512,16 @@ print_list_of_hooks()
     for (int i = 0; i < num_elems - 1; i++) {
         jbpf_logger(JBPF_INFO, "* %s : %s\n", jbpfHookMethods[i].ml_name, jbpfHookMethods[i].ml_doc);
     }
-    // jbpf_logger(JBPF_INFO, "\n");
+    jbpf_logger(JBPF_INFO, "\n");
 
-    // num_elems = sizeof(jbpfAgentHookMethods) / sizeof(struct PyMethodDef);
+    num_elems = sizeof(jbpfAgentHookMethods) / sizeof(struct PyMethodDef);
 
-    // jbpf_logger(JBPF_INFO, "Available hooks @jbpf_agent_hooks: \n");
+    jbpf_logger(JBPF_INFO, "Available hooks @jbpf_agent_hooks: \n");
 
-    // // Skip the last element since it is NULL
-    // for (int i = 0; i < num_elems - 1; i++) {
-    //     jbpf_logger(JBPF_INFO, "* %s : %s\n", jbpfAgentHookMethods[i].ml_name, jbpfAgentHookMethods[i].ml_doc);
-    // }
+    // Skip the last element since it is NULL
+    for (int i = 0; i < num_elems - 1; i++) {
+        jbpf_logger(JBPF_INFO, "* %s : %s\n", jbpfAgentHookMethods[i].ml_name, jbpfAgentHookMethods[i].ml_doc);
+    }
     jbpf_logger(JBPF_INFO, "\n");
 }
 
@@ -642,7 +641,7 @@ main(int argc, char** argv)
     jbpf_register_io_output_cb(io_channel_check_output);
 
     PyImport_AppendInittab("jbpf_hooks", &PyInit_jbpf_hooks);
-    // PyImport_AppendInittab("jbpf_agent_hooks", &PyInit_jbpf_agent_hooks);
+    PyImport_AppendInittab("jbpf_agent_hooks", &PyInit_jbpf_agent_hooks);
     PyImport_AppendInittab("jbpf_helpers", &PyInit_jbpf_helpers);
     PyImport_AppendInittab("helper_functions", &PyInit_helper_functions);
 
