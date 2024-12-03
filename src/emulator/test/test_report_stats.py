@@ -9,9 +9,9 @@ sys.path.append(emulator_path)
 
 import jbpf_helpers
 import emulator_utils
-# import jbpf_agent_hooks
-# import jbpf_perf_ext
 
+import jbpf_agent_hooks
+import jbpf_perf_ext
 
 def io_channel_check_output(bufs, num_bufs, ctx):
     for i in range(num_bufs):
@@ -49,22 +49,22 @@ if jbpf_helpers.jbpf_codeletset_load(codeletset_req_c1) != 0:
     print("Failed to load codeletset")
     sys.exit(-1)
 
-# Testing only - when hook_report_stats is not called internally, we can call the hooks manually
-# jbpf_agent_hooks.hook_report_stats(jbpf_perf_ext.struct_jbpf_perf_hook_list(), 100)
-# jbpf_agent_hooks.hook_report_stats(jbpf_perf_ext.struct_jbpf_perf_hook_list(), 100)
-# jbpf_agent_hooks.hook_report_stats(jbpf_perf_ext.struct_jbpf_perf_hook_list(), 100)
+## call the hooks additional 3 times
+jbpf_agent_hooks.hook_report_stats(jbpf_perf_ext.struct_jbpf_perf_hook_list(), 100)
+jbpf_agent_hooks.hook_report_stats(jbpf_perf_ext.struct_jbpf_perf_hook_list(), 100)
+jbpf_agent_hooks.hook_report_stats(jbpf_perf_ext.struct_jbpf_perf_hook_list(), 100)
 
 ## handle output bufs
 print(f"stream_id_c1: {list(stream_id_c1.id)}")
 count = emulator_utils.jbpf_handle_out_bufs(
     stream_id_c1,
     io_channel_check_output,
-    num_of_messages=2,
+    num_of_messages=5,
     timeout=3 * emulator_utils.SEC_TO_NS,
     debug=True,
 )
 print(f"Received {count} messages.")
-assert count == 2
+assert count == 5
 
 ## unload codeletset
 res = emulator_utils.jbpf_codeletset_unload(codeletset_req_c1.codeletset_id)

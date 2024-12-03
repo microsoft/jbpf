@@ -67,13 +67,13 @@ set(COMMON_LIBS
 )
 
 if (JBPF_STATIC)
-    MESSAGE(STATUS "Linking the emulator to static libraries.")
+    MESSAGE(STATUS "Linking the the emulator to libjbpf.a")
     target_link_libraries(${JBPF_EMULATOR} PUBLIC
         ${JBPF_OUT_DIR}/lib/libjbpf.a
         ${COMMON_LIBS}        
     )
 else()
-    MESSAGE(STATUS "Linking the emulator to shared libraries.")
+    MESSAGE(WARNING "Linking the emulator to libjbpf.so may not work as expected for report_stats and periodic_call hooks.")
     target_link_libraries(${JBPF_EMULATOR} PUBLIC
         ${JBPF_OUT_DIR}/lib/libjbpf.so
         ${COMMON_LIBS}        

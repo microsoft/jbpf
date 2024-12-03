@@ -12,14 +12,14 @@
 #include "jbpf_helper_impl.h"
 #include <sys/queue.h>
 
+// this only works when the emulator is statically linked to libjbpf.a
+#include "jbpf_agent_hooks.h"
+
 #define PY_SSIZE_T_CLEAN
 #undef _GNU_SOURCE
 #include <Python.h>
 
 using namespace std;
-
-void (*hook_report_stats)(void* hook_perfs, uint32_t meas_period) = nullptr;
-void (*hook_periodic_call)(uint32_t meas_period) = nullptr;
 
 const int EMULATOR_RETURN_SUCC = 0;
 const int EMULATOR_RETURN_FILE_NOT_EXIST = 1;
