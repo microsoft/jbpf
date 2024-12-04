@@ -66,19 +66,19 @@ set(COMMON_LIBS
     ${Python_LIBRARIES}
 )
 
-if (JBPF_STATIC)
+# if (JBPF_STATIC)
     MESSAGE(STATUS "Linking the the emulator to libjbpf.a")
     target_link_libraries(${JBPF_EMULATOR} PUBLIC
         ${JBPF_OUT_DIR}/lib/libjbpf.a
         ${COMMON_LIBS}        
     )
-else()
-    MESSAGE(WARNING "Linking the emulator to libjbpf.so may not work as expected for report_stats and periodic_call hooks.")
-    target_link_libraries(${JBPF_EMULATOR} PUBLIC
-        ${JBPF_OUT_DIR}/lib/libjbpf.so
-        ${COMMON_LIBS}        
-    )
-endif()
+# else()
+#     MESSAGE(WARNING "Linking the emulator to libjbpf.so may not work as expected for report_stats and periodic_call hooks.")
+#     target_link_libraries(${JBPF_EMULATOR} PUBLIC
+#         ${JBPF_OUT_DIR}/lib/libjbpf.so
+#         ${COMMON_LIBS}        
+#     )
+# endif()
 
 add_clang_format_check(${JBPF_EMULATOR} ${JBPF_EMULATOR_SOURCES})
 add_cppcheck(${JBPF_EMULATOR} ${JBPF_EMULATOR_SOURCES})
