@@ -583,6 +583,56 @@ print_registered_functions()
     jbpf_logger(JBPF_INFO, "\n");
 }
 
+static uint64_t jbpf_perf_time_get_ns(void) {
+  return get_time_event();
+}
+
+static uint64_t jbpf_perf_system_time_get_ns(bool is_start) {
+  (void)is_start;
+  return get_time_event();
+}
+
+uint64_t jbpf_get_time_diff_ns_func(uint64_t start_time, uint64_t end_time) {
+  uint64_t et;
+  if (start_time == end_time) {
+    return 0;
+  } else if (start_time < end_time) {
+    et = (end_time - start_time);
+  } else { /* Wrap around of time */
+    et = 0xFFFFFFFFFFFFFFFF - start_time + end_time;
+  }
+  return et;
+}
+
+void register_emulated_time_functions(void) {
+    jbpf_helper_func_def_t helper_func1 = {
+        .name = "jbpf_time_get_ns",
+        .reloc_id = JBPF_TIME_GET_NS,
+        .function_cb = (jbpf_helper_func_t)jbpf_perf_time_get_ns,
+    };
+
+    jbpf_logger(JBPF_INFO, "Overriding helper function %s\n", helper_func1.name);
+    assert(jbpf_register_helper_function(helper_func1) == 1);
+
+    jbpf_helper_func_def_t helper_func2 = {
+        .name = "jbpf_get_sys_time",
+        .reloc_id = JBPF_GET_SYS_TIME,
+        .function_cb = (jbpf_helper_func_t)jbpf_perf_system_time_get_ns,
+    };
+
+    jbpf_logger(JBPF_INFO, "Overriding helper function %s\n", helper_func2.name);
+    assert(jbpf_register_helper_function(helper_func2) == 1);
+
+    jbpf_helper_func_def_t helper_func3 = {
+        .name = "jbpf_get_sys_time_diff_ns",
+        .reloc_id = JBPF_GET_SYS_TIME_DIFF_NS,
+        .function_cb = (jbpf_helper_func_t)jbpf_get_time_diff_ns_func,
+    };
+
+    jbpf_logger(JBPF_INFO, "Overriding helper function %s\n", helper_func3.name);
+    assert(jbpf_register_helper_function(helper_func3) == 1);
+}
+
 int
 main(int argc, char** argv)
 {
@@ -601,6 +651,9 @@ main(int argc, char** argv)
 
     // init the queues
     TAILQ_INIT(&head);
+
+    // always emulate the time events
+    register_emulated_time_functions();
 
     // init custom code
     custom_init();
