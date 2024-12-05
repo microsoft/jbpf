@@ -583,28 +583,36 @@ print_registered_functions()
     jbpf_logger(JBPF_INFO, "\n");
 }
 
-static uint64_t jbpf_perf_time_get_ns(void) {
-  return get_time_event();
+static uint64_t
+jbpf_perf_time_get_ns(void)
+{
+    return get_time_event();
 }
 
-static uint64_t jbpf_perf_system_time_get_ns(bool is_start) {
-  (void)is_start;
-  return get_time_event();
+static uint64_t
+jbpf_perf_system_time_get_ns(bool is_start)
+{
+    (void)is_start;
+    return get_time_event();
 }
 
-uint64_t jbpf_get_time_diff_ns_func(uint64_t start_time, uint64_t end_time) {
-  uint64_t et;
-  if (start_time == end_time) {
-    return 0;
-  } else if (start_time < end_time) {
-    et = (end_time - start_time);
-  } else { /* Wrap around of time */
-    et = 0xFFFFFFFFFFFFFFFF - start_time + end_time;
-  }
-  return et;
+uint64_t
+jbpf_get_time_diff_ns_func(uint64_t start_time, uint64_t end_time)
+{
+    uint64_t et;
+    if (start_time == end_time) {
+        return 0;
+    } else if (start_time < end_time) {
+        et = (end_time - start_time);
+    } else { /* Wrap around of time */
+        et = 0xFFFFFFFFFFFFFFFF - start_time + end_time;
+    }
+    return et;
 }
 
-void register_emulated_time_functions(void) {
+void
+register_emulated_time_functions(void)
+{
     jbpf_helper_func_def_t helper_func1 = {
         .name = "jbpf_time_get_ns",
         .reloc_id = JBPF_TIME_GET_NS,
