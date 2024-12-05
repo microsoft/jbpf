@@ -613,29 +613,26 @@ jbpf_get_time_diff_ns_func(uint64_t start_time, uint64_t end_time)
 void
 register_emulated_time_functions(void)
 {
-    jbpf_helper_func_def_t helper_func1 = {
-        .name = "jbpf_time_get_ns",
-        .reloc_id = JBPF_TIME_GET_NS,
-        .function_cb = (jbpf_helper_func_t)jbpf_perf_time_get_ns,
-    };
+    jbpf_helper_func_def_t helper_func1;
+    strcpy(helper_func1.name, "jbpf_time_get_ns");
+    helper_func1.reloc_id = JBPF_TIME_GET_NS;
+    helper_func1.function_cb = (jbpf_helper_func_t)jbpf_perf_time_get_ns;
 
     jbpf_logger(JBPF_INFO, "Overriding helper function %s\n", helper_func1.name);
     assert(jbpf_register_helper_function(helper_func1) == 1);
 
-    jbpf_helper_func_def_t helper_func2 = {
-        .name = "jbpf_get_sys_time",
-        .reloc_id = JBPF_GET_SYS_TIME,
-        .function_cb = (jbpf_helper_func_t)jbpf_perf_system_time_get_ns,
-    };
+    jbpf_helper_func_def_t helper_func2;
+    strcpy(helper_func2.name, "jbpf_get_sys_time");
+    helper_func2.reloc_id = JBPF_GET_SYS_TIME;
+    helper_func2.function_cb = (jbpf_helper_func_t)jbpf_perf_system_time_get_ns;
 
     jbpf_logger(JBPF_INFO, "Overriding helper function %s\n", helper_func2.name);
     assert(jbpf_register_helper_function(helper_func2) == 1);
 
-    jbpf_helper_func_def_t helper_func3 = {
-        .name = "jbpf_get_sys_time_diff_ns",
-        .reloc_id = JBPF_GET_SYS_TIME_DIFF_NS,
-        .function_cb = (jbpf_helper_func_t)jbpf_get_time_diff_ns_func,
-    };
+    jbpf_helper_func_def_t helper_func3;
+    strcpy(helper_func3.name, "jbpf_get_sys_time_diff_ns");
+    helper_func3.reloc_id = JBPF_GET_SYS_TIME_DIFF_NS;
+    helper_func3.function_cb = (jbpf_helper_func_t)jbpf_get_time_diff_ns_func;
 
     jbpf_logger(JBPF_INFO, "Overriding helper function %s\n", helper_func3.name);
     assert(jbpf_register_helper_function(helper_func3) == 1);
