@@ -57,6 +57,11 @@ parameters:
         staticBuildParam: "-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1"
         sanitizerBuildParam: ""
 
+      - description: "Both Static and Dynamic"
+        id: test8
+        staticBuildParam: "-e JBPF_STATIC=2"
+        sanitizerBuildParam: ""        
+
 stages:
   - stage: CoverageTests
     displayName: CoverageTests
