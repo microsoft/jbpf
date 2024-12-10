@@ -251,7 +251,7 @@ jbpf_mbuf_share_data_ptr(void* data_ptr)
     if (!data_ptr)
         return NULL;
 
-    struct jbpf_mbuf* mb = (struct jbpf_mbuf*)((uint8_t*)data_ptr - offsetof(struct jbpf_mbuf, data));
+    struct jbpf_mbuf* mb = container_of(data_ptr, struct jbpf_mbuf, data);
     atomic_fetch_add(&mb->ref_cnt, 1);
     return data_ptr;
 }
