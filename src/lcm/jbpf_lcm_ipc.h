@@ -9,9 +9,8 @@ extern "C"
 {
 #endif
 
-#define JBPF_LCM_IPC_PATH_LEN (512U)
+#define JBPF_LCM_IPC_NAME_LEN (512U)
 #define JBPF_LCM_IPC_ADDRESS_LEN (1024U)
-#define JBPF_LCM_IPC_NAME_LEN (64U)
 #define JBPF_LCM_IPC_REQ_BACKLOG (40U)
 #define JBPF_DEFAULT_LCM_SOCKET "jbpf_lcm_ipc"
 

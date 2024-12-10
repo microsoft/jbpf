@@ -35,13 +35,13 @@
 /**
  * @brief JBPF agent lcm IPC configuration
  * @param has_lcm_ipc_thread Whether to use LCM IPC thread
- * @param lcm_ipc_path The path to the LCM IPC socket
+ * @param lcm_ipc_name The name of the LCM IPC socket
  * @ingroup core
  */
 struct jbpf_agent_lcm_ipc_config
 {
     bool has_lcm_ipc_thread;
-    char lcm_ipc_name[JBPF_LCM_IPC_PATH_LEN];
+    char lcm_ipc_name[JBPF_LCM_IPC_NAME_LEN];
 };
 
 /**
