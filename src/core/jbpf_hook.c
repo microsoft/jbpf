@@ -71,9 +71,12 @@ jbpf_register_codelet_hook(
         }
     }
 
+    // +2 to add the new codelet and the NULL terminator
     new_codelets = (struct jbpf_hook_codelet*)jbpf_calloc_mem(nr_codelets + 2, sizeof(struct jbpf_hook_codelet));
 
     if (!new_codelets) {
+        ck_epoch_end(e_record, NULL);
+        jbpf_logger(JBPF_ERROR, "Failed to allocate memory for new codelets\n");
         goto out;
     }
 
