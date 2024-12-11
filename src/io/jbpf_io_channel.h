@@ -193,11 +193,11 @@ extern "C"
      * @brief Increments the reference counter of a reserved data pointer of a channel.
      *
      * @param data_ptr The reserved data pointer.
-     * @return void* A pointer to the same buffer, with the reference count incremented by one.
+     * @return jbpf_channel_buf_ptr A pointer to the same buffer, with the reference count incremented by one.
      * @ingroup io
      */
-    void*
-    jbpf_mbuf_share_data_ptr(jbpf_channel_buf_ptr data_ptr);
+    jbpf_channel_buf_ptr
+    jbpf_io_channel_share_data_ptr(jbpf_channel_buf_ptr data_ptr);
 
 #ifdef __cplusplus
 }
