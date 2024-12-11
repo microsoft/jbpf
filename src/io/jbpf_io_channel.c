@@ -793,16 +793,17 @@ jbpf_io_channel_recv_data_copy(struct jbpf_io_channel* channel, void* buf, size_
     return 1;
 }
 
-void*
+jbpf_channel_buf_ptr
 jbpf_io_channel_share_data_ptr(jbpf_channel_buf_ptr data_ptr)
 {
+    jbpf_io_channel_elem_t* elem;
 
-    void* data;
-
-    if (!data_ptr)
+    if (!data_ptr) {
         return NULL;
+    }
 
-    data = container_of(data_ptr, jbpf_io_channel_elem_t, data);
+    elem = container_of(data_ptr, jbpf_io_channel_elem_t, data);
+    jbpf_mbuf_share_data_ptr(elem);
 
-    return jbpf_mbuf_share(data);
+    return elem->data;
 }

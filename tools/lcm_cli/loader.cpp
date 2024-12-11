@@ -110,7 +110,7 @@ parseArgs(int ac, char** av, lcm_cli_config* opts)
         break;
     }
 
-    address.copy(opts->addr.path, JBPF_LCM_IPC_PATH_LEN - 1);
+    address.copy(opts->addr.path, JBPF_LCM_IPC_NAME_LEN - 1);
     opts->addr.path[address.length()] = '\0';
 
     if (!exists(filename)) {
