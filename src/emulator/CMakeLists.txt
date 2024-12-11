@@ -49,7 +49,7 @@ target_include_directories(${JBPF_EMULATOR} PUBLIC
     ${UBPF_INCLUDE_DIRS}
     ${JBPF_LOGGER_HEADERS}
 )
-add_dependencies(${JBPF_EMULATOR} jbpf::core_lib jbpf::logger_lib jbpf::mem_mgmt_lib jbpf_verifier jbpf_io)
+add_dependencies(${JBPF_EMULATOR} jbpf::core_lib jbpf::logger_lib jbpf::mem_mgmt_lib jbpf_verifier jbpf_io generate_hook_wrappers)
 
 target_link_options(${JBPF_EMULATOR} PUBLIC ${Python3_LINK_OPTIONS} "-lpthread" "-ldl" "-lrt")
 
@@ -107,6 +107,7 @@ add_custom_command(TARGET ${JBPF_EMULATOR} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/patch.py ${OUTPUT_DIR}/emulator/
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/emulator.cpp ${OUTPUT_DIR}/emulator/
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/hook_wrapper.h ${OUTPUT_DIR}/emulator/
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/autogen-hook-wrappers.py ${OUTPUT_DIR}/emulator/
     ## example test files
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/helper_functions.hpp ${OUTPUT_DIR}/emulator/test
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/hooks.h ${OUTPUT_DIR}/emulator/test
@@ -134,4 +135,14 @@ add_custom_command(TARGET ${JBPF_EMULATOR} POST_BUILD
     COMMAND cat ${JBPF_PATH}/src/core/jbpf_perf_ext.h >> /tmp/tmp_jbpf_perf_ext.h
     COMMAND ctypesgen /tmp/tmp_jbpf_perf_ext.h -I ${JBPF_PATH}/src/common/ --no-macro-warnings -o ${OUTPUT_DIR}/lib/jbpf_perf_ext.py
     COMMENT "Building python APIs for tests using the C headers (jbpf_perf_ext.h)..."
+)
+
+# generate "auto-generated-hook-wrappers.hpp", this should be before the build
+add_custom_target(generate_hook_wrappers ALL
+    COMMAND echo "Generating hook wrappers: auto_generated_hooks_wrapper.hpp..."
+    COMMAND python3 ${JBPF_EMULATOR_SRC_DIR}/autogen-hook-wrappers.py ${JBPF_PATH}/jbpf_tests/common/jbpf_agent_common.h > ${OUTPUT_DIR}/inc/auto_generated_hooks_wrapper.hpp
+    ## remove the lines that start with "DEFINE_JBPF_"
+    COMMAND sed -i '/^DEFINE_JBPF_/d' ${OUTPUT_DIR}/inc/auto_generated_hooks_wrapper.hpp
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating hook wrappers: auto_generated_hooks_wrapper.hpp..."
 )
