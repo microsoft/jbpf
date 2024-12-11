@@ -73,7 +73,7 @@ int
 add_time_event(uint64_t event)
 {
     struct time_event* elem;
-    elem = (time_event*)malloc(sizeof(struct time_event));
+    elem = static_cast<time_event*>(malloc(sizeof(struct time_event)));
     if (elem) {
         elem->tevent = event;
     } else {
