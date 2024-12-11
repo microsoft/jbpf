@@ -37,10 +37,7 @@ static void
 io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_bufs, void* ctx)
 {
     int* c1_output;
-    int* c2_c3_output;
-
     JBPF_UNUSED(c1_output);
-    JBPF_UNUSED(c2_c3_output);
 
     for (int i = 0; i < num_bufs; i++) {
         if (memcmp(stream_id, &stream_id_c1, sizeof(stream_id_c1)) == 0) {
@@ -49,7 +46,6 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
             assert(c1_output);
             assert(*c1_output == received_value);
             received_value++;
-            jbpf_logger(JBPF_INFO, "Received value: %d\n", *c1_output);
         } else {
             // Unexpected output. Fail the test
             assert(false);
@@ -82,7 +78,6 @@ main(int argc, char** argv)
     helper_func1.reloc_id = JBPF_TIME_GET_NS;
     helper_func1.function_cb = (jbpf_helper_func_t)jbpf_perf_time_get_ns_replacement;
 
-    jbpf_logger(JBPF_INFO, "Overriding helper function %s\n", helper_func1.name);
     assert(jbpf_register_helper_function(helper_func1) == 1);
 
     // The thread will be calling hooks, so we need to register it
