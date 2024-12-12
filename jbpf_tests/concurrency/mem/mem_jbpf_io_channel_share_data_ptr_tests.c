@@ -114,6 +114,9 @@ worker_thread_func(void* arg)
         // Process shared buffer
         struct test_struct* buffer = current_buffer;
         assert(buffer);
+        uint32_t id = buffer->id;
+        uint32_t value = buffer->value;
+        assert(id * 10 == value);
 
         sem_post(&worker_done_sem);
     }
