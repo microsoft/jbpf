@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 /*
-This test ensures each consumer thread sends data to a unique worker thread.*/
+    Tests the jbpf_io_channel_share_data_ptr functionality in a multithreaded environment.
+    The test creates a channel with a capacity of 255 elements and spawns the following threads:
+    - 1 producer thread that reserves and submits a buffer to the channel
+    - 5 consumer threads that consume the elements from the channel, share the data pointer with the worker threads, and
+   release the buffer (but the buffer should still be accessible via the shared pointer)
+    - 5 worker threads that process the elements consumed by the consumer threads
+
+    The test verifies that the jbpf_io_channel_share_data_ptr functionality works correctly in a multithreaded
+   environment.
+*/
 
 #include <stdint.h>
 #include <stdio.h>
@@ -18,7 +27,7 @@ This test ensures each consumer thread sends data to a unique worker thread.*/
 #include "jbpf_io_channel.h"
 #include "jbpf_io_utils.h"
 
-#define NUM_THREADS 4
+#define NUM_THREADS 5
 #define CHANNEL_NUMBER_OF_ELEMENTS 100
 #define CHANNEL_CAPACITY 255
 
@@ -35,12 +44,12 @@ sem_t producer_sem;
 sem_t consumer_sem[NUM_THREADS];
 sem_t worker_start_sem[NUM_THREADS];
 sem_t worker_done_sem[NUM_THREADS];
+void* data_pointers[NUM_THREADS];
 
 jbpf_io_channel_t* local_channel;
 
 struct worker_thread_args
 {
-    struct test_struct** shared_buffer_ptr;
     int thread_index;
 };
 
@@ -49,6 +58,7 @@ producer_thread_func(void* arg)
 {
     jbpf_io_register_thread();
     for (uint32_t i = 0; i < CHANNEL_CAPACITY; i++) {
+        // Wait until there is space in the channel
         sem_wait(&producer_sem);
 
         struct test_struct* buffer = jbpf_io_channel_reserve_buf(local_channel);
@@ -57,6 +67,8 @@ producer_thread_func(void* arg)
         buffer->value = i * 10;
 
         assert(jbpf_io_channel_submit_buf(local_channel) == 0);
+
+        // Signal the consumer thread
         sem_post(&consumer_sem[i % NUM_THREADS]);
     }
     return NULL;
@@ -66,31 +78,31 @@ void*
 consumer_thread_func(void* arg)
 {
     jbpf_io_register_thread();
-    struct worker_thread_args* args = (struct worker_thread_args*)arg;
-    int thread_index = args->thread_index;
+    for (uint32_t i = 0; i < CHANNEL_CAPACITY; i++) {
+        if (i % NUM_THREADS != ((struct worker_thread_args*)arg)->thread_index) {
+            continue;
+        }
+        sem_wait(&consumer_sem[i % NUM_THREADS]);
 
-    sem_wait(&consumer_sem[thread_index]);
+        void* recv_ptr[10];
+        int num_received = jbpf_io_channel_recv_data(local_channel, recv_ptr, 1);
+        assert(num_received == 1);
 
-    void* recv_ptr[10];
-    int num_received = jbpf_io_channel_recv_data(local_channel, recv_ptr, 1);
-    assert(num_received == 1);
+        data_pointers[i % NUM_THREADS] = (struct test_struct*)recv_ptr[0];
 
-    *args->shared_buffer_ptr = (struct test_struct*)recv_ptr[0];
-    struct test_struct** local_buffer_ptr = args->shared_buffer_ptr;
+        // Test jbpf_io_channel_share_data_ptr functionality
+        void* shared_ptr = jbpf_io_channel_share_data_ptr(data_pointers[i % NUM_THREADS]);
+        assert(shared_ptr == data_pointers[i % NUM_THREADS]);
 
-    // Test jbpf_io_channel_share_data_ptr functionality
-    void* shared_ptr = jbpf_io_channel_share_data_ptr(*local_buffer_ptr);
-    assert(shared_ptr == *local_buffer_ptr);
+        // Signal the associated worker to start processing
+        sem_post(&worker_start_sem[i % NUM_THREADS]);
 
-    // Signal the associated worker to start processing
-    sem_post(&worker_start_sem[thread_index]);
+        // Release the buffer, but it should still be accessible via shared_ptr
+        jbpf_io_channel_release_buf(data_pointers[i % NUM_THREADS]);
 
-    // Release the buffer
-    jbpf_io_channel_release_buf(*local_buffer_ptr);
-
-    // Wait for the worker to complete processing
-    sem_wait(&worker_done_sem[thread_index]);
-
+        // Wait for the worker to complete processing
+        sem_wait(&worker_done_sem[i % NUM_THREADS]);
+    }
     return NULL;
 }
 
@@ -98,20 +110,23 @@ void*
 worker_thread_func(void* arg)
 {
     jbpf_io_register_thread();
-    struct worker_thread_args* args = (struct worker_thread_args*)arg;
-    int thread_index = args->thread_index;
+    for (int i = 0; i < CHANNEL_CAPACITY; i++) {
+        if (i % NUM_THREADS != ((struct worker_thread_args*)arg)->thread_index) {
+            continue;
+        }
+        sem_wait(&worker_start_sem[i % NUM_THREADS]);
 
-    sem_wait(&worker_start_sem[thread_index]);
-    struct test_struct** local_buffer_ptr = args->shared_buffer_ptr;
+        // Process shared buffer
+        struct test_struct* buffer = data_pointers[i % NUM_THREADS];
+        assert(buffer);
+        uint32_t id = buffer->id;
+        uint32_t value = buffer->value;
+        assert(id * 10 == value);
+        printf("Worker %d processed buffer with id %d and value %d\n", i % NUM_THREADS, id, value);
 
-    // Process shared buffer
-    struct test_struct* buffer = *local_buffer_ptr;
-    assert(buffer);
-    uint32_t id = buffer->id;
-    uint32_t value = buffer->value;
-    assert(id * 10 == value);
-
-    sem_post(&worker_done_sem[thread_index]);
+        // Signal the consumer thread that processing is done
+        sem_post(&worker_done_sem[i % NUM_THREADS]);
+    }
     return NULL;
 }
 
@@ -143,7 +158,6 @@ main(int argc, char* argv[])
     assert(local_channel);
 
     pthread_t producer_thread, consumer_threads[NUM_THREADS], worker_threads[NUM_THREADS];
-    struct test_struct* local_current_buffer[NUM_THREADS];
 
     sem_init(&producer_sem, 0, CHANNEL_CAPACITY);
     for (int i = 0; i < NUM_THREADS; i++) {
@@ -158,7 +172,6 @@ main(int argc, char* argv[])
     // Start consumer and worker threads
     struct worker_thread_args worker_args[NUM_THREADS];
     for (int i = 0; i < NUM_THREADS; i++) {
-        worker_args[i].shared_buffer_ptr = &local_current_buffer[i];
         worker_args[i].thread_index = i;
 
         assert(pthread_create(&consumer_threads[i], NULL, consumer_thread_func, &worker_args[i]) == 0);
@@ -168,16 +181,14 @@ main(int argc, char* argv[])
     // Wait for producer to finish
     assert(pthread_join(producer_thread, NULL) == 0);
 
-    // Signal workers to stop
-    for (int i = 0; i < NUM_THREADS; i++) {
-        sem_post(&worker_start_sem[i]);
-    }
-
     // Wait for consumer and worker threads to finish
     for (int i = 0; i < NUM_THREADS; i++) {
         assert(pthread_join(consumer_threads[i], NULL) == 0);
         assert(pthread_join(worker_threads[i], NULL) == 0);
     }
+
+    // we can't allocate any more because the channel is full
+    assert(jbpf_io_channel_reserve_buf(local_channel) == NULL);
 
     // Cleanup
     sem_destroy(&producer_sem);
