@@ -122,7 +122,7 @@ worker_thread_func(void* arg)
         uint32_t id = buffer->id;
         uint32_t value = buffer->value;
         assert(id * 10 == value);
-        printf("Worker %d processed buffer with id %d and value %d\n", i % NUM_THREADS, id, value);
+        // printf("Worker %d processed buffer with id %d and value %d\n", i % NUM_THREADS, id, value);
 
         // Signal the consumer thread that processing is done
         sem_post(&worker_done_sem[i % NUM_THREADS]);
@@ -133,7 +133,7 @@ worker_thread_func(void* arg)
 int
 main(int argc, char* argv[])
 {
-    printf("Starting jbpf_io_channel_share_data_ptr multithreading tests ...\n");
+    // printf("Starting jbpf_io_channel_share_data_ptr multithreading tests ...\n");
 
     struct jbpf_io_config io_config = {0};
     struct jbpf_io_ctx* io_ctx;
