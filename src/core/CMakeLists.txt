@@ -98,6 +98,9 @@ elseif(JBPF_STATIC_OPTION_UPPER STREQUAL "BOTH")
     create_jbpf_library(${JBPF_LIB} "static")
     create_jbpf_library(${JBPF_LIB}_shared "shared")
 
+    ## add JBPF_SHARED_LIB definition to shared library
+    target_compile_definitions(${JBPF_LIB}_shared PRIVATE JBPF_SHARED_LIB)
+
     ## move libjbpf_shared.so to libjbpf.so
     add_custom_command(TARGET ${JBPF_LIB}_shared POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${JBPF_LIB}_shared> ${OUTPUT_DIR}/lib/lib${JBPF_LIB}.so

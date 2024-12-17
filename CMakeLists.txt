@@ -66,11 +66,6 @@ endif(JBPF_THREADS_LARGE)
 
 if(JBPF_STATIC_OPTION_UPPER STREQUAL "OFF")
     add_definitions(-DJBPF_SHARED_LIB)
-elseif(JBPF_STATIC_OPTION_UPPER STREQUAL "ON")
-    # Optional: Add definitions or logic for static builds if needed
-elseif(JBPF_STATIC_OPTION_UPPER STREQUAL "BOTH")
-    # Optional: Add logic for handling both static and shared builds
-    add_definitions(-DJBPF_SHARED_LIB)
 endif()
 
 if(USE_JBPF_PERF_OPT)
