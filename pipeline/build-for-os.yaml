@@ -19,7 +19,7 @@ parameters:
     default:
       - description: "Dynamic"
         id: test0
-        staticBuildParam: ""
+        staticBuildParam: "-e JBPF_STATIC=0"
         sanitizerBuildParam: ""
 
       - description: "Static"
@@ -29,7 +29,7 @@ parameters:
 
       - description: "Dynamic with ASAN"
         id: test2
-        staticBuildParam: ""
+        staticBuildParam: "-e JBPF_STATIC=0"
         sanitizerBuildParam: "-e SANITIZER=1"
 
       - description: "Static with ASAN"
@@ -39,7 +39,7 @@ parameters:
 
       - description: "Experimental Features, Dynamic with ASAN"
         id: test4
-        staticBuildParam: ""
+        staticBuildParam: "-e JBPF_STATIC=0"
         sanitizerBuildParam: "-e SANITIZER=1 -e JBPF_EXPERIMENTAL_FEATURES=1"
 
       - description: "Experimental Features, Static with ASAN"
@@ -49,7 +49,7 @@ parameters:
 
       - description: "Experimental Features, Dynamic"
         id: test6
-        staticBuildParam: ""
+        staticBuildParam: "-e JBPF_STATIC=0"
         sanitizerBuildParam: "-e JBPF_EXPERIMENTAL_FEATURES=1"
 
       - description: "Experimental Features, Static"
@@ -60,7 +60,7 @@ parameters:
       - description: "Both Static and Dynamic"
         id: test8
         staticBuildParam: "-e JBPF_STATIC=2"
-        sanitizerBuildParam: ""        
+        sanitizerBuildParam: ""
 
 stages:
   - stage: CoverageTests

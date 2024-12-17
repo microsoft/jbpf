@@ -23,11 +23,11 @@ get_flags() {
         OUTPUT="$OUTPUT Building jbpf as a static library\n"
         FLAGS="$FLAGS -DJBPF_STATIC=on"
     fi
-    if [[ "$JBPF_STATIC" == "0" || "$JBPF_STATIC" == "" ]]; then
+    if [[ "$JBPF_STATIC" == "0" ]]; then
         OUTPUT="$OUTPUT Building jbpf as a dynamic library\n"
         FLAGS="$FLAGS -DJBPF_STATIC=off"
     fi
-    if [[ "$JBPF_STATIC" == "2" ]]; then
+    if [[ "$JBPF_STATIC" == "2" || "$JBPF_STATIC" == "" ]]; then
         OUTPUT="$OUTPUT Building jbpf as a both shared and static libraries.\n"
         FLAGS="$FLAGS -DJBPF_STATIC=both"
     fi

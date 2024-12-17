@@ -38,7 +38,7 @@ The `$DEST_PATH` should be set to the absolute path of the directory where you w
 ### Available Build Options:
 When building the library, you can pass various options using the -e OPTION_NAME={0,1} format where 0 is disabled and 1 is enabled. Here are some available options:
 
-* JBPF_STATIC - Build jbpf as a static library (**default: disabled**). With this, we can also set to value 2 which means to build the jbpf in both `libjbpf.so` and `libjbpf.a`.
+* JBPF_STATIC - Build jbpf as a static library. By default this is set to value 2 which means to build the jbpf in both `libjbpf.so` (when set to 0) and `libjbpf.a` (when set to 1).
 * USE_NATIVE - Enable/disable `-march=native` compilation flag (**default: enabled**)
 * USE_JBPF_PERF_OPT - Performance optimizations that assume threads calling jbpf codelets are pinned to a certain core (**default: enabled**)
 * USE_JBPF_PRINTF_HELPER - Disable the use of the helper function jbpf_printf_debug() (**default: enabled**)

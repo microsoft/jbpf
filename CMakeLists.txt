@@ -14,7 +14,8 @@ option(CLANG_FORMAT_CHECK "Enable clang-format check" OFF)
 option(CPP_CHECK "Enable cppcheck" OFF)
 
 # Define the JBPF_STATIC option with three states: ON, OFF, BOTH
-set(JBPF_STATIC "OFF" CACHE STRING "Build jbpf as static library: ON, OFF, or BOTH")
+# Default is BOTH, which means both static and shared libraries will be built
+set(JBPF_STATIC "BOTH" CACHE STRING "Build jbpf as static library: ON, OFF, or BOTH")
 set_property(CACHE JBPF_STATIC PROPERTY STRINGS ON OFF BOTH)
 string(TOUPPER "${JBPF_STATIC}" JBPF_STATIC_OPTION_UPPER)
 
