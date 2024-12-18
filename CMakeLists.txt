@@ -40,17 +40,18 @@ set(VERSION_FILE ${PROJECT_SOURCE_DIR}/VERSION)
 set(VERSION_HEADER ${JBPF_SOURCE_CODE}/common/jbpf_version.h)
 
 # Execute the setup script first
-execute_process(
-    COMMAND ./init_and_patch_submodules.sh
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    RESULT_VARIABLE result
-    OUTPUT_VARIABLE output
-    ERROR_VARIABLE error
-)
-
-# Check if the script ran successfully
-if(NOT result EQUAL 0)
-    message(FATAL_ERROR "Setup script failed with error: ${error}")
+option(INITIALIZE_SUBMODULES "Initialize submodules" ON)
+if(INITIALIZE_SUBMODULES)
+    execute_process(
+        COMMAND ./init_and_patch_submodules.sh
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        RESULT_VARIABLE result
+        OUTPUT_VARIABLE output
+        ERROR_VARIABLE error
+    )
+    if(NOT result EQUAL 0)
+        message(FATAL_ERROR "Setup script failed with error: ${error}")
+    endif()
 endif()
 
 ################ Definitions ################
