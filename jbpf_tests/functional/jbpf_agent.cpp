@@ -40,7 +40,7 @@ main(int argc, char** argv)
     jbpf_logger(JBPF_INFO, "Starting jbpf...\n");
 
     // init jbpf
-    struct jbpf_config* jbpf_config = (struct jbpf_config*)malloc(sizeof(struct jbpf_config));
+    struct jbpf_config* jbpf_config = static_cast<struct jbpf_config*>(malloc(sizeof(struct jbpf_config)));
     jbpf_set_default_config_options(jbpf_config);
 
     if (!handle_signal()) {
