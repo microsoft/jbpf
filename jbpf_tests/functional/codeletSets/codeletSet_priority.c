@@ -79,7 +79,7 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
 // stream6 should have value 5, 13, 21, 29, 37
 // stream7 should have value 4, 12, 20, 28, 36
 #define STREAM_COUNT 8
-        int expected_values[STREAM_COUNT][NUM_ITERATIONS] = {
+        const int expected_values[STREAM_COUNT][NUM_ITERATIONS] = {
             {8, 16, 24, 32, 40},
             {1, 9, 17, 25, 33},
             {7, 15, 23, 31, 39},
