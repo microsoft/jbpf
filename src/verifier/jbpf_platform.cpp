@@ -45,12 +45,13 @@ jbpf_verifier_register_program_type(int prog_type_id, EbpfProgramType program_ty
 static EbpfProgramType
 jbpf_verifier_get_program_type(const std::string& section, const std::string& path)
 {
-    EbpfProgramType type{};
-
     for (const EbpfProgramType& t : jbpf_program_types) {
-        for (const std::string& prefix : t.section_prefixes) {
-            if (section.find(prefix) == 0)
-                return t;
+        auto it =
+            std::find_if(t.section_prefixes.begin(), t.section_prefixes.end(), [&section](const std::string& prefix) {
+                return section.find(prefix) == 0;
+            });
+        if (it != t.section_prefixes.end()) {
+            return t;
         }
     }
 

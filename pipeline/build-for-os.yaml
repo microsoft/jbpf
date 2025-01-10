@@ -12,6 +12,9 @@ parameters:
       - value: "ubuntu20.04"
         displayName: "Ubuntu 20.04"
         id: "ubuntu20_04"
+      - value: "ubuntu24.04"
+        displayName: "Ubuntu 24.04"
+        id: "ubuntu24_04"
 
   - name: testCases
     displayName: Test Cases
