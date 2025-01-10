@@ -55,7 +55,7 @@ static jbpf_io_stream_id_t stream_id = {
 static int
 new_helper_implementation(void* jbpf_ctx, int a)
 {
-    struct jbpf_generic_ctx* ctx = (jbpf_generic_ctx*)jbpf_ctx;
+    struct jbpf_generic_ctx* ctx = static_cast<jbpf_generic_ctx*>(jbpf_ctx);
     JBPF_UNUSED(ctx);
     assert(ctx);
     assert(a >= CUSTOM_HELPER_START_ID);
@@ -79,7 +79,7 @@ io_channel_check_output(jbpf_io_stream_id_t* streamId, void** bufs, int num_bufs
 
         assert(memcmp(streamId, &stream_id, sizeof(jbpf_io_stream_id_t)) == 0);
 
-        output = (int*)bufs[i];
+        output = static_cast<int*>(bufs[i]);
         // printf("output=%d\n", *output);
         assert(*output >= 1000 + CUSTOM_HELPER_START_ID && *output < 1000 + MAX_HELPER_FUNC);
 

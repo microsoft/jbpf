@@ -58,7 +58,7 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
         // printf("#### s=%d buf=%d\n", s, *output);
 
 #define STREAM_COUNT 3
-        int expected_values[STREAM_COUNT][NUM_ITERATIONS * 2] = {
+        const int expected_values[STREAM_COUNT][NUM_ITERATIONS * 2] = {
             {1, 1, 12, 12, 122, 122, 1222, 1222, 12222, 12222},
             {1, 11, 11, 111, 111, 1111, 1111, 11111, 1111},
             {2, 2, 22, 22, 222, 222, 2222, 2222, 22222, 22222}};
