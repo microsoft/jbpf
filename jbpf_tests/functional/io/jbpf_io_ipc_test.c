@@ -121,34 +121,26 @@ void
 handle_channel_bufs(
     struct jbpf_io_channel* io_channel, struct jbpf_io_stream_id* stream_id, void** bufs, int num_bufs, void* ctx)
 {
-
-    struct test_struct* s;
-    struct test_struct2* s2;
-
-    JBPF_IO_UNUSED(s);
-    JBPF_IO_UNUSED(s2);
+    struct test_struct* s = NULL;
+    struct test_struct2* s2 = NULL;
 
     for (int i = 0; i < num_bufs; i++) {
         if (memcmp(stream_id, &local_stream_id, sizeof(local_stream_id)) == 0) {
             s = bufs[i];
-            assert(s);
             assert(s->counter_a == 19821924);
             total_processed++;
         } else if (memcmp(stream_id, &stream_id1, sizeof(stream_id1)) == 0) {
             s = bufs[i];
-            assert(s);
             assert(s->counter_a == channel1_results[channel1_index]);
             assert(s->counter_b == channel1_results[channel1_index] * 2);
             channel1_index++;
             total_processed++;
         } else if (memcmp(stream_id, &stream_id2, sizeof(stream_id2)) == 0) {
             s2 = bufs[i];
-            assert(s2);
             assert(s2->counter_a == 1234);
             total_processed++;
         } else if (memcmp(stream_id, &stream_id3, sizeof(stream_id3)) == 0) {
             s = bufs[i];
-            assert(s);
             assert(s->counter_a == channel3_results[channel3_index]);
             assert(s->counter_b == channel3_results[channel3_index] * 2);
             channel3_index++;
@@ -222,7 +214,7 @@ run_primary(char* serde1, char* serde2)
     struct jbpf_io_config io_config = {0};
     struct jbpf_io_ctx* io_ctx;
 
-    struct test_struct test_input;
+    struct test_struct test_input = {0};
     test_input.counter_a = 9999;
     pthread_t local_channel_test;
 
@@ -261,7 +253,6 @@ run_primary(char* serde1, char* serde2)
     // Now send a control input and notify the secondary
     assert(jbpf_io_channel_send_msg(io_ctx, &input_stream_id, (char*)&test_input, sizeof(struct test_struct)) == 0);
     sem_post(primary_sem);
-    pthread_join(local_channel_test, NULL);
 }
 
 void
@@ -274,7 +265,7 @@ run_secondary(char* serde1, char* serde2)
     void *serde_lib, *serde2_lib;
     long lib_size, lib2_size;
     int serialized_len;
-    struct jbpf_io_stream_id tmp_sid;
+    struct jbpf_io_stream_id tmp_sid = {0};
 
     char* serialized_output1 = "{ \"counter_a\": 200, \"counter_b\": 400 }";
 
