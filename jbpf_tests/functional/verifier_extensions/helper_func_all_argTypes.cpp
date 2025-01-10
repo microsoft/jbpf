@@ -176,7 +176,7 @@ io_channel_check_output(jbpf_io_stream_id_t* streamId, void** bufs, int num_bufs
 
         assert(memcmp(streamId, &stream_id, sizeof(jbpf_io_stream_id_t)) == 0);
 
-        output = (int*)bufs[i];
+        output = static_cast<int*>(bufs[i]);
         // printf("output=%d\n", *output);
         assert(
             *output == HELPER_FUNC_1_RETURN || *output == (COUNTER_A + STATIC_FIELD1) ||

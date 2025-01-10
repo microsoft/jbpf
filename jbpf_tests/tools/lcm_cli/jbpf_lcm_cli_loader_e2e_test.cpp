@@ -66,7 +66,7 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
 
         if (memcmp(stream_id, &stream_id_c1, sizeof(stream_id_c1)) == 0) {
             // Output from C1. Check that the counter has the expected value
-            c1_output = (int*)bufs[i];
+            c1_output = static_cast<int*>(bufs[i]);
             assert(c1_output);
             assert(*c1_output == expected_c1_value);
             expected_c1_value++;
