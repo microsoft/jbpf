@@ -13,6 +13,10 @@ RUN apt install -y clang-format cppcheck
 RUN apt install -y clang gcc-multilib
 RUN apt install -y libyaml-cpp-dev
 
+## Emulator
+RUN apt install -y python3-dev python3-pip
+RUN pip3 install ctypesgen pyyaml regex --break-system-packages
+
 WORKDIR /jbpf
 COPY . /jbpf
 ENTRYPOINT ["./helper_build_files/build_jbpf_lib.sh"]

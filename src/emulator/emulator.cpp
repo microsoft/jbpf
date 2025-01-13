@@ -148,11 +148,11 @@ static void
 io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_bufs, void* ctx)
 {
     // Allocate memory for the message
-    message_t* message = (message_t*)malloc(sizeof(message_t));
+    message_t* message = static_cast<message_t*>(malloc(sizeof(message_t)));
     message->stream_id = stream_id;
 
     // Allocate memory for the data pointers
-    message->data = (void**)malloc(num_bufs * sizeof(void*));
+    message->data = static_cast<void**>(malloc(num_bufs * sizeof(void*)));
     if (message->data == NULL) {
         free(message); // Avoid memory leak
         return;        // Handle memory allocation failure
@@ -188,7 +188,7 @@ PyInit_jbpf_agent_hooks(void)
 static PyObject*
 helper_jbpf_load_codeletset(PyObject* self, PyObject* args)
 {
-    struct jbpf_codeletset_load_req* codeletset_req_c1;
+    struct jbpf_codeletset_load_req* codeletset_req_c1 = NULL;
     Py_buffer pyBuffer;
     jbpf_codeletset_load_error_s err;
 
@@ -197,7 +197,7 @@ helper_jbpf_load_codeletset(PyObject* self, PyObject* args)
         return Py_BuildValue("i", 1); // Return error code
     }
 
-    codeletset_req_c1 = (struct jbpf_codeletset_load_req*)pyBuffer.buf;
+    codeletset_req_c1 = static_cast<struct jbpf_codeletset_load_req*>(pyBuffer.buf);
 
     if (!codeletset_req_c1) {
         PyErr_SetString(PyExc_TypeError, "Invalid codeletset request object");
@@ -263,7 +263,7 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, uint64_t
             message_t* message = message_queue.front();
             message_queue.pop();
 
-            PyObject* py_stream_id = PyCapsule_New((void*)message->stream_id, "jbpf_io_stream_id_t", NULL);
+            PyObject* py_stream_id = PyCapsule_New(static_cast<void*>(message->stream_id), "jbpf_io_stream_id_t", NULL);
 
             // Create a list to hold the buffer capsules
             PyObject* py_bufs = PyList_New(message->nbuf);
@@ -360,10 +360,10 @@ helper_jbpf_send_input_msg(PyObject* self, PyObject* args)
     }
 
     // Cast the stream_id_data to a jbpf_io_stream_id_t pointer
-    jbpf_io_stream_id_t* stream_id = (jbpf_io_stream_id_t*)stream_id_data;
+    jbpf_io_stream_id_t* stream_id = reinterpret_cast<jbpf_io_stream_id_t*>(stream_id_data);
 
     // Call the original C function
-    int result = jbpf_send_input_msg(stream_id, (void*)data, (size_t)size);
+    int result = jbpf_send_input_msg(stream_id, static_cast<void*>(data), static_cast<size_t>(size));
 
     // Return the result as a Python integer
     return Py_BuildValue("i", result);
@@ -451,7 +451,7 @@ run_benchmark_test(char* dir, char* python_file)
     PyObject* pyTempPath;
     bool ok = true;
 
-    sysPath = PySys_GetObject((char*)"path");
+    sysPath = PySys_GetObject(static_cast<char*>("path"));
 
     // Append the dir to sys.path
     pyDir = PyUnicode_FromString(dir);
