@@ -310,6 +310,9 @@ add_subdirectory(${JBPF_SOURCE_CODE}/core)
 ################ jbpf lcm cli ################
 add_subdirectory(${JBPF_TOOLS}/lcm_cli)
 
+################ jbpf emulator ################
+add_subdirectory(${JBPF_SOURCE_CODE}/emulator)
+
 ################ Doxygen ################
 
 find_package(Doxygen)

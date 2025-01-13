@@ -55,4 +55,6 @@ extern "C"
 }
 #endif
 
+extern jbpf_va_logger_cb jbpf_va_logger_func;
+
 #endif /* JBPF_LOGGING_H */
