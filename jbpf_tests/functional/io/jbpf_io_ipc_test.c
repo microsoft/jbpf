@@ -124,6 +124,9 @@ handle_channel_bufs(
     struct test_struct* s = NULL;
     struct test_struct2* s2 = NULL;
 
+    JBPF_IO_UNUSED(s);
+    JBPF_IO_UNUSED(s2);
+
     for (int i = 0; i < num_bufs; i++) {
         if (memcmp(stream_id, &local_stream_id, sizeof(local_stream_id)) == 0) {
             s = bufs[i];
