@@ -90,7 +90,7 @@ main(int argc, char** argv)
     io_config.jbpf_path[JBPF_RUN_PATH_LEN - 1] = '\0';
 
     strncpy(io_config.jbpf_namespace, JBPF_DEFAULT_NAMESPACE, JBPF_NAMESPACE_LEN - 1);
-    io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';    
+    io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';
 
     strncpy(io_config.ipc_config.addr.jbpf_io_ipc_name, IPC_NAME, JBPF_IO_IPC_MAX_NAMELEN);
 
