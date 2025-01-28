@@ -1116,7 +1116,11 @@ jbpf_io_ipc_register(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ct
 
     if (connect(ipc_desc->sock_fd, saddr, saddr_len) == -1) {
         // printf("Error connecting to primary at port %d. Errno: %d\n", JBPF_IO_IPC_PORT, errno);
-        jbpf_logger(JBPF_ERROR, "Error connecting to primary (path=%s) (ipc_name=%s)\n", io_ctx->jbpf_io_path, dipc_cfg->addr.jbpf_io_ipc_name);
+        jbpf_logger(
+            JBPF_ERROR,
+            "Error connecting to primary (path=%s) (ipc_name=%s)\n",
+            io_ctx->jbpf_io_path,
+            dipc_cfg->addr.jbpf_io_ipc_name);
         goto sock_close;
     }
 
