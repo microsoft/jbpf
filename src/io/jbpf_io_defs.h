@@ -167,7 +167,6 @@ extern "C"
     struct jbpf_io_config
     {
         int type;
-        bool has_jbpf_path_namespace;
         char jbpf_path[JBPF_RUN_PATH_LEN];
         char jbpf_namespace[JBPF_NAMESPACE_LEN];
         union

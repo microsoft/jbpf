@@ -1895,6 +1895,11 @@ jbpf_init_io_interface(struct jbpf_config* config)
             JBPF_IO_IPC_MAX_NAMELEN - 1);
         io_config.ipc_config.addr.jbpf_io_ipc_name[JBPF_IO_IPC_MAX_NAMELEN - 1] = '\0';
 
+        strncpy(io_config.jbpf_namespace, config->jbpf_namespace, JBPF_NAMESPACE_LEN - 1);
+        io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';
+
+        strncpy(io_config.jbpf_path, config->jbpf_run_path, JBPF_RUN_PATH_LEN - 1);
+        io_config.jbpf_path[JBPF_RUN_PATH_LEN - 1] = '\0';
     } else if (config->io_config.io_type == JBPF_IO_THREAD_CONFIG) {
         jbpf_logger(JBPF_DEBUG, "Initializing with thread\n");
         io_config.type = JBPF_IO_LOCAL_PRIMARY;
