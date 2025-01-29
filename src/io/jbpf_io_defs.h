@@ -52,8 +52,6 @@ extern "C"
 
 #define JBPF_IO_IPC_VSOCK_CID_DEFAULT VMADDR_CID_ANY
 
-#define JBPF_IO_IPC_BASE_NAME "/" JBPF_DEFAULT_NAMESPACE "_io"
-
 #define JBPF_IO_IPC_MAX_BASE_NAMELEN (64U)
 
 #define JBPF_IO_IPC_MAX_MEM_NAMELEN (128U)
@@ -167,7 +165,6 @@ extern "C"
     struct jbpf_io_config
     {
         int type;
-        bool has_jbpf_path_namespace;
         char jbpf_path[JBPF_RUN_PATH_LEN];
         char jbpf_namespace[JBPF_NAMESPACE_LEN];
         union
