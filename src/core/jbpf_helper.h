@@ -17,7 +17,7 @@
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static void* (*jbpf_map_lookup_elem)(const void*, const void*) = (void*)JBPF_MAP_LOOKUP;
+static void* (*jbpf_map_lookup_elem)(const void*, const void*) = (void* (*)(const void*, const void*))JBPF_MAP_LOOKUP;
 
 /**
  * @brief Perform a lookup in map for a value associated kith key and reset the value
@@ -27,7 +27,7 @@ static void* (*jbpf_map_lookup_elem)(const void*, const void*) = (void*)JBPF_MAP
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static void* (*jbpf_map_lookup_reset_elem)(const void*, const void*) = (void*)JBPF_MAP_LOOKUP_RESET;
+static void* (*jbpf_map_lookup_reset_elem)(const void*, const void*) = (void* (*)(const void*, const void*))JBPF_MAP_LOOKUP_RESET;
 
 /**
  * @brief Adds or updates the value associated with key in map with the value item. The flags argument is currently
@@ -40,7 +40,7 @@ static void* (*jbpf_map_lookup_reset_elem)(const void*, const void*) = (void*)JB
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static int (*jbpf_map_update_elem)(void*, const void*, void*, uint64_t) = (void*)JBPF_MAP_UPDATE;
+static int (*jbpf_map_update_elem)(void*, const void*, void*, uint64_t) = (int (*)(void*, const void*, void*, uint64_t))JBPF_MAP_UPDATE;
 
 /**
  * @brief Deletes the value associated with key in map.
@@ -50,7 +50,7 @@ static int (*jbpf_map_update_elem)(void*, const void*, void*, uint64_t) = (void*
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static int (*jbpf_map_delete_elem)(void*, const void*) = (void*)JBPF_MAP_DELETE;
+static int (*jbpf_map_delete_elem)(void*, const void*) = (int (*)(void*, const void*))JBPF_MAP_DELETE;
 
 /**
  * @brief Clears all value in the map.
@@ -59,7 +59,7 @@ static int (*jbpf_map_delete_elem)(void*, const void*) = (void*)JBPF_MAP_DELETE;
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static int (*jbpf_map_clear)(const void*) = (void*)JBPF_MAP_CLEAR;
+static int (*jbpf_map_clear)(const void*) = (int (*)(const void*))JBPF_MAP_CLEAR;
 
 /**
  * @brief Dumps the contents of the map into the data buffer.
@@ -71,7 +71,7 @@ static int (*jbpf_map_clear)(const void*) = (void*)JBPF_MAP_CLEAR;
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static int (*jbpf_map_dump)(void*, void*, uint32_t, uint64_t) = (void*)JBPF_MAP_DUMP;
+static int (*jbpf_map_dump)(void*, void*, uint32_t, uint64_t) = (int (*)(void*, void*, uint32_t, uint64_t))JBPF_MAP_DUMP;
 
 /**
  * @brief Returns the time in nanoseconds. Uses clock_gettime(CLOCK_REALTIME) internally.
@@ -79,7 +79,7 @@ static int (*jbpf_map_dump)(void*, void*, uint32_t, uint64_t) = (void*)JBPF_MAP_
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static uint64_t (*jbpf_time_get_ns)(void) = (void*)JBPF_TIME_GET_NS;
+static uint64_t (*jbpf_time_get_ns)(void) = (uint64_t (*)(void))JBPF_TIME_GET_NS;
 
 /**
  * @brief Returns the time in nanoseconds. Uses clock_gettime(CLOCK_MONOTONIC_RAW) internally.
@@ -88,7 +88,7 @@ static uint64_t (*jbpf_time_get_ns)(void) = (void*)JBPF_TIME_GET_NS;
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static uint64_t (*jbpf_get_sys_time)(bool) = (void*)JBPF_GET_SYS_TIME;
+static uint64_t (*jbpf_get_sys_time)(bool) = (uint64_t (*)(bool))JBPF_GET_SYS_TIME;
 
 /**
  * @brief Returns the time difference between two times in nanoseconds.
@@ -98,7 +98,7 @@ static uint64_t (*jbpf_get_sys_time)(bool) = (void*)JBPF_GET_SYS_TIME;
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static uint64_t (*jbpf_get_sys_time_diff_ns)(uint64_t, uint64_t) = (void*)JBPF_GET_SYS_TIME_DIFF_NS;
+static uint64_t (*jbpf_get_sys_time_diff_ns)(uint64_t, uint64_t) = (uint64_t (*)(uint64_t, uint64_t))JBPF_GET_SYS_TIME_DIFF_NS;
 
 /**
  * @brief Creates a hash for an arbitrary item of a given size.
@@ -108,7 +108,7 @@ static uint64_t (*jbpf_get_sys_time_diff_ns)(uint64_t, uint64_t) = (void*)JBPF_G
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static uint32_t (*jbpf_hash)(void*, uint64_t) = (void*)JBPF_HASH;
+static uint32_t (*jbpf_hash)(void*, uint64_t) = (uint32_t (*)(void*, uint64_t))JBPF_HASH;
 
 /**
  * @brief Prints a formatted string fmt of size len (Currently not supported)
@@ -118,7 +118,7 @@ static uint32_t (*jbpf_hash)(void*, uint64_t) = (void*)JBPF_HASH;
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static void (*jbpf_printf)(const void*, uint32_t, ...) = (void*)JBPF_PRINTF;
+static void (*jbpf_printf)(const void*, uint32_t, ...) = (void (*)(const void*, uint32_t, ...))JBPF_PRINTF;
 
 /**
  * @brief Outputs data of size from a map of type JBPF_MAP_TYPE_RINGBUF through the output thread of JBPF. It is up to
@@ -130,7 +130,7 @@ static void (*jbpf_printf)(const void*, uint32_t, ...) = (void*)JBPF_PRINTF;
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static int (*jbpf_ringbuf_output)(const void*, void*, uint64_t) = (void*)JBPF_RINGBUF_OUTPUT;
+static int (*jbpf_ringbuf_output)(const void*, void*, uint64_t) = (int (*)(const void*, void*, uint64_t))JBPF_RINGBUF_OUTPUT;
 
 /**
  * @brief Receives control input data and copies them in some memory region.
@@ -138,7 +138,7 @@ static int (*jbpf_ringbuf_output)(const void*, void*, uint64_t) = (void*)JBPF_RI
  * @incgroup jbpf_agent
  * @incgroup helper_function
  */
-static int (*jbpf_control_input_receive)(void*, void*, uint32_t) = (void*)JBPF_CONTROL_INPUT_RECEIVE;
+static int (*jbpf_control_input_receive)(void*, void*, uint32_t) = (int (*)(void*, void*, uint32_t))JBPF_CONTROL_INPUT_RECEIVE;
 
 /**
  * @brief Obtains a memory chunk from an output map, which can be used to send data out.
@@ -148,7 +148,7 @@ static int (*jbpf_control_input_receive)(void*, void*, uint32_t) = (void*)JBPF_C
  * @incgroup jbpf_agent
  * @incgroup helper_function
  */
-static void* (*jbpf_get_output_buf)(void*) = (void*)JBPF_GET_OUTPUT_BUF;
+static void* (*jbpf_get_output_buf)(void*) = (void* (*)(void*))JBPF_GET_OUTPUT_BUF;
 
 /**
  * @brief Pushes an allocated memory chunk to the designated map to be sent as output.
@@ -159,7 +159,7 @@ static void* (*jbpf_get_output_buf)(void*) = (void*)JBPF_GET_OUTPUT_BUF;
  * @incgroup jbpf_agent
  * @incgroup helper_function
  */
-static int (*jbpf_send_output)(void*) = (void*)JBPF_SEND_OUTPUT;
+static int (*jbpf_send_output)(void*) = (int (*)(void*))JBPF_SEND_OUTPUT;
 
 /**
  * @brief Adds a checkpoint for measuring elapsed runtime.
@@ -168,7 +168,7 @@ static int (*jbpf_send_output)(void*) = (void*)JBPF_SEND_OUTPUT;
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static void (*jbpf_mark_runtime_init)(void) = (void*)JBPF_MARK_RUNTIME_INIT;
+static void (*jbpf_mark_runtime_init)(void) = (void (*)(void))JBPF_MARK_RUNTIME_INIT;
 
 /**
  * @brief Checks whether the running codelet has exceeded some runtime threshold, set during the loading phase.
@@ -177,7 +177,7 @@ static void (*jbpf_mark_runtime_init)(void) = (void*)JBPF_MARK_RUNTIME_INIT;
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static int (*jbpf_check_runtime_limit)(void) = (void*)JBPF_RUNTIME_LIMIT_EXCEEDED;
+static int (*jbpf_check_runtime_limit)(void) = (int (*)(void))JBPF_RUNTIME_LIMIT_EXCEEDED;
 
 /**
  * @brief Returns a random integer.
@@ -185,7 +185,7 @@ static int (*jbpf_check_runtime_limit)(void) = (void*)JBPF_RUNTIME_LIMIT_EXCEEDE
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static int (*jbpf_rand)(void) = (void*)JBPF_RAND;
+static int (*jbpf_rand)(void) = (int (*)(void))JBPF_RAND;
 
 /**
  * Macros to repeat jbpf_map_update_elem several times, if the map is busy.
