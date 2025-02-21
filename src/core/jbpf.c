@@ -553,8 +553,10 @@ jbpf_create_map(const char* name, const struct jbpf_load_map_def* map_def, const
 
     map = jbpf_calloc_mem(1, sizeof(struct jbpf_map));
 
-    if (!map)
+    if (!map) {
+        jbpf_logger(JBPF_ERROR, "Failed to allocate memory for map %s\n", name);
         return NULL;
+    }
 
     map->type = map_def->type;
     map->key_size = map_def->key_size;
@@ -612,6 +614,7 @@ jbpf_create_map(const char* name, const struct jbpf_load_map_def* map_def, const
         if (map->data) {
             goto map_created;
         } else {
+            jbpf_logger(JBPF_ERROR, "Failed to create channel for map %s\n", name);
             goto map_not_created;
         }
         break;

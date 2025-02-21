@@ -116,6 +116,7 @@ jbpf_io_create_channel(
 {
 
     if (!io_ctx) {
+        jbpf_logger(JBPF_ERROR, "Error. Invalid IO context\n");
         return NULL;
     }
 
@@ -145,7 +146,6 @@ jbpf_io_create_channel(
         return _jbpf_io_create_channel(
             &io_ctx->primary_ctx.io_channels, &chan_req, io_ctx->primary_ctx.local_ctx.mem_ctx);
 
-        return NULL;
     } else {
         return NULL;
     }
