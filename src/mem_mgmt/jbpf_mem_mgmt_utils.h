@@ -27,11 +27,7 @@ _jbpf_round_up_mem(size_t orig_size, size_t multiple_size)
     if (multiple_size == 0)
         return orig_size;
 
-    size_t remainder = orig_size % multiple_size;
-    if (remainder == 0)
-        return orig_size;
-    else
-        return orig_size + multiple_size - remainder;
+    return ((orig_size - 1) | (multiple_size - 1)) + 1;
 }
 
 #endif
