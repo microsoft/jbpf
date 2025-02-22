@@ -124,6 +124,9 @@ handle_channel_bufs(
     struct test_struct* s = NULL;
     struct test_struct2* s2 = NULL;
 
+    JBPF_IO_UNUSED(s);
+    JBPF_IO_UNUSED(s2);
+
     for (int i = 0; i < num_bufs; i++) {
         if (memcmp(stream_id, &local_stream_id, sizeof(local_stream_id)) == 0) {
             s = bufs[i];
@@ -222,6 +225,12 @@ run_primary(char* serde1, char* serde2)
 
     io_config.type = JBPF_IO_IPC_PRIMARY;
 
+    strncpy(io_config.jbpf_path, JBPF_DEFAULT_RUN_PATH, JBPF_RUN_PATH_LEN - 1);
+    io_config.jbpf_path[JBPF_RUN_PATH_LEN - 1] = '\0';
+
+    strncpy(io_config.jbpf_namespace, JBPF_DEFAULT_NAMESPACE, JBPF_NAMESPACE_LEN - 1);
+    io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';
+
     strncpy(io_config.ipc_config.addr.jbpf_io_ipc_name, "test", JBPF_IO_IPC_MAX_NAMELEN);
     io_ctx = jbpf_io_init(&io_config);
 
@@ -277,6 +286,11 @@ run_secondary(char* serde1, char* serde2)
 
     io_config.type = JBPF_IO_IPC_SECONDARY;
     io_config.ipc_config.mem_cfg.memory_size = 1024 * 1024 * 1024;
+    strncpy(io_config.jbpf_path, JBPF_DEFAULT_RUN_PATH, JBPF_RUN_PATH_LEN - 1);
+    io_config.jbpf_path[JBPF_RUN_PATH_LEN - 1] = '\0';
+
+    strncpy(io_config.jbpf_namespace, JBPF_DEFAULT_NAMESPACE, JBPF_NAMESPACE_LEN - 1);
+    io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';
     strncpy(io_config.ipc_config.addr.jbpf_io_ipc_name, "test", JBPF_IO_IPC_MAX_NAMELEN);
 
     // Wait until the primary is ready
