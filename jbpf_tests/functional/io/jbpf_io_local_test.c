@@ -137,6 +137,11 @@ main(int argc, char* argv[])
 
     io_config.type = JBPF_IO_LOCAL_PRIMARY;
     io_config.local_config.mem_cfg.memory_size = 1024 * 1024 * 1024;
+    strncpy(io_config.jbpf_path, JBPF_DEFAULT_RUN_PATH, JBPF_RUN_PATH_LEN - 1);
+    io_config.jbpf_path[JBPF_RUN_PATH_LEN - 1] = '\0';
+
+    strncpy(io_config.jbpf_namespace, JBPF_DEFAULT_NAMESPACE, JBPF_NAMESPACE_LEN - 1);
+    io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';
 
     long lib_size, lib2_size;
     void *serde_lib, *serde2_lib;

@@ -41,20 +41,11 @@ jbpf_io_init(struct jbpf_io_config* io_config)
     if (!io_config)
         return NULL;
 
-    if (io_config->has_jbpf_path_namespace) {
-        snprintf(
-            dio_ctx.jbpf_io_path, JBPF_PATH_NAMESPACE_LEN, "%s/%s", io_config->jbpf_path, io_config->jbpf_namespace);
+    snprintf(dio_ctx.jbpf_io_path, JBPF_PATH_NAMESPACE_LEN, "%s/%s", io_config->jbpf_path, io_config->jbpf_namespace);
 
-        strncpy(dio_ctx.jbpf_mem_base_name, io_config->jbpf_namespace, JBPF_IO_IPC_MAX_NAMELEN - 1);
-        snprintf(
-            dio_ctx.jbpf_mem_base_name, sizeof(dio_ctx.jbpf_mem_base_name) - 1, "%s_io", io_config->jbpf_namespace);
-        dio_ctx.jbpf_mem_base_name[sizeof(dio_ctx.jbpf_mem_base_name) - 1] = '\0';
-    } else {
-        snprintf(dio_ctx.jbpf_io_path, JBPF_PATH_NAMESPACE_LEN, "%s/%s", JBPF_DEFAULT_RUN_PATH, JBPF_DEFAULT_NAMESPACE);
-
-        strncpy(dio_ctx.jbpf_mem_base_name, JBPF_IO_IPC_BASE_NAME, JBPF_IO_IPC_MAX_NAMELEN - 1);
-        dio_ctx.jbpf_mem_base_name[JBPF_IO_IPC_MAX_NAMELEN - 1] = '\0';
-    }
+    strncpy(dio_ctx.jbpf_mem_base_name, io_config->jbpf_namespace, JBPF_IO_IPC_MAX_NAMELEN - 1);
+    snprintf(dio_ctx.jbpf_mem_base_name, sizeof(dio_ctx.jbpf_mem_base_name) - 1, "%s_io", io_config->jbpf_namespace);
+    dio_ctx.jbpf_mem_base_name[sizeof(dio_ctx.jbpf_mem_base_name) - 1] = '\0';
 
     if (_jbpf_io_create_run_dir(&dio_ctx) != 0)
         return NULL;
@@ -125,6 +116,7 @@ jbpf_io_create_channel(
 {
 
     if (!io_ctx) {
+        jbpf_logger(JBPF_ERROR, "Error. Invalid IO context\n");
         return NULL;
     }
 
@@ -154,7 +146,6 @@ jbpf_io_create_channel(
         return _jbpf_io_create_channel(
             &io_ctx->primary_ctx.io_channels, &chan_req, io_ctx->primary_ctx.local_ctx.mem_ctx);
 
-        return NULL;
     } else {
         return NULL;
     }

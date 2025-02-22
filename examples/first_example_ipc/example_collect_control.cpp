@@ -86,6 +86,12 @@ main(int argc, char** argv)
     // Designate the data collection framework as a primary for the IPC
     io_config.type = JBPF_IO_IPC_PRIMARY;
 
+    strncpy(io_config.jbpf_path, JBPF_DEFAULT_RUN_PATH, JBPF_RUN_PATH_LEN - 1);
+    io_config.jbpf_path[JBPF_RUN_PATH_LEN - 1] = '\0';
+
+    strncpy(io_config.jbpf_namespace, JBPF_DEFAULT_NAMESPACE, JBPF_NAMESPACE_LEN - 1);
+    io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';
+
     strncpy(io_config.ipc_config.addr.jbpf_io_ipc_name, IPC_NAME, JBPF_IO_IPC_MAX_NAMELEN);
 
     // Configure memory size for the IO buffer

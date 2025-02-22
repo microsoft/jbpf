@@ -91,6 +91,12 @@ primary_process(char* jbpf_io_ipc_name)
 
     io_config.type = JBPF_IO_IPC_PRIMARY;
 
+    strncpy(io_config.jbpf_path, JBPF_DEFAULT_RUN_PATH, JBPF_RUN_PATH_LEN - 1);
+    io_config.jbpf_path[JBPF_RUN_PATH_LEN - 1] = '\0';
+
+    strncpy(io_config.jbpf_namespace, JBPF_DEFAULT_NAMESPACE, JBPF_NAMESPACE_LEN - 1);
+    io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';
+
     strncpy(io_config.ipc_config.addr.jbpf_io_ipc_name, jbpf_io_ipc_name, JBPF_IO_IPC_MAX_NAMELEN - 1);
     io_ctx = jbpf_io_init(&io_config);
     if (io_ctx == NULL) {
@@ -196,6 +202,11 @@ secondary_stress_test(char* jbpf_io_ipc_name)
     io_config.type = JBPF_IO_IPC_SECONDARY;
     io_config.ipc_config.mem_cfg.memory_size = 1024 * 1024 * 1024;
     strncpy(io_config.ipc_config.addr.jbpf_io_ipc_name, jbpf_io_ipc_name, JBPF_IO_IPC_MAX_NAMELEN - 1);
+    strncpy(io_config.jbpf_path, JBPF_DEFAULT_RUN_PATH, JBPF_RUN_PATH_LEN - 1);
+    io_config.jbpf_path[JBPF_RUN_PATH_LEN - 1] = '\0';
+
+    strncpy(io_config.jbpf_namespace, JBPF_DEFAULT_NAMESPACE, JBPF_NAMESPACE_LEN - 1);
+    io_config.jbpf_namespace[JBPF_NAMESPACE_LEN - 1] = '\0';
 
     // Wait until the primary is ready
     sem_wait(primary_sem);
