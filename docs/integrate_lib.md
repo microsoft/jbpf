@@ -20,7 +20,7 @@ To avoid installing dependencies locally, you can build the library using a Dock
 ### Steps to Build with Docker
 1. Build the container image:
 ```bash
-OS=mariner  # or ubuntu20.04, ubuntu22.04, or ubuntu24.04
+OS=mariner  # or ubuntu22.04, or ubuntu24.04
 sudo -E docker build -t jbpf_lib -f deploy/${OS}.Dockerfile .
 ```
 
