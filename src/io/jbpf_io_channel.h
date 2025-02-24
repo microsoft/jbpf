@@ -26,7 +26,7 @@ extern "C"
      *
      * @param io_ctx A pointer to a jbpf_io ctx.
      * @param stream_id The stream id of the channel to find.
-     * @param is_output true if looking for an input channel and false if looking for an output channel.
+     * @param is_output true if looking for an output channel and false if looking for an input channel.
      * @return struct jbpf_io_channel* Returns a pointer to the jbpf_io_channel, if the channel is found,
      * or NULL, if the channel is not found.
      * @ingroup io
