@@ -381,7 +381,12 @@ set(JBPF_TESTS
   jbpf::verifier_lib
   jbpf::lcm_ipc_lib
 )
-add_subdirectory(jbpf_tests)
+
+if(BUILD_TESTING)  
+  add_subdirectory(jbpf_tests)
+else()
+  message(STATUS "BUILD_TESTING is OFF, skipping jbpf_tests")
+endif()
 #configure_file(${PROJECT_SOURCE_DIR}/cmake_modules/CTestCustom.cmake ${CMAKE_BINARY_DIR})
 
 ################ Basic examples ################
