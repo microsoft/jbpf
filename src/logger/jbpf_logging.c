@@ -9,18 +9,18 @@
 
 static const char* LOG_LEVEL_STR[] = {FOREACH_LOG_LEVEL(GENERATE_STRING)};
 
-jbpf_logging_level jbpf_logger_level = JBPF_DEBUG;
+jbpf_logging_level jbpf_logger_level;
 
 void
-jbpf_default_logging(jbpf_logging_level level, const char* s, ...);
+jbpf_default_logging(const char* domain, jbpf_logging_level level, const char* s, ...);
 
 void
-jbpf_default_va_logging(jbpf_logging_level level, const char* s, va_list arg);
+jbpf_default_va_logging(const char* domain, jbpf_logging_level level, const char* s, va_list arg);
 
 jbpf_va_logger_cb jbpf_va_logger_func = jbpf_default_va_logging;
 
 void
-jbpf_default_va_logging(jbpf_logging_level level, const char* s, va_list arg)
+jbpf_default_va_logging(const char* domain, jbpf_logging_level level, const char* s, va_list arg)
 {
     if (level >= jbpf_logger_level) {
         char output[LOGGING_BUFFER_LEN];
@@ -36,24 +36,23 @@ jbpf_default_va_logging(jbpf_logging_level level, const char* s, va_list arg)
         snprintf(timestamp + strlen(timestamp), sizeof(timestamp) - strlen(timestamp), ".%06ldZ", tv.tv_usec);
 
         // Add timestamp and log level
-        snprintf(output, LOGGING_BUFFER_LEN, "[%s] %s%s", timestamp, LOG_LEVEL_STR[level], s);
+        snprintf(output, LOGGING_BUFFER_LEN, "%s%s %s%s", timestamp, domain, LOG_LEVEL_STR[level], s);
 
-        FILE* where = level >= JBPF_INFO ? stderr : stdout;
+        FILE* where = level >= INFO ? stderr : stdout;
         vfprintf(where, output, arg);
         fflush(where);
     }
 }
 
 void
-jbpf_default_logging(jbpf_logging_level level, const char* s, ...)
+jbpf_default_logging(const char* domain, jbpf_logging_level level, const char* s, ...)
 {
     if (level >= jbpf_logger_level) {
-
         char output[LOGGING_BUFFER_LEN];
-        snprintf(output, LOGGING_BUFFER_LEN, "%s%s", LOG_LEVEL_STR[level], s);
+        snprintf(output, LOGGING_BUFFER_LEN, "[%s:%s] %s", LOG_LEVEL_STR[level], domain, s);
         va_list ap;
         va_start(ap, s);
-        FILE* where = level >= JBPF_INFO ? stderr : stdout;
+        FILE* where = level >= INFO ? stderr : stdout;
         vfprintf(where, output, ap);
         va_end(ap);
         fflush(where);
@@ -79,16 +78,16 @@ jbpf_set_va_logging_function(jbpf_va_logger_cb func)
 }
 
 void
-jbpf_logger(jbpf_logging_level logging_level, const char* format, ...)
+jbpf_logger(const char* domain, jbpf_logging_level logging_level, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
-    jbpf_va_logger(logging_level, format, args);
+    jbpf_va_logger(domain, logging_level, format, args);
     va_end(args);
 }
 
 void
-jbpf_va_logger(jbpf_logging_level logging_level, const char* format, va_list arg)
+jbpf_va_logger(const char* domain, jbpf_logging_level logging_level, const char* format, va_list arg)
 {
-    jbpf_va_logger_func(logging_level, format, arg);
+    jbpf_va_logger_func(domain, logging_level, format, arg);
 }
