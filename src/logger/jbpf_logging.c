@@ -9,7 +9,7 @@
 
 static const char* LOG_LEVEL_STR[] = {FOREACH_LOG_LEVEL(GENERATE_STRING)};
 
-jbpf_logging_level jbpf_logger_level;
+jbpf_logging_level jbpf_logger_level = DEBUG;
 
 void
 jbpf_default_logging(const char* domain, jbpf_logging_level level, const char* s, ...);
