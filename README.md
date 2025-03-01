@@ -73,6 +73,7 @@ For more information, also consider:
 # Related projects
 
 - [jbpf-protobuf](https://github.com/microsoft/jbpf-protobuf): jbpf extension, demonstrating how to utilize protobuf serialization for sending and receiving data from codelets loaded in jbpf applications.
+- [jrt-controller](https://github.com/microsoft/jrt-controller): a real-time controller for network functions instrumented with the *jbpf*.
 
 # License
 
