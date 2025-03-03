@@ -12,6 +12,7 @@ option(ENABLE_POISONING "Enable ASAN poisoning. Should not be used for IPC mode 
 option(JBPF_EXPERIMENTAL_FEATURES "Enable experimental features of jbpf" OFF)
 option(CLANG_FORMAT_CHECK "Enable clang-format check" OFF)
 option(CPP_CHECK "Enable cppcheck" OFF)
+option(BUILD_TESTING "Enable tests" ON)
 
 # Define the JBPF_STATIC option with three states: ON, OFF, BOTH
 # Default is BOTH, which means both static and shared libraries will be built
@@ -386,7 +387,12 @@ set(JBPF_TESTS
   jbpf::verifier_lib
   jbpf::lcm_ipc_lib
 )
-add_subdirectory(jbpf_tests)
+
+if(BUILD_TESTING)  
+  add_subdirectory(jbpf_tests)
+else()
+  message(STATUS "BUILD_TESTING is OFF, skipping jbpf_tests")
+endif()
 #configure_file(${PROJECT_SOURCE_DIR}/cmake_modules/CTestCustom.cmake ${CMAKE_BINARY_DIR})
 
 ################ Basic examples ################

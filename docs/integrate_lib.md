@@ -44,6 +44,10 @@ When building the library, you can pass various options using the -e OPTION_NAME
 * USE_JBPF_PRINTF_HELPER - Disable the use of the helper function jbpf_printf_debug() (**default: enabled**)
 * JBPF_THREADS_LARGE - Allow more threads to be registered by jbpf and the IO lib (**default: disabled**)
 * JBPF_EXPERIMENTAL_FEATURES - Enable experimental features of jbpf (**default: disabled**)
+* ENABLE_POISONING - Enable ASAN poisoning. Should not be used for IPC mode tests and must be used in conjunction with ASAN (**default: disabled**)
+* CLANG_FORMAT_CHECK - Enable clang-format check (**default: disabled**)
+* CPP_CHECK - Enable Cpp static code analyser (**default: disabled**)
+* BUILD_TESTING - build the tests (**default: enabled**)
 
 Additionally, you can change the `CMAKE_BUILD_TYPE` to:
 * Release - Default Build Type.
