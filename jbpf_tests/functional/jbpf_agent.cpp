@@ -36,7 +36,7 @@ main(int argc, char** argv)
     int ret = 0;
     // pthread_t id1, id2, id3;
     //  set your own logging
-    jbpf_set_logging_level(JBPF_DEBUG);
+    jbpf_set_logging_level(DEBUG);
     jbpf_logger(JBPF_INFO, "Starting jbpf...\n");
 
     // init jbpf

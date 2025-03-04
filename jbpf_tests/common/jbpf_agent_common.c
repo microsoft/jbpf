@@ -20,7 +20,7 @@ jbpf_agent_logger(jbpf_logging_level level, const char* s, ...)
         snprintf(output, LOGGING_BUFFER_LEN, "%s%s", LOG_LEVEL_STR[level], s);
         va_list ap;
         va_start(ap, s);
-        FILE* where = level >= JBPF_ERROR ? stderr : stdout;
+        FILE* where = level >= ERROR ? stderr : stdout;
         vfprintf(where, output, ap);
         va_end(ap);
     }
