@@ -72,7 +72,7 @@ For more information, also consider:
 
 # Related projects
 
-- [jrt-controller](https://github.com/microsoft/jrt-controller): The real-time controller for network functions that uses instrumentation and control from *jbpf*. Both are parts of [Project Janus](https://www.microsoft.com/en-us/research/project/programmable-ran-platform/) and provides functionalities envisaged by the concept of real-time RIC in O-RAN.
+- [jrt-controller](https://github.com/microsoft/jrt-controller): The real-time controller for network functions that uses instrumentation and control from *jbpf*. Both are parts of [Project Janus](https://www.microsoft.com/en-us/research/project/programmable-ran-platform/) and provide functionalities envisaged by the concept of real-time RIC in O-RAN.
 
 - Sample integration with [srsRAN](https://github.com/srsran/srsRAN_Project), which consists of two parts: 
   * A [version of srsRAN](https://github.com/xfoukas/srsRAN_Project_jbpf) integrated with *jbpf*.
