@@ -240,20 +240,4 @@ if ! test_flags "-DBUILD_TESTING=on" "When BUILD_TESTING is unset flags should c
     exit 1
 fi
 
-### env parameter: VERBOSE_LOGGING
-VERBOSE_LOGGING=1
-if ! test_flags "-DVERBOSE_LOGGING=on" "When VERBOSE_LOGGING=1 flags should contain -DVERBOSE_LOGGING=on"; then
-    exit 1
-fi
-
-VERBOSE_LOGGING=0
-if ! test_flags_not_contains "-DVERBOSE_LOGGING=" "When VERBOSE_LOGGING=0 flags should not contain VERBOSE_LOGGING"; then
-    exit 1
-fi
-
-VERBOSE_LOGGING=
-if ! test_flags_not_contains "-DVERBOSE_LOGGING" "When VERBOSE_LOGGING is unset flags should not contain VERBOSE_LOGGING"; then
-    exit 1
-fi
-
 echo ---------------- All Passed ----------------

@@ -48,7 +48,6 @@ When building the library, you can pass various options using the -e OPTION_NAME
 * CLANG_FORMAT_CHECK - Enable clang-format check (**default: disabled**)
 * CPP_CHECK - Enable Cpp static code analyser (**default: disabled**)
 * BUILD_TESTING - Build the tests (**default: enabled**)
-* VERBOSE_LOGGING - Shows extra logging information e.g. File/Line (**default: disabled**)
 
 Additionally, you can change the `CMAKE_BUILD_TYPE` to:
 * Release - Default Build Type.
@@ -95,8 +94,7 @@ void jbpf_custom_logger(jbpf_logging_level level, const char* s, ...) {
 jbpf_va_logger_cb jbpf_va_logger_func = jbpf_custom_logger;
 ```
 
-
-
+When environment variable `JBPF_VERBOSE_LOGGING` is set, extra information will be shown per logging message: file, function and the line number.
 
 ## Thread registration 
 

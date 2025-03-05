@@ -13,7 +13,6 @@
 ### env parameter: CLANG_FORMAT_CHECK
 ### env parameter: CPP_CHECK
 ### env parameter: BUILD_TESTING
-### env parameter: VERBOSE_LOGGING
 get_flags() {
     FLAGS=""
     OUTPUT=""
@@ -83,11 +82,5 @@ get_flags() {
         FLAGS="$FLAGS -DBUILD_TESTING=on"
     else
         OUTPUT="$OUTPUT Skipping building tests\n"
-    fi
-    if [[ "$VERBOSE_LOGGING" == "1" ]]; then
-        OUTPUT="$OUTPUT Verbose Logging Enabled\n"
-        FLAGS="$FLAGS -DVERBOSE_LOGGING=on"
-    else
-        OUTPUT="$OUTPUT Verbose Logging Disabled\n"
     fi
 }
