@@ -2029,7 +2029,7 @@ start_jbpf_interfaces(struct jbpf_config* config)
             jbpf_logger(JBPF_WARN, "Could not set name of jbpf_io pthread\n");
         }
         sem_wait(&jio_thread_sem);
-        jbpf_logger(JBPF_DEBUG, "jbpf_io thread ready");
+        jbpf_logger(JBPF_DEBUG, "jbpf_io thread ready\n");
 
     } else {
         init_maintenance_thread(config);
