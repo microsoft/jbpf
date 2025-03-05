@@ -36,7 +36,7 @@ jbpf_default_va_logging(const char* domain, jbpf_logging_level level, const char
         snprintf(timestamp + strlen(timestamp), sizeof(timestamp) - strlen(timestamp), ".%06ldZ", tv.tv_usec);
 
         // Add timestamp and log level
-        snprintf(output, LOGGING_BUFFER_LEN, "%s%s %s%s", timestamp, domain, LOG_LEVEL_STR[level], s);
+        snprintf(output, LOGGING_BUFFER_LEN, "%s%s%s%s", timestamp, domain, LOG_LEVEL_STR[level], s);
 
         FILE* where = level >= INFO ? stderr : stdout;
         vfprintf(where, output, arg);
@@ -49,7 +49,7 @@ jbpf_default_logging(const char* domain, jbpf_logging_level level, const char* s
 {
     if (level >= jbpf_logger_level) {
         char output[LOGGING_BUFFER_LEN];
-        snprintf(output, LOGGING_BUFFER_LEN, "[%s:%s] %s", LOG_LEVEL_STR[level], domain, s);
+        snprintf(output, LOGGING_BUFFER_LEN, "[%s:%s]%s", LOG_LEVEL_STR[level], domain, s);
         va_list ap;
         va_start(ap, s);
         FILE* where = level >= INFO ? stderr : stdout;

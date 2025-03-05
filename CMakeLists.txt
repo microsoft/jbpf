@@ -14,6 +14,7 @@ option(JBPF_EXPERIMENTAL_FEATURES "Enable experimental features of jbpf" OFF)
 option(CLANG_FORMAT_CHECK "Enable clang-format check" OFF)
 option(CPP_CHECK "Enable cppcheck" OFF)
 option(BUILD_TESTING "Enable tests" ON)
+option(VERBOSE_LOGGING "Show Extra Line/Function in logging" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -56,6 +57,10 @@ if(INITIALIZE_SUBMODULES)
 endif()
 
 ################ Definitions ################
+
+if(VERBOSE_LOGGING)
+  add_definitions(-DVERBOSE_LOGGING)
+endif(VERBOSE_LOGGING)
 
 if(JBPF_THREADS_LARGE)
 add_definitions(-DJBPF_MAX_NUM_REG_THREADS=256)

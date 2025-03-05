@@ -6,6 +6,9 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 #pragma once
 #ifdef __cplusplus
@@ -29,21 +32,79 @@ extern "C"
 #define _STR(x) _VAL(x)
 #define _VAL(x) #x
 
+    static inline const char*
+    get_file_name(const char* file)
+    {
+        const char* p = strrchr(file, '/');
+        return p ? p + 1 : file;
+    }
+
+    static inline const char*
+    get_domain(const char* file)
+    {
+        const char* p = strstr(file, "src/");
+        if (p) {
+            p += 4; // Move past "src/"
+            const char* q = strchr(p, '/');
+            if (q) {
+                size_t len = q - p;
+                char* domain = (char*)malloc(len + 1);
+                if (!domain) {
+                    return NULL; // Indicate failure
+                }
+                memcpy(domain, p, len);
+                domain[len] = '\0';
+                // make it uppercase
+                for (size_t i = 0; i < len; i++) {
+                    domain[i] = toupper(domain[i]);
+                }
+                return domain;
+            }
+        }
+        return NULL;
+    }
+
     // Function to generate the log prefix dynamically
+    static inline const char*
+    get_log_prefix_verbose(const char* file, const char* func, int line, const char* level)
+    {
+        static char buffer[256];
+        const char* domain = get_domain(file);
+        if (domain) {
+            snprintf(buffer, sizeof(buffer), "[JBPF][%s]:%s:%s:%d", domain, get_file_name(file), func, line);
+        } else {
+            snprintf(buffer, sizeof(buffer), "[JBPF]:%s:%s:%d", get_file_name(file), func, line);
+        }
+        return buffer;
+    }
+
     static inline const char*
     get_log_prefix(const char* file, const char* func, int line, const char* level)
     {
         static char buffer[256];
-        snprintf(buffer, sizeof(buffer), "[%s:%s:%s:%d]", level, file, func, line);
+        const char* domain = get_domain(file);
+        if (domain) {
+            snprintf(buffer, sizeof(buffer), "[JBPF][%s]", domain);
+        } else {
+            snprintf(buffer, sizeof(buffer), "[JBPF]");
+        }
         return buffer;
     }
 
 // Define macros using the helper function
+#ifdef VERBOSE_LOGGING
+#define JBPF_CRITICAL get_log_prefix_verbose(__FILE__, __func__, __LINE__, "CRITICAL"), CRITICAL
+#define JBPF_ERROR get_log_prefix_verbose(__FILE__, __func__, __LINE__, "ERROR"), ERROR
+#define JBPF_WARN get_log_prefix_verbose(__FILE__, __func__, __LINE__, "WARN"), WARN
+#define JBPF_INFO get_log_prefix_verbose(__FILE__, __func__, __LINE__, "INFO"), INFO
+#define JBPF_DEBUG get_log_prefix_verbose(__FILE__, __func__, __LINE__, "DEBUG"), DEBUG
+#else
 #define JBPF_CRITICAL get_log_prefix(__FILE__, __func__, __LINE__, "CRITICAL"), CRITICAL
 #define JBPF_ERROR get_log_prefix(__FILE__, __func__, __LINE__, "ERROR"), ERROR
 #define JBPF_WARN get_log_prefix(__FILE__, __func__, __LINE__, "WARN"), WARN
 #define JBPF_INFO get_log_prefix(__FILE__, __func__, __LINE__, "INFO"), INFO
 #define JBPF_DEBUG get_log_prefix(__FILE__, __func__, __LINE__, "DEBUG"), DEBUG
+#endif
 
 #define GENERATE_ENUM_LOG(ENUM) ENUM,
 #define GENERATE_STRING(STRING) JBPF_LOG_WRAP(#STRING),

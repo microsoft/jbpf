@@ -47,7 +47,8 @@ When building the library, you can pass various options using the -e OPTION_NAME
 * ENABLE_POISONING - Enable ASAN poisoning. Should not be used for IPC mode tests and must be used in conjunction with ASAN (**default: disabled**)
 * CLANG_FORMAT_CHECK - Enable clang-format check (**default: disabled**)
 * CPP_CHECK - Enable Cpp static code analyser (**default: disabled**)
-* BUILD_TESTING - build the tests (**default: enabled**)
+* BUILD_TESTING - Build the tests (**default: enabled**)
+* VERBOSE_LOGGING - Shows extra logging information e.g. File/Line (**default: disabled**)
 
 Additionally, you can change the `CMAKE_BUILD_TYPE` to:
 * Release - Default Build Type.
