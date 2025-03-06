@@ -80,8 +80,6 @@ For more information, also consider:
 
 - [jbpf-protobuf](https://github.com/microsoft/jbpf-protobuf): The *jbpf* extension, used in *jrt-controller*, that demonstrates how to utilize protobuf serialization for sending and receiving data from codelets loaded in jbpf applications.
 
-- [jbpf-protobuf](https://github.com/microsoft/jbpf-protobuf): jbpf extension, demonstrating how to utilize protobuf serialization for sending and receiving data from codelets loaded in jbpf applications.
-
 # License
 
 The jbpf framework is licensed under the [MIT license](LICENSE.md).
