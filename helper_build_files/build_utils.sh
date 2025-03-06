@@ -82,11 +82,11 @@ get_flags() {
         FLAGS="$FLAGS -DCPP_CHECK=on"
     else
         OUTPUT="$OUTPUT Skipping cppcheck\n"
-    fi    
+    fi
     if [[ "$BUILD_TESTING" == "1" || "$BUILD_TESTING" == "" ]]; then
         OUTPUT="$OUTPUT Build with tests\n"
         FLAGS="$FLAGS -DBUILD_TESTING=on"
     else
         OUTPUT="$OUTPUT Skipping building tests\n"
-    fi       
+    fi
 }
