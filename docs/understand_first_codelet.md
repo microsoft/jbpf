@@ -11,7 +11,7 @@ Here, we explain in detail a [simple example](../examples/first_example_standalo
 For this example we start with an [application](../examples/first_example_standalone/example_app.cpp) that runs an infinite loop and calls the `example` hook every second. 
 In each hook call, it passes a sequence count and then increases it. 
 
-To keep things simple, the same application also performs the function of [data collection and control](../jbpf_oss_architecture.png). 
+To keep things simple, the same application also performs the function of [data collection and control](./jbpf_oss_architecture.png). 
 It registers a callback `io_channel_print_output` that gets called every time the codelet sends output data, which prints out the received data in a JSON format. 
 The callback also demonstrates how to use the input API by sending back the same information to the codelet. 
 To see how the same example can be implemented with separate application and data collection binaries, see [here](../examples/first_example_ipc/).
