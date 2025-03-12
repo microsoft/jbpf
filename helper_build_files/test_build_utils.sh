@@ -224,4 +224,20 @@ if ! test_flags_not_contains "-DCPP_CHECK" "When CPP_CHECK is unset flags should
     exit 1
 fi
 
+### env parameter: BUILD_TESTING
+BUILD_TESTING=1
+if ! test_flags "-DBUILD_TESTING=on" "When BUILD_TESTING=1 flags should contain -DBUILD_TESTING=on"; then
+    exit 1
+fi
+
+BUILD_TESTING=0
+if ! test_flags_not_contains "-DBUILD_TESTING=" "When BUILD_TESTING=0 flags should not contain BUILD_TESTING"; then
+    exit 1
+fi
+
+BUILD_TESTING=
+if ! test_flags "-DBUILD_TESTING=on" "When BUILD_TESTING is unset flags should contain -DBUILD_TESTING=on"; then
+    exit 1
+fi
+
 echo ---------------- All Passed ----------------

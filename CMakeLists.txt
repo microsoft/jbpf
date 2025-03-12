@@ -13,6 +13,7 @@ option(JBPF_STATIC "Build jbpf as static library" OFF)
 option(JBPF_EXPERIMENTAL_FEATURES "Enable experimental features of jbpf" OFF)
 option(CLANG_FORMAT_CHECK "Enable clang-format check" OFF)
 option(CPP_CHECK "Enable cppcheck" OFF)
+option(BUILD_TESTING "Enable tests" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -381,7 +382,12 @@ set(JBPF_TESTS
   jbpf::verifier_lib
   jbpf::lcm_ipc_lib
 )
-add_subdirectory(jbpf_tests)
+
+if(BUILD_TESTING)  
+  add_subdirectory(jbpf_tests)
+else()
+  message(STATUS "BUILD_TESTING is OFF, skipping jbpf_tests")
+endif()
 #configure_file(${PROJECT_SOURCE_DIR}/cmake_modules/CTestCustom.cmake ${CMAKE_BINARY_DIR})
 
 ################ Basic examples ################

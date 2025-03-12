@@ -12,6 +12,7 @@
 ### env parameter: JBPF_EXPERIMENTAL_FEATURES
 ### env parameter: CLANG_FORMAT_CHECK
 ### env parameter: CPP_CHECK
+### env parameter: BUILD_TESTING
 get_flags() {
     FLAGS=""
     OUTPUT=""
@@ -75,5 +76,11 @@ get_flags() {
         FLAGS="$FLAGS -DCPP_CHECK=on"
     else
         OUTPUT="$OUTPUT Skipping cppcheck\n"
-    fi    
+    fi
+    if [[ "$BUILD_TESTING" == "1" || "$BUILD_TESTING" == "" ]]; then
+        OUTPUT="$OUTPUT Build with tests\n"
+        FLAGS="$FLAGS -DBUILD_TESTING=on"
+    else
+        OUTPUT="$OUTPUT Skipping building tests\n"
+    fi
 }
