@@ -449,7 +449,7 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
     }
 
     if (bind(ipc_ctx->dipc_ctrl_fd, saddr, saddr_size) == -1) {
-        jbpf_logger(JBPF_ERROR, "Error binding to socket\n");
+        jbpf_logger(JBPF_ERROR, "Error binding to socket: Please make sure you have access rights.\n");
         ret = -1;
         goto close_epoll;
     }

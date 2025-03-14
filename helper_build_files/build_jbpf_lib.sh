@@ -71,6 +71,11 @@ if [[ "$RUN_TESTS" == "1" ]]; then
         echo "Error running tests!"
         exit 1
     fi
+    ## if there are no tests, fail
+    if [ ! -s $JBPF_OUT_DIR/jbpf_tests.xml ]; then
+        echo "Error: No tests found!"
+        exit 1
+    fi
 fi
 
 ## Test the emulator
