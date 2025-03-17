@@ -1067,6 +1067,44 @@ jbpf_io_ipc_shm_create(char* meta_path_name, char* mem_name, size_t size, struct
     return 0;
 }
 
+ssize_t
+send_all(int sock_fd, const void* buf, size_t len, int flags)
+{
+    size_t total = 0;
+    ssize_t bytes_left = len;
+    ssize_t n;
+
+    while (total < len) {
+        n = send(sock_fd, buf + total, bytes_left, flags);
+        if (n == -1) {
+            break;
+        }
+        total += n;
+        bytes_left -= n;
+    }
+
+    return (n == -1) ? -1 : total;
+}
+
+ssize_t
+recv_all(int sock_fd, void* buf, size_t len, int flags)
+{
+    size_t total = 0;
+    ssize_t bytes_left = len;
+    ssize_t n;
+
+    while (total < len) {
+        n = recv(sock_fd, buf + total, bytes_left, flags);
+        if (n == -1) {
+            break;
+        }
+        total += n;
+        bytes_left -= n;
+    }
+
+    return (n == -1) ? -1 : total;
+}
+
 int
 jbpf_io_ipc_register(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
 {
@@ -1128,13 +1166,26 @@ jbpf_io_ipc_register(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ct
 
     ipc_reg_req.msg_type = JBPF_IO_IPC_REG_REQ;
     ipc_reg_req.msg.dipc_reg_req.alloc_size = alloc_size;
-    if (send(ipc_desc->sock_fd, &ipc_reg_req, sizeof(struct jbpf_io_ipc_msg), 0) == -1)
+    int send_res = send_all(ipc_desc->sock_fd, &ipc_reg_req, sizeof(struct jbpf_io_ipc_msg), 0);
+    if (send_res == -1) {
+        jbpf_logger(
+            JBPF_ERROR,
+            "Error while sending registration request %d: %d\n",
+            send_res,
+            (int)sizeof(struct jbpf_io_ipc_msg));
         goto sock_close;
+    }
 
-    jbpf_logger(JBPF_INFO, "Sent registration request\n");
-    if (recv(ipc_desc->sock_fd, &ipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL) !=
-        sizeof(struct jbpf_io_ipc_msg))
+    jbpf_logger(JBPF_INFO, "Sent registration request %d bytes\n", sizeof(struct jbpf_io_ipc_msg));
+    int recv_res = recv(ipc_desc->sock_fd, &ipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
+    if (recv_res != sizeof(struct jbpf_io_ipc_msg)) {
+        jbpf_logger(
+            JBPF_ERROR,
+            "Error while receiving registration response %d: %d\n",
+            recv_res,
+            (int)sizeof(struct jbpf_io_ipc_msg));
         goto sock_close;
+    }
 
     if (ipc_reg_resp.msg_type != JBPF_IO_IPC_REG_RESP ||
         ipc_reg_resp.msg.dipc_reg_resp.status != JBPF_IO_IPC_REG_NEG_MMAP)
@@ -1169,16 +1220,16 @@ jbpf_io_ipc_register(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ct
             ipc_neg_req.msg.dipc_reg_req.status = JBPF_IO_IPC_REG_NEG_MMAP_SUCC;
         }
         ipc_neg_req.msg_type = JBPF_IO_IPC_REG_REQ;
-        jbpf_logger(JBPF_INFO, "Sending notification\n");
-        int send_res = send(ipc_desc->sock_fd, &ipc_neg_req, sizeof(struct jbpf_io_ipc_msg), 0);
+        jbpf_logger(JBPF_INFO, "Sending notification: %d bytes\n", sizeof(struct jbpf_io_ipc_msg));
+        int send_res = send_all(ipc_desc->sock_fd, &ipc_neg_req, sizeof(struct jbpf_io_ipc_msg), 0);
         if (send_res != sizeof(struct jbpf_io_ipc_msg)) {
             jbpf_logger(
                 JBPF_ERROR, "Error while sending notification %d: %d\n", send_res, (int)sizeof(struct jbpf_io_ipc_msg));
             goto sock_close;
         }
 
-        jbpf_logger(JBPF_INFO, "Waiting for peer update\n");
-        int recv_res = recv(ipc_desc->sock_fd, &ipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
+        jbpf_logger(JBPF_INFO, "Waiting for peer update: %d bytes\n", sizeof(struct jbpf_io_ipc_msg));
+        int recv_res = recv_all(ipc_desc->sock_fd, &ipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
         if (recv_res != sizeof(struct jbpf_io_ipc_msg)) {
             jbpf_logger(
                 JBPF_ERROR,
