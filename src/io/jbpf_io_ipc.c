@@ -1087,6 +1087,7 @@ send_all(int sock_fd, const void* buf, size_t len, int flags)
     while (total < len) {
         n = send(sock_fd, buf + total, bytes_left, flags);
         if (n == -1) {
+            jbpf_logger(JBPF_ERROR, "Error sending data %s with errono %d\n", strerror(errno), errno);
             break;
         }
         jbpf_logger(JBPF_DEBUG, "Sent %zd bytes\n", n);
@@ -1117,6 +1118,7 @@ recv_all(int sock_fd, void* buf, size_t len, int flags)
     while (total < len) {
         n = recv(sock_fd, buf + total, bytes_left, flags);
         if (n == -1) {
+            jbpf_logger(JBPF_ERROR, "Error receiving data %s with errono %d\n", strerror(errno), errno);
             break;
         }
         jbpf_logger(JBPF_DEBUG, "Received %zd bytes\n", n);
