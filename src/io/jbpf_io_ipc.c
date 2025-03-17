@@ -1170,15 +1170,23 @@ jbpf_io_ipc_register(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ct
         }
         ipc_neg_req.msg_type = JBPF_IO_IPC_REG_REQ;
         jbpf_logger(JBPF_INFO, "Sending notification\n");
-        if (send(ipc_desc->sock_fd, &ipc_neg_req, sizeof(struct jbpf_io_ipc_msg), 0) !=
-            sizeof(struct jbpf_io_ipc_msg)) {
+        int send_res = send(ipc_desc->sock_fd, &ipc_neg_req, sizeof(struct jbpf_io_ipc_msg), 0);
+        if (send_res != sizeof(struct jbpf_io_ipc_msg)) {
+            jbpf_logger(
+                JBPF_ERROR, "Error while sending notification %d: %d\n", send_res, (int)sizeof(struct jbpf_io_ipc_msg));
             goto sock_close;
         }
 
         jbpf_logger(JBPF_INFO, "Waiting for peer update\n");
-        if (recv(ipc_desc->sock_fd, &ipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL) !=
-            sizeof(struct jbpf_io_ipc_msg))
+        int recv_res = recv(ipc_desc->sock_fd, &ipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
+        if (recv_res != sizeof(struct jbpf_io_ipc_msg)) {
+            jbpf_logger(
+                JBPF_ERROR,
+                "Error while receiving notification %d: %d\n",
+                recv_res,
+                (int)sizeof(struct jbpf_io_ipc_msg));
             goto sock_close;
+        }
 
         jbpf_logger(JBPF_INFO, "Received peer update with status %d\n", ipc_reg_resp.msg.dipc_reg_resp.status);
 
