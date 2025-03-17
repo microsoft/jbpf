@@ -1089,6 +1089,7 @@ send_all(int sock_fd, const void* buf, size_t len, int flags)
         if (n == -1) {
             break;
         }
+        jbpf_logger(JBPF_DEBUG, "Sent %zd bytes\n", n);
         total += n;
         bytes_left -= n;
     }
@@ -1118,6 +1119,7 @@ recv_all(int sock_fd, void* buf, size_t len, int flags)
         if (n == -1) {
             break;
         }
+        jbpf_logger(JBPF_DEBUG, "Received %zd bytes\n", n);
         if (n == 0) {
             // Connection closed
             break;
