@@ -98,6 +98,30 @@ stages:
 
   - template: pipeline/build-for-os.yaml
 
+  - stage: BuildDebug
+    displayName: 'Build Debug'
+    dependsOn: []
+    jobs:
+      - job: build_debug
+        displayName: 'Build with Debug configuration'
+        steps:
+          - checkout: self
+            submodules: true
+
+          - bash: |
+              source ./setup_jbpf_env.sh
+              mkdir -p build_debug
+              cd build_debug
+              cmake ../ -DCMAKE_BUILD_TYPE=Debug
+              make -j$(nproc)
+            displayName: 'Build with Debug configuration'
+          
+          - bash: |
+              cd build_debug
+              ctest -V
+            displayName: 'Run tests with Debug configuration'
+            continueOnError: false
+
   - stage: Doxygen
     dependsOn: []
     displayName: Doxygen
