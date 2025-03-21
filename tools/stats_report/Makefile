@@ -1,6 +1,6 @@
 
 CC = clang
-INC= -I${JBPF_PATH}/src/common -I${JBPF_PATH}/jbpf_tests/common -I${JBPF_PATH}/src/core 
+INC= -I${JBPF_PATH}/src/common -I${JBPF_PATH}/jbpf_tests/common -I${JBPF_PATH}/src/core -I/usr/include/aarch64-linux-gnu -I/usr/include/x86_64-linux-gnu 
 CFLAGS = -O2 -target bpf -Wall -DJBPF_DEBUG_ENABLED -D__x86_64__
 SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
