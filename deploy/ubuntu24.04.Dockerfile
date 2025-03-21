@@ -10,7 +10,12 @@ RUN apt install -y cmake build-essential libboost-dev git libboost-program-optio
     wget gcovr doxygen libboost-filesystem-dev libasan6 python3
 
 RUN apt install -y clang-format cppcheck
-RUN apt install -y clang gcc-multilib
+RUN apt install -y clang
+RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
+    apt-get install -y gcc-multilib; \
+  elif [ "$TARGET_ARCHITECTURE" = "arm64" ]; then \
+    apt-get install -y libc6-dev; \
+  fi
 RUN apt install -y libyaml-cpp-dev
 
 WORKDIR /jbpf
