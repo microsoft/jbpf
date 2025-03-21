@@ -8,9 +8,7 @@ trigger:
 pr:
   branches:
     include:
-      - main
-      - stable
-      - gh-readonly-queue/main/*
+      - '*'
 
 pool:
   name: agent-pool-onprem-ubuntu
