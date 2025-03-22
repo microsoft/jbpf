@@ -1269,9 +1269,8 @@ jbpf_io_ipc_local_req_create_channel(
         ck_pr_stall();
     }
 
-    pthread_cond_signal(&req_resp.cond);
-
     pthread_mutex_lock(&req_resp.mutex);
+    pthread_cond_signal(&req_resp.cond);
     // Wait for the response
     while (req_resp.request_pending) {
         // The pthread_cond_wait() itself will temporarily release the lock while waiting, so we must acquire the lock
@@ -1287,11 +1286,8 @@ jbpf_io_ipc_local_req_create_channel(
 
     if (req_resp.resp.msg.dipc_ch_create_resp.status == JBPF_IO_IPC_CHAN_SUCCESS) {
         return req_resp.resp.msg.dipc_ch_create_resp.io_channel;
-    } else {
-        jbpf_logger(JBPF_ERROR, "Channel was not created\n");
-        return NULL;
     }
-
+    jbpf_logger(JBPF_ERROR, "Channel was not created\n");
     return NULL;
 }
 
@@ -1395,8 +1391,6 @@ jbpf_io_ipc_local_req_destroy_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_chan
         ck_pr_stall();
     }
 
-    pthread_cond_signal(&req_resp.cond);
-
     // Wait for the response
     pthread_mutex_lock(&req_resp.mutex);
     while (req_resp.request_pending) {
@@ -1404,6 +1398,7 @@ jbpf_io_ipc_local_req_destroy_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_chan
         // beforehand.
         pthread_cond_wait(&req_resp.cond, &req_resp.mutex);
     }
+    pthread_cond_signal(&req_resp.cond);
     pthread_mutex_unlock(&req_resp.mutex);
 
     jbpf_logger(JBPF_INFO, "Local channel destroy request completed\n");
