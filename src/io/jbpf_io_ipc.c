@@ -358,6 +358,7 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
     ipc_cfg = calloc(1, sizeof(struct jbpf_io_ipc_cfg));
 
     if (!ipc_cfg) {
+        jbpf_logger(JBPF_ERROR, "Memory allocation failed for ipc_cfg\n");
         return -1;
     }
 
@@ -367,11 +368,13 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
     ipc_ctx = &io_ctx->primary_ctx.ipc_ctx;
 
     if (pthread_cond_init(&ipc_ctx->cond, NULL) != 0) {
+        jbpf_logger(JBPF_ERROR, "Error initializing condition variable: %s\n", strerror(errno));
         ret = -1;
         goto out;
     }
 
     if (pthread_mutex_init(&ipc_ctx->lock, NULL) != 0) {
+        jbpf_logger(JBPF_ERROR, "Error initializing mutex: %s\n", strerror(errno));
         ret = -1;
         goto out;
     }
@@ -443,7 +446,7 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
     event.data.fd = ipc_ctx->dipc_ctrl_fd;
 
     if (epoll_ctl(ipc_ctx->dipc_epoll_fd, EPOLL_CTL_ADD, ipc_ctx->dipc_ctrl_fd, &event)) {
-        jbpf_logger(JBPF_ERROR, "Error adding socket fd to epoll\n");
+        jbpf_logger(JBPF_ERROR, "Error adding socket fd to epoll: %s\n", strerror(errno));
         ret = -1;
         goto close_epoll;
     }
@@ -455,12 +458,14 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
     }
 
     if (listen(ipc_ctx->dipc_ctrl_fd, JBPF_IO_IPC_CTL_BACKLOG) == -1) {
+        jbpf_logger(JBPF_ERROR, "Error listening on socket: %s\n", strerror(errno));
         ret = -1;
         goto close_epoll;
     }
 
     if (dipc_primary_addr.type == JBPF_IO_IPC_TYPE_UNIX) {
         if (chmod(dipc_primary_addr.un_addr.sun_path, S_IRWXU | S_IRWXG) == -1) {
+            jbpf_logger(JBPF_ERROR, "Error setting file permissions for socket: %s\n", strerror(errno));
             ret = -1;
             goto unlink_socket;
         }
@@ -1241,11 +1246,16 @@ jbpf_io_ipc_local_req_create_channel(
     char* descriptor,
     size_t descriptor_size)
 {
-
     local_req_resp_t req_resp = {0};
     req_resp.request_pending = true;
-    pthread_mutex_init(&req_resp.mutex, NULL);
-    pthread_cond_init(&req_resp.cond, NULL);
+    if (pthread_mutex_init(&req_resp.mutex, NULL) != 0) {
+        jbpf_logger(JBPF_ERROR, "Mutex initialization failed\n");
+        return NULL;
+    }
+    if (pthread_cond_init(&req_resp.cond, NULL) != 0) {
+        jbpf_logger(JBPF_ERROR, "Cond init failed\n");
+        return NULL;
+    }
 
     req_resp.req.msg_type = JBPF_IO_IPC_CH_CREATE_REQ;
     req_resp.req.msg.dipc_ch_create_req.chan_request.type = channel_type;
@@ -1375,10 +1385,16 @@ jbpf_io_ipc_local_req_destroy_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_chan
     if (io_ctx->io_type != JBPF_IO_IPC_PRIMARY)
         return;
 
-    local_req_resp_t req_resp;
+    local_req_resp_t req_resp = {0};
     req_resp.request_pending = true;
-    pthread_mutex_init(&req_resp.mutex, NULL);
-    pthread_cond_init(&req_resp.cond, NULL);
+    if (pthread_mutex_init(&req_resp.mutex, NULL) != 0) {
+        jbpf_logger(JBPF_ERROR, "Mutex initialization failed\n");
+        return;
+    }
+    if (pthread_cond_init(&req_resp.cond, NULL) != 0) {
+        jbpf_logger(JBPF_ERROR, "Cond init failed\n");
+        return;
+    }
 
     req_resp.req.msg_type = JBPF_IO_IPC_CH_DESTROY;
     req_resp.req.msg.dipc_ch_destroy.io_channel = io_channel;
