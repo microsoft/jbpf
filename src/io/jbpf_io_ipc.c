@@ -1274,7 +1274,8 @@ jbpf_io_ipc_local_req_create_channel(
     pthread_mutex_lock(&req_resp.mutex);
     // Wait for the response
     while (req_resp.request_pending) {
-        // The pthread_cond_wait() itself will temporarily release the lock while waiting, so we must acquire the lock beforehand.
+        // The pthread_cond_wait() itself will temporarily release the lock while waiting, so we must acquire the lock
+        // beforehand.
         pthread_cond_wait(&req_resp.cond, &req_resp.mutex);
     }
     pthread_mutex_unlock(&req_resp.mutex);
@@ -1399,7 +1400,8 @@ jbpf_io_ipc_local_req_destroy_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_chan
     // Wait for the response
     pthread_mutex_lock(&req_resp.mutex);
     while (req_resp.request_pending) {
-        // The pthread_cond_wait() itself will temporarily release the lock while waiting, so we must acquire the lock beforehand.
+        // The pthread_cond_wait() itself will temporarily release the lock while waiting, so we must acquire the lock
+        // beforehand.
         pthread_cond_wait(&req_resp.cond, &req_resp.mutex);
     }
     pthread_mutex_unlock(&req_resp.mutex);
