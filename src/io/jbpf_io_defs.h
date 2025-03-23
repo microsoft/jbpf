@@ -130,7 +130,7 @@ extern "C"
         struct jbpf_io_ipc_proto_addr addr;
         int dipc_ctrl_fd;
         int dipc_epoll_fd;
-        bool dipc_ctrl_thread_run;
+        volatile bool dipc_ctrl_thread_run;
 
         dipc_peer_list_t* dipc_peer_list;
         pthread_t dipc_ctrl_thread_id;
