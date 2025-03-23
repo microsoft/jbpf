@@ -56,6 +56,16 @@ parameters:
         id: test7
         staticBuildParam: "-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1"
         sanitizerBuildParam: ""
+    - description: "Dynamic Debug"
+      id: test8
+      staticBuildParam: ""
+      sanitizerBuildParam: "-e CMAKE_BUILD_TYPE=Debug"
+    
+    - description: "Static Debug"
+      id: test9
+      staticBuildParam: "-e JBPF_STATIC=1"
+      sanitizerBuildParam: "-e CMAKE_BUILD_TYPE=Debug"
+
 
 stages:
   - stage: CoverageTests
