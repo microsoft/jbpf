@@ -1484,12 +1484,12 @@ jbpf_io_ipc_req_find_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_stream_id* st
             &ipc_ch_find_resp,
             sizeof(struct jbpf_io_ipc_msg),
             MSG_WAITALL) != sizeof(struct jbpf_io_ipc_msg)) {
-        printf("Something went wrong \n");
+        jbpf_logger(JBPF_ERROR, "Something went wrong\n");
         return NULL;
     }
 
     if (ipc_ch_find_resp.msg_type != JBPF_IO_IPC_CH_FIND_RESP) {
-        printf("Received wrong message type\n");
+        jbpf_logger(JBPF_ERROR, "Received wrong message type %d\n", ipc_ch_find_resp.msg_type);
         return NULL;
     }
 
