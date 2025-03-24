@@ -478,7 +478,7 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
     pthread_mutex_lock(&ipc_ctx->lock);
 
     /* Wait for thread to be ready */
-    while (!atomic_load(&ipc_ctx->local_ctx.registered)) {
+    while (!atomic_load(&ipc_ctx->dipc_ctrl_thread_run)) {
         pthread_cond_wait(&ipc_ctx->cond, &ipc_ctx->lock);
     }
 
