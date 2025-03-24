@@ -189,9 +189,9 @@ dipc_ctrl_thread(void* args)
         return NULL;
     }
 
-    pthread_mutex_lock(&ipc_ctx->lock);
-
     atomic_store(&ipc_ctx->dipc_ctrl_thread_run, true);
+
+    pthread_mutex_lock(&ipc_ctx->lock);
 
     pthread_cond_signal(&ipc_ctx->cond);
 
