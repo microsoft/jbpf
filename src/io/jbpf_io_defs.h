@@ -10,15 +10,8 @@
 
 #include "jbpf_mem_mgmt.h"
 #include "jbpf_io_channel_defs.h"
-#include "jbpf_common.h"
 
-#ifdef __cplusplus
-#include <atomic>
-typedef std::atomic<bool> jbpf_atomic_bool;
-#else
-#include <stdatomic.h>
-typedef _Atomic bool jbpf_atomic_bool;
-#endif
+#include "jbpf_common.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -137,7 +130,7 @@ extern "C"
         struct jbpf_io_ipc_proto_addr addr;
         int dipc_ctrl_fd;
         int dipc_epoll_fd;
-        jbpf_atomic_bool dipc_ctrl_thread_run;
+        volatile bool dipc_ctrl_thread_run;
 
         dipc_peer_list_t* dipc_peer_list;
         pthread_t dipc_ctrl_thread_id;

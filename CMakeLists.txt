@@ -15,7 +15,6 @@ option(CLANG_FORMAT_CHECK "Enable clang-format check" OFF)
 option(CPP_CHECK "Enable cppcheck" OFF)
 option(BUILD_TESTING "Enable tests" ON)
 
-set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

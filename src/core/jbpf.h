@@ -6,7 +6,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "jbpf_lcm_api.h"
 #pragma once
 #ifdef __cplusplus
 extern "C"
@@ -14,6 +13,7 @@ extern "C"
 #endif
 
 #include "jbpf_config.h"
+#include "jbpf_lcm_api.h"
 #include "jbpf_io_channel.h"
 
 #include "ck_epoch.h"

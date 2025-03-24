@@ -20,7 +20,6 @@
 #include "jbpf_io_utils.h"
 #include "jbpf_io_ipc_int.h"
 #include "jbpf_logging.h"
-#include <stdatomic.h>
 
 ck_epoch_t list_epoch = {0};
 ck_epoch_record_t list_epoch_records[JBPF_IO_MAX_NUM_THREADS];
@@ -191,13 +190,13 @@ dipc_ctrl_thread(void* args)
 
     pthread_mutex_lock(&ipc_ctx->lock);
 
-    atomic_store(&ipc_ctx->local_ctx.registered, true);
+    (void)__sync_lock_test_and_set(&ipc_ctx->dipc_ctrl_thread_run, true);
 
     pthread_cond_signal(&ipc_ctx->cond);
 
     pthread_mutex_unlock(&ipc_ctx->lock);
 
-    while (atomic_load(&ipc_ctx->dipc_ctrl_thread_run)) {
+    while (ipc_ctx->dipc_ctrl_thread_run) {
         event_count = epoll_wait(ipc_ctx->dipc_epoll_fd, events, MAX_JBPF_EPOLL_EVENTS, 500);
 
         // First check events coming from the UNIX socket
@@ -409,7 +408,7 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
         ck_epoch_register(&list_epoch, &list_epoch_records[i], NULL);
     }
 
-    atomic_store(&ipc_ctx->dipc_ctrl_thread_run, false);
+    (void)__sync_lock_test_and_set(&ipc_ctx->dipc_ctrl_thread_run, false);
 
     _jbpf_io_ipc_parse_addr(io_ctx->jbpf_io_path, ipc_cfg->addr.jbpf_io_ipc_name, &dipc_primary_addr);
 
@@ -478,7 +477,7 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
     pthread_mutex_lock(&ipc_ctx->lock);
 
     /* Wait for thread to be ready */
-    while (!atomic_load(&ipc_ctx->local_ctx.registered)) {
+    while (!ipc_ctx->dipc_ctrl_thread_run) {
         pthread_cond_wait(&ipc_ctx->cond, &ipc_ctx->lock);
     }
 
