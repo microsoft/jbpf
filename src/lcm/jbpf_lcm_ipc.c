@@ -10,6 +10,7 @@
 
 #include "jbpf_lcm_ipc.h"
 #include "jbpf_logging.h"
+#include "jbpf_io_utils.h"
 
 struct jbpf_lcm_ipc_server_ctx
 {
@@ -48,11 +49,11 @@ jbpf_lcm_ipc_send_req(jbpf_lcm_ipc_address_t* address, jbpf_lcm_ipc_req_msg_s* m
         goto out;
     }
 
-    if (send(sockfd, msg, sizeof(jbpf_lcm_ipc_req_msg_s), 0) != sizeof(jbpf_lcm_ipc_req_msg_s)) {
+    if (send_all(sockfd, msg, sizeof(jbpf_lcm_ipc_req_msg_s), 0) != sizeof(jbpf_lcm_ipc_req_msg_s)) {
         goto out;
     }
 
-    if (recv(sockfd, &resp, sizeof(jbpf_lcm_ipc_resp_msg_s), MSG_WAITALL) != sizeof(jbpf_lcm_ipc_resp_msg_s)) {
+    if (recv_all(sockfd, &resp, sizeof(jbpf_lcm_ipc_resp_msg_s), MSG_WAITALL) != sizeof(jbpf_lcm_ipc_resp_msg_s)) {
         goto out;
     }
 
@@ -169,7 +170,8 @@ jbpf_lcm_ipc_server_start(jbpf_lcm_ipc_server_ctx_t server_ctx)
             jbpf_logger(JBPF_ERROR, "Error receiving LCM API from a client\n");
         }
 
-        if (recv(client_fd, &req_msg, sizeof(jbpf_lcm_ipc_req_msg_s), MSG_WAITALL) != sizeof(jbpf_lcm_ipc_req_msg_s)) {
+        if (recv_all(client_fd, &req_msg, sizeof(jbpf_lcm_ipc_req_msg_s), MSG_WAITALL) !=
+            sizeof(jbpf_lcm_ipc_req_msg_s)) {
             jbpf_logger(JBPF_ERROR, "Received malformed request from client with fd %\n", client_fd);
         }
 
@@ -195,7 +197,7 @@ jbpf_lcm_ipc_server_start(jbpf_lcm_ipc_server_ctx_t server_ctx)
 
         resp_msg.outcome = outcome == 0 ? JBPF_LCM_IPC_REQ_SUCCESS : JBPF_LCM_IPC_REQ_FAIL;
 
-        if (send(client_fd, &resp_msg, sizeof(jbpf_lcm_ipc_resp_msg_s), 0) != sizeof(jbpf_lcm_ipc_resp_msg_s)) {
+        if (send_all(client_fd, &resp_msg, sizeof(jbpf_lcm_ipc_resp_msg_s), 0) != sizeof(jbpf_lcm_ipc_resp_msg_s)) {
             jbpf_logger(
                 JBPF_WARN,
                 "Response failed to be sent to client with socket fd %d. Tearing down the connection\n",

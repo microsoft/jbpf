@@ -215,7 +215,7 @@ dipc_ctrl_thread(void* args)
                 incoming_req = events->data.fd;
             }
             struct jbpf_io_ipc_msg ipc_msg_recv;
-            ssize_t num_bytes = recv(incoming_req, &ipc_msg_recv, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
+            ssize_t num_bytes = recv_all(incoming_req, &ipc_msg_recv, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
             if (num_bytes != sizeof(struct jbpf_io_ipc_msg)) {
                 jbpf_logger(JBPF_INFO, "Peer is down. Tearing down the connection\n");
                 if (!init_req)
@@ -626,7 +626,7 @@ jbpf_io_ipc_handle_reg_req(
         goto out;
         break;
     }
-    if (send(sock_fd, &dipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), 0) != sizeof(struct jbpf_io_ipc_msg)) {
+    if (send_all(sock_fd, &dipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), 0) != sizeof(struct jbpf_io_ipc_msg)) {
         jbpf_logger(JBPF_ERROR, "Error while sending response to fd %d\n", sock_fd);
         close(sock_fd);
         res = -1;
@@ -647,7 +647,7 @@ jbpf_io_ipc_handle_dereg_req(int sock_fd, struct jbpf_io_ctx* io_ctx)
 
     jbpf_io_ipc_remove_peer(sock_fd, io_ctx);
 
-    send(sock_fd, &dipc_dereg_resp, sizeof(struct jbpf_io_ipc_msg), 0);
+    send_all(sock_fd, &dipc_dereg_resp, sizeof(struct jbpf_io_ipc_msg), 0);
     close(sock_fd);
 }
 
@@ -725,7 +725,7 @@ jbpf_io_ipc_handle_ch_create_req(int sock_fd, struct jbpf_io_ctx* io_ctx, struct
     }
 
 out:
-    if (send(sock_fd, &dipc_ch_create_resp, sizeof(struct jbpf_io_ipc_msg), 0) != sizeof(struct jbpf_io_ipc_msg)) {
+    if (send_all(sock_fd, &dipc_ch_create_resp, sizeof(struct jbpf_io_ipc_msg), 0) != sizeof(struct jbpf_io_ipc_msg)) {
         jbpf_logger(JBPF_ERROR, "Error while sending response to fd %d\n", sock_fd);
         close(sock_fd);
         res = -1;
@@ -779,7 +779,7 @@ jbpf_io_ipc_handle_ch_find_req(int sock_fd, struct jbpf_io_ctx* io_ctx, struct j
         }
     }
 
-    if (send(sock_fd, &dipc_ch_find_resp, sizeof(struct jbpf_io_ipc_msg), 0) != sizeof(struct jbpf_io_ipc_msg)) {
+    if (send_all(sock_fd, &dipc_ch_find_resp, sizeof(struct jbpf_io_ipc_msg), 0) != sizeof(struct jbpf_io_ipc_msg)) {
         printf("Error while sending response to fd %d\n", sock_fd);
         close(sock_fd);
         res = -1;
@@ -1067,71 +1067,6 @@ jbpf_io_ipc_shm_create(char* meta_path_name, char* mem_name, size_t size, struct
     return 0;
 }
 
-ssize_t
-send_all(int sock_fd, const void* buf, size_t len, int flags)
-{
-    size_t total = 0;
-    ssize_t bytes_left = len;
-    ssize_t n;
-    if (len == 0) {
-        return 0;
-    }
-    if (buf == NULL) {
-        jbpf_logger(JBPF_ERROR, "Buffer is NULL\n");
-        return -1;
-    }
-    if (sock_fd < 0) {
-        jbpf_logger(JBPF_ERROR, "Socket fd is invalid\n");
-        return -1;
-    }
-    while (total < len) {
-        n = send(sock_fd, buf + total, bytes_left, flags);
-        if (n == -1) {
-            jbpf_logger(JBPF_ERROR, "Error sending data %s with errono %d\n", strerror(errno), errno);
-            break;
-        }
-        jbpf_logger(JBPF_DEBUG, "Sent %zd bytes\n", n);
-        total += n;
-        bytes_left -= n;
-    }
-
-    return (n == -1) ? -1 : total;
-}
-
-ssize_t
-recv_all(int sock_fd, void* buf, size_t len, int flags)
-{
-    size_t total = 0;
-    ssize_t bytes_left = len;
-    ssize_t n;
-    if (len == 0) {
-        return 0;
-    }
-    if (buf == NULL) {
-        jbpf_logger(JBPF_ERROR, "Buffer is NULL\n");
-        return -1;
-    }
-    if (sock_fd < 0) {
-        jbpf_logger(JBPF_ERROR, "Socket fd is invalid\n");
-        return -1;
-    }
-    while (total < len) {
-        n = recv(sock_fd, buf + total, bytes_left, flags);
-        if (n == -1) {
-            jbpf_logger(JBPF_ERROR, "Error receiving data %s with errono %d\n", strerror(errno), errno);
-            break;
-        }
-        jbpf_logger(JBPF_DEBUG, "Received %zd bytes\n", n);
-        if (n == 0) {
-            // Connection closed
-            break;
-        }
-        total += n;
-        bytes_left -= n;
-    }
-    return bytes_left == 0 ? total : -1;
-}
-
 int
 jbpf_io_ipc_register(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
 {
@@ -1204,7 +1139,7 @@ jbpf_io_ipc_register(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ct
     }
 
     jbpf_logger(JBPF_INFO, "Sent registration request %d bytes\n", sizeof(struct jbpf_io_ipc_msg));
-    int recv_res = recv(ipc_desc->sock_fd, &ipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
+    int recv_res = recv_all(ipc_desc->sock_fd, &ipc_reg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
     if (recv_res != sizeof(struct jbpf_io_ipc_msg)) {
         jbpf_logger(
             JBPF_ERROR,
@@ -1303,13 +1238,13 @@ jbpf_io_ipc_deregister(struct jbpf_io_ctx* io_ctx)
         jbpf_logger(JBPF_ERROR, "Cannot deregister a primary process\n");
     }
     ipc_dereg_req.msg_type = JBPF_IO_IPC_DEREG_REQ;
-    if (send(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_dereg_req, sizeof(struct jbpf_io_ipc_msg), 0) !=
+    if (send_all(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_dereg_req, sizeof(struct jbpf_io_ipc_msg), 0) !=
         sizeof(struct jbpf_io_ipc_msg)) {
         jbpf_logger(
             JBPF_ERROR, "Ungraceful deregister of peer with sockfd %d\n", io_ctx->secondary_ctx.ipc_sec_desc.sock_fd);
         return;
     }
-    if (recv(
+    if (recv_all(
             io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_dereg_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL) !=
         sizeof(struct jbpf_io_ipc_msg)) {
         jbpf_logger(JBPF_INFO, "Peer deregistered successfully\n");
@@ -1418,12 +1353,12 @@ jbpf_io_ipc_req_create_channel(
 
     jbpf_logger(
         JBPF_INFO, "Requesting the creation of new channel for peer %d\n", io_ctx->secondary_ctx.ipc_sec_desc.sock_fd);
-    if (send(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_create_req, sizeof(struct jbpf_io_ipc_msg), 0) !=
+    if (send_all(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_create_req, sizeof(struct jbpf_io_ipc_msg), 0) !=
         sizeof(struct jbpf_io_ipc_msg)) {
         return NULL;
     }
 
-    if (recv(
+    if (recv_all(
             io_ctx->secondary_ctx.ipc_sec_desc.sock_fd,
             &ipc_ch_create_resp,
             sizeof(struct jbpf_io_ipc_msg),
@@ -1520,7 +1455,7 @@ jbpf_io_ipc_req_destroy_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_channel* i
         "Requesting the destruction of channel %s for peer %d\n",
         sname,
         io_ctx->secondary_ctx.ipc_sec_desc.sock_fd);
-    send(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_destroy_req, sizeof(struct jbpf_io_ipc_msg), 0);
+    send_all(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_destroy_req, sizeof(struct jbpf_io_ipc_msg), 0);
 }
 
 struct jbpf_io_channel*
@@ -1541,12 +1476,12 @@ jbpf_io_ipc_req_find_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_stream_id* st
     ipc_ch_find_req.msg.dipc_ch_find_req.is_output = is_output;
     ipc_ch_find_req.msg.dipc_ch_find_req.stream_id = *stream_id;
 
-    if (send(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_find_req, sizeof(struct jbpf_io_ipc_msg), 0) !=
+    if (send_all(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_find_req, sizeof(struct jbpf_io_ipc_msg), 0) !=
         sizeof(struct jbpf_io_ipc_msg)) {
         return NULL;
     }
 
-    if (recv(
+    if (recv_all(
             io_ctx->secondary_ctx.ipc_sec_desc.sock_fd,
             &ipc_ch_find_resp,
             sizeof(struct jbpf_io_ipc_msg),
