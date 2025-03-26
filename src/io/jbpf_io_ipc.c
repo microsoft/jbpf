@@ -20,7 +20,6 @@
 #include "jbpf_io_utils.h"
 #include "jbpf_io_ipc_int.h"
 #include "jbpf_logging.h"
-#include <stdatomic.h>
 
 ck_epoch_t list_epoch = {0};
 ck_epoch_record_t list_epoch_records[JBPF_IO_MAX_NUM_THREADS];
