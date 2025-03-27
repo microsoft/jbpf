@@ -34,7 +34,7 @@ jbpf_free_perf_hook(struct jbpf_hook* hook);
 static inline uint64_t
 jbpf_measure_start_time(void)
 {
-#ifdef JBPF_PERF_OPT
+#if defined(JBPF_PERF_OPT) && defined(__x86_64__)
     return jbpf_start_time();
 #else
     struct timespec ts;
@@ -46,7 +46,7 @@ jbpf_measure_start_time(void)
 static inline uint64_t
 jbpf_measure_stop_time(void)
 {
-#ifdef JBPF_PERF_OPT
+#if defined(JBPF_PERF_OPT) && defined(__x86_64__)
     return jbpf_end_time();
 #else
     struct timespec ts;

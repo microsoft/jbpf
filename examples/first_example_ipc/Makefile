@@ -9,7 +9,7 @@ endif
 AGENT_NAME := example_app
 PRIMARY_NAME := example_collect_control
 CODELET_NAME := example_codelet.o
-INCLUDES := -I${JBPF_OUT_DIR}/inc -I${JBPF_PATH}/src/common
+INCLUDES := -I${JBPF_OUT_DIR}/inc -I${JBPF_PATH}/src/common -I/usr/include/aarch64-linux-gnu -I/usr/include/x86_64-linux-gnu
 AGENT_LDFLAGS := -L${JBPF_OUT_DIR}/lib -ljbpf -lck -lubpf -lmimalloc -lpthread -ldl -lrt ${DEBUG_LDFLAGS}
 PRIMARY_LDFLAGS := -L${JBPF_OUT_DIR}/lib -ljbpf_io -lck -lmimalloc -lpthread -ldl -lrt ${DEBUG_LDFLAGS}
 AGENT_FILE := example_app.cpp
