@@ -76,6 +76,7 @@ jobs:
             -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
             -v "$(pwd)"/3p:/jbpf/3p \
             -e JBPF_PATH=/jbpf \
+            -e INITIALIZE_SUBMODULES=0 \
             ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
             -e RUN_TESTS=1 jbpf_lib
 
