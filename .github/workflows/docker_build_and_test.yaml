@@ -55,11 +55,14 @@ jobs:
       - name: Run Container to Build JBPF
         run: |
           set -ex
+          source setup_jbpf_env.sh
+          ./init_and_patch_submodules.sh
           docker run -v "$(pwd)":/jbpf_out_lib ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
 
       - name: Run Tests
         run: |
           set -x
+          source setup_jbpf_env.sh
           docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
             --mount type=tmpfs,destination=/dev/shm \
             -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
