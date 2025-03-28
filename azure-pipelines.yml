@@ -2,7 +2,6 @@ trigger:
   branches:
     include:
       - main
-      - stable
       - gh-readonly-queue/main/*
 
 pr:
@@ -15,17 +14,11 @@ pool:
   # demands: Agent.CPU -equals 8
 
 schedules:
-  - cron: "0 0 1 * *"
-    displayName: Monthly scheduled build
-    branches:
-      include:
-        - main
-    always: true
   - cron: "0 0 * * *"
     displayName: Daily scheduled build
     branches:
       include:
-        - stable
+        - main
     always: true
 
 variables:
