@@ -32,15 +32,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Multi-Arch Docker Image
-        run: |
-          docker buildx create --use
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
-            -f deploy/${{ matrix.dockerType }}.Dockerfile \
-            --push .
-
       - name: Set Build Parameters
         id: set_params
         run: |
@@ -66,11 +57,14 @@ jobs:
         run: |
           git config --global http.sslVerify false
 
-      - name: Build Docker Image
+      - name: Build Multi-Arch Docker Image
         run: |
-          docker build \
+          docker buildx create --use
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
             -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
-            -f deploy/${{ matrix.dockerType }}.Dockerfile .
+            -f deploy/${{ matrix.dockerType }}.Dockerfile \
+            --push .
           docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
 
       - name: Run Container to Build JBPF
