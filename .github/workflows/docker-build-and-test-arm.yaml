@@ -1,0 +1,108 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  ACR: jbpfpipeline
+  IMAGE_TAG: ${{ github.run_id }}-${{ github.sha }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerType: [ "mariner", "ubuntu22.04", "ubuntu24.04" ]
+        testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true  # Ensure submodules are initialized
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Multi-Arch Docker Image
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
+            -f deploy/${{ matrix.dockerType }}.Dockerfile \
+            --push .
+
+      - name: Set Build Parameters
+        id: set_params
+        run: |
+          case "${{ matrix.testCase }}" in
+            test0) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test1) echo "staticBuildParam=-e JBPF_STATIC=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test2) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test3) echo "staticBuildParam=-e JBPF_STATIC=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test4) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
+            test5) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test6) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
+            test7) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+          esac
+
+      - name: Display Build Parameters
+        run: |
+          echo "Docker Type: ${{ matrix.dockerType }}"
+          echo "Test Case: ${{ matrix.testCase }}"
+          echo "Static Build Param: ${{ env.staticBuildParam }}"
+          echo "Sanitizer Build Param: ${{ env.sanitizerBuildParam }}"
+
+      - name: Disable Git SSL Verification (Temporary)
+        run: |
+          git config --global http.sslVerify false
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
+            -f deploy/${{ matrix.dockerType }}.Dockerfile .
+          docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
+
+      - name: Run Container to Build JBPF
+        run: |
+          set -ex
+          source setup_jbpf_env.sh
+          ./init_and_patch_submodules.sh
+          docker run \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            -v "$(pwd)":/jbpf_out_lib \
+            -e INITIALIZE_SUBMODULES=0 \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
+
+      - name: Run Tests
+        run: |
+          set -x
+          source setup_jbpf_env.sh
+          docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
+            --mount type=tmpfs,destination=/dev/shm \
+            -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            -e JBPF_PATH=/jbpf \
+            -e INITIALIZE_SUBMODULES=0 \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            -e RUN_TESTS=1 jbpf_lib
+
+          TEST_OUTCOME=$?
+          mkdir -p ${{ github.workspace }}/artifacts
+          cp ./build/Testing/Temporary/LastTest.log ${{ github.workspace }}/artifacts/ || true
+          cp "$(pwd)"/out/jbpf_tests.xml ${{ github.workspace }}/artifacts/ || true
+
+          if [ "$TEST_OUTCOME" -ne 0 ]; then
+            echo "Error running tests, result code is $TEST_OUTCOME"
+            exit 1
+          fi
