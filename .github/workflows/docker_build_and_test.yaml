@@ -35,7 +35,7 @@ jobs:
             test4) echo "-e SANITIZER=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
             test5) echo "-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1 -e SANITIZER=1" >> "$GITHUB_ENV";;
             test6) echo "-e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
-            test7) echo "-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV" >> "$GITHUB_ENV";;
+            test7) echo "-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
           esac
 
       - name: Display Build Parameters
@@ -48,7 +48,7 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build \
-            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} 
+            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
             -f deploy/${{ matrix.dockerType }}.Dockerfile .
           docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
 
