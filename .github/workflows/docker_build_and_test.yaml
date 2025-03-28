@@ -89,16 +89,3 @@ jobs:
             echo "Error running tests, result code is $TEST_OUTCOME"
             exit 1
           fi
-
-      - name: Publish Test Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: ${{ github.workspace }}/artifacts/jbpf_tests.xml
-
-      - name: Publish Build Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: ${{ github.workspace }}/artifacts/**
