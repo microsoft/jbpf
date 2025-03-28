@@ -61,7 +61,11 @@ jobs:
           set -ex
           source setup_jbpf_env.sh
           ./init_and_patch_submodules.sh
-          docker run -v "$(pwd)"/3p:/jbpf/3p -v "$(pwd)":/jbpf_out_lib ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
+          docker run \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            -v "$(pwd)":/jbpf_out_lib \
+            -e INITIALIZE_SUBMODULES=0 \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
 
       - name: Run Tests
         run: |
