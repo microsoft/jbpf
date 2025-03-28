@@ -48,8 +48,8 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build \
-            -f deploy/${{ matrix.dockerType }}.Dockerfile \
-            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }}
+            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} 
+            -f deploy/${{ matrix.dockerType }}.Dockerfile .
           docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
 
       - name: Run Container to Build JBPF
