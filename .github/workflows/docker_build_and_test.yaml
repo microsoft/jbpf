@@ -28,14 +28,14 @@ jobs:
         id: set_params
         run: |
           case "${{ matrix.testCase }}" in
-            test0) echo "" >> "$GITHUB_ENV";;
-            test1) echo "-e JBPF_STATIC=1" >> "$GITHUB_ENV";;
-            test2) echo "-e SANITIZER=1" >> "$GITHUB_ENV";;
-            test3) echo "-e JBPF_STATIC=1 -e SANITIZER=1" >> "$GITHUB_ENV";;
-            test4) echo "-e SANITIZER=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
-            test5) echo "-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1 -e SANITIZER=1" >> "$GITHUB_ENV";;
-            test6) echo "-e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
-            test7) echo "-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
+            test0) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test1) echo "staticBuildParam=-e JBPF_STATIC=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test2) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test3) echo "staticBuildParam=-e JBPF_STATIC=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test4) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
+            test5) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test6) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
+            test7) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
           esac
 
       - name: Display Build Parameters
@@ -55,7 +55,7 @@ jobs:
       - name: Run Container to Build JBPF
         run: |
           set -ex
-          docker run -v "$(pwd)":/jbpf_out_lib $GITHUB_ENV jbpf_lib
+          docker run -v "$(pwd)":/jbpf_out_lib ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
 
       - name: Run Tests
         run: |
@@ -64,7 +64,7 @@ jobs:
             --mount type=tmpfs,destination=/dev/shm \
             -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
             -e JBPF_PATH=/jbpf \
-            $GITHUB_ENV \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
             -e RUN_TESTS=1 jbpf_lib
 
           TEST_OUTCOME=$?
