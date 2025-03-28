@@ -61,7 +61,7 @@ jobs:
           set -ex
           source setup_jbpf_env.sh
           ./init_and_patch_submodules.sh
-          docker run -v "$(pwd)":/jbpf_out_lib ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
+          docker run -v "$(pwd)"/3p:/jbpf/3p -v "$(pwd)":/jbpf_out_lib ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
 
       - name: Run Tests
         run: |
@@ -70,6 +70,7 @@ jobs:
           docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
             --mount type=tmpfs,destination=/dev/shm \
             -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
+            -v "$(pwd)"/3p:/jbpf/3p \
             -e JBPF_PATH=/jbpf \
             ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
             -e RUN_TESTS=1 jbpf_lib
