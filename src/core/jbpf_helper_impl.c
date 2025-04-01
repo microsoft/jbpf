@@ -18,6 +18,7 @@
 #include "jbpf_bpf_array.h"
 #include "jbpf_helper_impl.h"
 #include "jbpf_common_types.h"
+#include "jbpf_fixpoint_utils.h"
 
 #include "jbpf_io_channel.h"
 
@@ -45,6 +46,16 @@
              (jbpf_helper_func_t)jbpf_control_input_receive},                                                        \
             {"jbpf_get_output_buf", JBPF_GET_OUTPUT_BUF, (jbpf_helper_func_t)jbpf_get_output_buf},                   \
             {"jbpf_send_output", JBPF_SEND_OUTPUT, (jbpf_helper_func_t)jbpf_send_output},                            \
+            {"jbpf_fixedpt_from_double_approx",                                                                      \
+             JBPF_FIXEDPT_FROM_DOUBLE_APPROX,                                                                        \
+             (jbpf_helper_func_t)jbpf_fixedpt_from_double_approx},                                                   \
+            {"jbpf_fixedpt_to_int_approx",                                                                           \
+             JBPF_FIXEDPT_TO_INT_APPROX,                                                                             \
+             (jbpf_helper_func_t)jbpf_fixedpt_to_int_approx},                                                        \
+            {"jbpf_fixedpt_from_uint", JBPF_FIXEDPT_FROM_UINT, (jbpf_helper_func_t)jbpf_fixedpt_from_uint},          \
+            {"jbpf_fixedpt_to_uint", JBPF_FIXEDPT_TO_UINT, (jbpf_helper_func_t)jbpf_fixedpt_to_uint},                \
+            {"jbpf_fixedpt_from_double", JBPF_FIXEDPT_FROM_DOUBLE, (jbpf_helper_func_t)jbpf_fixedpt_from_double},    \
+            {"jbpf_fixedpt_to_double", JBPF_FIXEDPT_TO_DOUBLE, (jbpf_helper_func_t)jbpf_fixedpt_to_double},          \
     }
 
 struct __control_input_ctx
@@ -470,6 +481,43 @@ static int
 jbpf_rand(void)
 {
     return rand_r(&seed);
+}
+
+// fix points
+static inline fixedpt
+jbpf_fixedpt_from_double_approx(int value)
+{
+    return fixedpt_from_double_approx(value, FIXEDPT_ONE);
+}
+
+static inline int
+jbpf_fixedpt_to_int_approx(fixedpt value)
+{
+    return fixedpt_to_int_approx(value, FIXEDPT_ONE);
+}
+
+static fixedpt
+jbpf_fixedpt_from_uint(unsigned int value)
+{
+    return fixedpt_from_uint(value);
+}
+
+static unsigned int
+jbpf_fixedpt_to_uint(fixedpt value)
+{
+    return fixedpt_to_uint(value);
+}
+
+static int
+jbpf_fixedpt_from_double(double value)
+{
+    return fixedpt_from_double(value);
+}
+
+static double
+jbpf_fixedpt_to_double(fixedpt value)
+{
+    return fixedpt_to_double(value);
 }
 
 // Default jbpf helper functions

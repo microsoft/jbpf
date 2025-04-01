@@ -68,6 +68,7 @@ jbpf_verify(const char* objfile, const char* section, const char* asmfile)
     if (std::holds_alternative<string>(prog_or_error)) {
         result.verification_pass = false;
         std::strcpy(result.err_msg, "unmarshaling error\n");
+        std::strcat(result.err_msg, std::get<string>(prog_or_error).c_str());
         return result;
     }
 

@@ -8,6 +8,7 @@
 
 #include "jbpf_defs.h"
 #include "jbpf_helper_api_defs.h"
+#include "jbpf_helper_utils.h"
 
 /**
  * @brief Perform a lookup in map for a value associated kith key
@@ -192,6 +193,60 @@ static int (*jbpf_check_runtime_limit)(void) = (int (*)(void))JBPF_RUNTIME_LIMIT
  * @ingroup helper_function
  */
 static int (*jbpf_rand)(void) = (int (*)(void))JBPF_RAND;
+
+/**
+ * @brief Converts a value to a fixed point representation.
+ * @param value The value to convert.
+ * @return The fixed point representation of the value.
+ * @ingroup jbpf_agent
+ * @ingroup helper_function
+ */
+static fixedpt (*jbpf_fixedpt_from_double_approx)(int) = (fixedpt(*)(int))JBPF_FIXEDPT_FROM_DOUBLE_APPROX;
+
+/**
+ * @brief Converts a fixed point representation to a value.
+ * @param value The fixed point value to convert.
+ * @return The converted value.
+ * @ingroup jbpf_agent
+ * @ingroup helper_function
+ */
+static int (*jbpf_fixedpt_to_int_approx)(fixedpt) = (int (*)(fixedpt))JBPF_FIXEDPT_TO_INT_APPROX;
+
+/**
+ * @brief Converts an unsigned int to a fixed point representation.
+ * @param value The unsigned int value to convert.
+ * @return The fixed point representation of the value.
+ * @ingroup jbpf_agent
+ * @ingroup helper_function
+ */
+static fixedpt (*jbpf_fixedpt_from_uint)(unsigned int) = (fixedpt(*)(unsigned int))JBPF_FIXEDPT_FROM_UINT;
+
+/**
+ * @brief Converts a fixed point representation to an unsigned int.
+ * @param value The fixed point value to convert.
+ * @return The unsigned int representation of the value.
+ * @ingroup jbpf_agent
+ * @ingroup helper_function
+ */
+static unsigned int (*jbpf_fixedpt_to_uint)(fixedpt) = (unsigned int (*)(fixedpt))JBPF_FIXEDPT_TO_UINT;
+
+/**
+ * @brief Converts a double to fixedpt, preserving accuracy.
+ * @param value The double value to convert.
+ * @return The fixed point representation of the value.
+ * @ingroup jbpf_agent
+ * @ingroup helper_function
+ */
+static fixedpt (*jbpf_fixedpt_from_double)(double) = (fixedpt(*)(double))JBPF_FIXEDPT_FROM_DOUBLE;
+
+/**
+ * @brief Converts a fixedpt to double, preserving accuracy.
+ * @param value The fixed point value to convert.
+ * @return The double representation of the value.
+ * @ingroup jbpf_agent
+ * @ingroup helper_function
+ */
+static double (*jbpf_fixedpt_to_double)(fixedpt) = (double (*)(fixedpt))JBPF_FIXEDPT_TO_DOUBLE;
 
 /**
  * Macros to repeat jbpf_map_update_elem several times, if the map is busy.

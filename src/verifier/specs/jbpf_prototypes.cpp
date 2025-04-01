@@ -223,6 +223,60 @@ static const struct EbpfHelperPrototype jbpf_control_input_receive_proto = {
         },
 };
 
+static const struct EbpfHelperPrototype jbpf_fixedpt_from_double_approx_proto = {
+    .name = "fixedpt_from_double_approx",
+    .return_type = EBPF_RETURN_TYPE_INTEGER,
+    .argument_type =
+        {
+            EBPF_ARGUMENT_TYPE_ANYTHING,
+        },
+};
+
+static const struct EbpfHelperPrototype jbpf_fixedpt_to_int_approx_proto = {
+    .name = "fixedpt_to_int_approx",
+    .return_type = EBPF_RETURN_TYPE_INTEGER,
+    .argument_type =
+        {
+            EBPF_ARGUMENT_TYPE_ANYTHING,
+        },
+};
+
+static const struct EbpfHelperPrototype jbpf_fixedpt_from_uint_proto = {
+    .name = "fixedpt_from_uint",
+    .return_type = EBPF_RETURN_TYPE_INTEGER,
+    .argument_type =
+        {
+            EBPF_ARGUMENT_TYPE_ANYTHING,
+        },
+};
+
+static const struct EbpfHelperPrototype jbpf_fixedpt_to_uint_proto = {
+    .name = "fixedpt_to_uint",
+    .return_type = EBPF_RETURN_TYPE_INTEGER,
+    .argument_type =
+        {
+            EBPF_ARGUMENT_TYPE_ANYTHING,
+        },
+};
+
+static const struct EbpfHelperPrototype jbpf_fixedpt_from_double_proto = {
+    .name = "fixedpt_from_double",
+    .return_type = EBPF_RETURN_TYPE_INTEGER,
+    .argument_type =
+        {
+            EBPF_ARGUMENT_TYPE_ANYTHING,
+        },
+};
+
+static const struct EbpfHelperPrototype jbpf_fixedpt_to_double_proto = {
+    .name = "fixedpt_to_double",
+    .return_type = EBPF_RETURN_TYPE_INTEGER,
+    .argument_type =
+        {
+            EBPF_ARGUMENT_TYPE_ANYTHING,
+        },
+};
+
 static const struct EbpfHelperPrototype jbpf_get_output_buf_proto = {
     .name = "get_output_buf",
     .return_type = EBPF_RETURN_TYPE_PTR_TO_MAP_VALUE_OR_NULL,
@@ -263,6 +317,12 @@ std::vector<struct EbpfHelperPrototype> prototypes = {
     FN(control_input_receive),
     FN(get_output_buf),
     FN(send_output),
+    FN(fixedpt_from_double_approx),
+    FN(fixedpt_to_int_approx),
+    FN(fixedpt_from_uint),
+    FN(fixedpt_to_uint),
+    FN(fixedpt_from_double),
+    FN(fixedpt_to_double),
     /* EXTEND WITH THE NEW PROTOTYPES HERE */
 };
 
