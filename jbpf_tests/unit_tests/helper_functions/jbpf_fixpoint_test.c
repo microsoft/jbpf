@@ -50,6 +50,23 @@ test_fixedpt_to_uint(void)
     printf("test_fixedpt_to_uint passed.\n");
 }
 
+void
+test_fixedpt_from_double_approx(void)
+{
+    assert(fixedpt_from_double_approx(1, FIXEDPT_ONE) == (1 * FIXEDPT_ONE));
+    assert(fixedpt_from_double_approx(3, FIXEDPT_ONE) == (3 * FIXEDPT_ONE));
+    assert(fixedpt_from_double_approx(-2, FIXEDPT_ONE) == (-2 * FIXEDPT_ONE));
+    printf("test_fixedpt_from_double_approx passed!\n");
+}
+
+void
+test_fixedpt_to_int_approx(void)
+{
+    assert(fixedpt_to_int_approx(1 * FIXEDPT_ONE, FIXEDPT_ONE) == 1);
+    assert(fixedpt_to_int_approx(3 * FIXEDPT_ONE, FIXEDPT_ONE) == 3);
+    assert(fixedpt_to_int_approx(-2 * FIXEDPT_ONE, FIXEDPT_ONE) == -2);
+    printf("test_fixedpt_to_int_approx passed!\n");
+}
 int
 main(int argc, char* argv[])
 {
@@ -58,6 +75,8 @@ main(int argc, char* argv[])
     test_fixedpt_to_double();
     test_fixedpt_from_uint();
     test_fixedpt_to_uint();
+    test_fixedpt_from_double_approx();
+    test_fixedpt_to_int_approx();
     printf("All tests passed!\n");
     return 0;
 }

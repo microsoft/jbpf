@@ -104,6 +104,10 @@ enum jbpf_prog_type
  * @note JBPF_CONTROL_INPUT_RECEIVE: Receive data from control input
  * @note JBPF_GET_OUTPUT_BUF: Get output buffer pointer
  * @note JBPF_SEND_OUTPUT: Send output
+ * @note JBPF_FIXEDPT_FROM_INT: Convert value to fixedpt
+ * @note JBPF_FIXEDPT_TO_INT Convert fixedpt to value
+ * @note JBPF_FIXEDPT_FROM_UINT: Convert uint to fixedpt
+ * @note JBPF_FIXEDPT_TO_UINT: Convert fixedpt to uint
  * @note JBPF_NUM_HELPERS_MAX: Placeholder for the maximum number of helper functions
  * @ingroup core
  */
@@ -128,6 +132,12 @@ enum jbpf_helper_type
     JBPF_CONTROL_INPUT_RECEIVE,
     JBPF_GET_OUTPUT_BUF,
     JBPF_SEND_OUTPUT,
+    JBPF_FIXEDPT_FROM_DOUBLE_APPROX,
+    JBPF_FIXEDPT_TO_INT_APPROX,
+    JBPF_FIXEDPT_FROM_UINT,
+    JBPF_FIXEDPT_TO_UINT,
+    JBPF_FIXEDPT_FROM_DOUBLE,
+    JBPF_FIXEDPT_TO_DOUBLE,
     JBPF_NUM_HELPERS_MAX, // Use this as the starting value for any additional helper functions
 };
 

@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 /*
-    This codelet tests the jbpf_hash helper function.
-    This codelet serves and example of how to use the jbpf_hash helper function.
+    This codelet tests the jbpf fix point helper functions.
+    This codelet serves as an example of how to use the jbpf fix point helper functions.
 */
 
 #include "jbpf_helper.h"
 #include "jbpf_test_def.h"
-#include "jbpf_fixpoint_utils.h"
 
 SEC("jbpf_generic")
 uint64_t
@@ -19,26 +18,38 @@ jbpf_main(void* state)
         return 1;
     }
 
-    // Test conversion from double to fixedpt and back
-    double value = 3.75;
-    fixedpt result = fixedpt_from_double(value);
-    double converted_back = fixedpt_to_double(result);
-    data->test_passed = (converted_back == value);
+    data->test_passed = 1;
+    int value = 1234;
 
-    // Test conversion from uint to fixedpt and back
-    unsigned int uint_value = 10;
-    fixedpt uint_result = fixedpt_from_uint(uint_value);
-    unsigned int uint_converted_back = fixedpt_to_uint(uint_result);
-    data->test_passed &= (uint_converted_back == uint_value);
+    // Test fixedpt_from_double_approx
+    fixedpt result = jbpf_fixedpt_from_double_approx(value);
+    if (result != (value * FIXEDPT_ONE)) {
+        data->test_passed = 0;
+        return 1;
+    }
 
-    // Test conversion from fixedpt to double
-    fixedpt fixed_value = fixedpt_from_double(5.5);
-    double fixed_result = fixedpt_to_double(fixed_value);
-    data->test_passed &= (fixed_result == 5.5);
+    // Test fixedpt_to_int_approx
+    int converted_back = jbpf_fixedpt_to_int_approx(result);
+    if (converted_back != value) {
+        data->test_passed = 0;
+        return 1;
+    }
 
-    // Test conversion from fixedpt to uint
-    fixedpt fixed_uint_value = fixedpt_from_uint(20);
-    unsigned int fixed_uint_result = fixedpt_to_uint(fixed_uint_value);
-    data->test_passed &= (fixed_uint_result == 20);
+    // Test fixedpt_from_uint and fixedpt_to_uint
+    unsigned int uint_value = 5678;
+    fixedpt uint_result = jbpf_fixedpt_from_uint(uint_value);
+    unsigned int uint_converted_back = jbpf_fixedpt_to_uint(uint_result);
+    if (uint_converted_back != uint_value) {
+        data->test_passed = 0;
+        return 1;
+    }
+
+    // Test fixedpt_from_double and fixedpt_to_double
+    double double_value = 3.75;
+    fixedpt double_result = jbpf_fixedpt_from_double(double_value);
+    double double_converted_back = jbpf_fixedpt_to_double(double_result);
+    // can't directly compare double values in ebpf
+    jbpf_printf_debug("double_converted_back: %0xx\n", double_converted_back);
+
     return 0;
 }
