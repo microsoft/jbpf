@@ -28,8 +28,8 @@ static void* (*jbpf_map_lookup_elem)(const void*, const void*) = (void* (*)(cons
  * @ingroup jbpf_agent
  * @ingroup helper_function
  */
-static void* (*jbpf_map_lookup_reset_elem)(const void*, const void*) = (void* (*)(const void*,
-                                                                                  const void*))JBPF_MAP_LOOKUP_RESET;
+static void* (*jbpf_map_lookup_reset_elem)(const void*, const void*) = (void* (*)(const void*, const void*))
+    JBPF_MAP_LOOKUP_RESET;
 
 /**
  * @brief Adds or updates the value associated with key in map with the value item. The flags argument is currently
