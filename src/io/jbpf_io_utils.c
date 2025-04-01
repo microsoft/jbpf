@@ -150,3 +150,68 @@ _jbpf_io_write_lib(void* data, size_t size, int fd)
 {
     return write(fd, data, size);
 }
+
+ssize_t
+send_all(int sock_fd, const void* buf, size_t len, int flags)
+{
+    size_t total = 0;
+    ssize_t bytes_left = len;
+    ssize_t n;
+    if (len == 0) {
+        return 0;
+    }
+    if (buf == NULL) {
+        jbpf_logger(JBPF_ERROR, "Buffer is NULL\n");
+        return -1;
+    }
+    if (sock_fd < 0) {
+        jbpf_logger(JBPF_ERROR, "Socket fd is invalid\n");
+        return -1;
+    }
+    while (total < len) {
+        n = send(sock_fd, buf + total, bytes_left, flags);
+        if (n == -1) {
+            jbpf_logger(JBPF_ERROR, "Error sending data %s with errono %d\n", strerror(errno), errno);
+            break;
+        }
+        jbpf_logger(JBPF_DEBUG, "Sent %zd bytes\n", n);
+        total += n;
+        bytes_left -= n;
+    }
+
+    return (n == -1) ? -1 : total;
+}
+
+ssize_t
+recv_all(int sock_fd, void* buf, size_t len, int flags)
+{
+    size_t total = 0;
+    ssize_t bytes_left = len;
+    ssize_t n;
+    if (len == 0) {
+        return 0;
+    }
+    if (buf == NULL) {
+        jbpf_logger(JBPF_ERROR, "Buffer is NULL\n");
+        return -1;
+    }
+    if (sock_fd < 0) {
+        jbpf_logger(JBPF_ERROR, "Socket fd is invalid\n");
+        return -1;
+    }
+    while (total < len) {
+        n = recv(sock_fd, buf + total, bytes_left, flags);
+        if (n == -1) {
+            jbpf_logger(JBPF_ERROR, "Error receiving data %s with errono %d\n", strerror(errno), errno);
+            break;
+        }
+        jbpf_logger(JBPF_DEBUG, "Received %zd bytes\n", n);
+        if (n == 0) {
+            // Connection closed
+            break;
+        }
+        total += n;
+        bytes_left -= n;
+    }
+    return bytes_left == 0 ? total : -1;
+}
