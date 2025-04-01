@@ -41,3 +41,9 @@ _jbpf_io_write_lib(void* data, size_t size, int fd);
     })
 
 #endif
+
+ssize_t
+recv_all(int sock_fd, void* buf, size_t len, int flags);
+
+ssize_t
+send_all(int sock_fd, const void* buf, size_t len, int flags);
