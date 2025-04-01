@@ -6,6 +6,8 @@
  * 2. Conversion from uint to fixedpt and back
  * 3. Conversion from fixedpt to double
  * 4. Conversion from fixedpt to uint
+ * 5. Conversion from double to fixedpt (approximation)
+ * 6. Conversion from fixedpt to int (approximation)
  */
 #include "jbpf_helper_utils.h"
 #include "jbpf_fixpoint_utils.h"
@@ -71,12 +73,14 @@ int
 main(int argc, char* argv[])
 {
     // Run all tests
-    test_fixedpt_from_double();
-    test_fixedpt_to_double();
-    test_fixedpt_from_uint();
-    test_fixedpt_to_uint();
-    test_fixedpt_from_double_approx();
-    test_fixedpt_to_int_approx();
-    printf("All tests passed!\n");
+    {
+        test_fixedpt_from_double();
+        test_fixedpt_to_double();
+        test_fixedpt_from_uint();
+        test_fixedpt_to_uint();
+        test_fixedpt_from_double_approx();
+        test_fixedpt_to_int_approx();
+        printf("All tests passed!\n");
+    }
     return 0;
 }

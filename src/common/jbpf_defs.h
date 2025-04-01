@@ -108,6 +108,8 @@ enum jbpf_prog_type
  * @note JBPF_FIXEDPT_TO_INT Convert fixedpt to value
  * @note JBPF_FIXEDPT_FROM_UINT: Convert uint to fixedpt
  * @note JBPF_FIXEDPT_TO_UINT: Convert fixedpt to uint
+ * @note JBPF_FIXEDPT_FROM_DOUBLE: Convert double to fixedpt
+ * @note JBPF_FIXEDPT_TO_DOUBLE: Convert fixedpt to double
  * @note JBPF_NUM_HELPERS_MAX: Placeholder for the maximum number of helper functions
  * @ingroup core
  */
