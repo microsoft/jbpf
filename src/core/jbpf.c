@@ -764,6 +764,7 @@ jbpf_do_map_relocation(
 
         if (!map) {
             jbpf_logger(JBPF_ERROR, "jbpf map '%s' could not be created for codelet %s\n", symbol_name, codelet->name);
+            jbpf_logger(JBPF_INFO, "Check if the map names in the codelet and the definition match.\n");
             codelet->relocation_error = true;
             return 0;
         }
