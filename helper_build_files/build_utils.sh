@@ -13,6 +13,7 @@
 ### env parameter: CLANG_FORMAT_CHECK
 ### env parameter: CPP_CHECK
 ### env parameter: BUILD_TESTING
+### env parameter: INITIALIZE_SUBMODULES
 get_flags() {
     FLAGS=""
     OUTPUT=""
@@ -82,5 +83,12 @@ get_flags() {
         FLAGS="$FLAGS -DBUILD_TESTING=on"
     else
         OUTPUT="$OUTPUT Skipping building tests\n"
+    fi
+    if [[ "$INITIALIZE_SUBMODULES" == "1" || "$INITIALIZE_SUBMODULES" == "" ]]; then
+        OUTPUT="$OUTPUT Initializing submodules\n"
+        FLAGS="$FLAGS -DINITIALIZE_SUBMODULES=on"
+    else
+        OUTPUT="$OUTPUT Skipping initializing submodules\n"
+        FLAGS="$FLAGS -DINITIALIZE_SUBMODULES=off"
     fi
 }
