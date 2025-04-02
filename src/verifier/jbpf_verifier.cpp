@@ -51,6 +51,7 @@ jbpf_verify(const char* objfile, const char* section, const char* asmfile)
     } catch (std::runtime_error& e) {
         result.verification_pass = false;
         std::strcpy(result.err_msg, "Could not open ELF file\n");
+        std::strcat(result.err_msg, e.what());
         return result;
     }
 
