@@ -1,8 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-/*
-    This codelet tests the jbpf fix point helper functions.
-    This codelet serves as an example of how to use the jbpf fix point helper functions.
-*/
+/**
+ * This codelet tests the fixpoint helper function.
+ * It performs various tests on the floating-point to fixed-point conversion functions.
+ * The tests include:
+ * - Basic float-to-fixed and back to float conversion
+ * - Convert negative float to fixed and back to float
+ * - Basic double-to-fixed and back to float conversion
+ * - Convert negative double to fixed and back to float
+ * - Complex math: Add two fixed-point values
+ * - Complex math: Subtract two fixed-point values
+ * When the test is run, it will set the test_passed field to 1 if all tests pass.
+ */
 
 #include "jbpf_helper.h"
 #include "jbpf_test_def.h"
@@ -22,12 +30,12 @@ jbpf_main(void* state)
     data->test_passed = 1;
 
     // Test 1: Basic float-to-fixed and back to float conversion
-    float value = 1.0f;
+    float value = 2.0f;
     int32_t fixed_value = float_to_fixed(value);
     float float_value = fixed_to_float(fixed_value);
 
     // Allow some small error in floating point comparison
-    data->test_passed &= compare_float(float_value, 1.0f, 0.0001f);
+    data->test_passed &= compare_float(float_value, 2.0f, 0.0001f);
 
     // Test 2: Convert negative float to fixed and back to float
     float neg_value = -1.0f;
@@ -62,6 +70,16 @@ jbpf_main(void* state)
     float result_float = fixed_to_float(result_fixed);
     // Expected result: 1.0 + 2.0 = 3.0
     data->test_passed &= compare_float(result_float, 3.0f, 0.0001f);
+
+    // Test 6: Complex math: Subtract two fixed-point values
+    x = 2.0f;
+    y = 1.0f;
+    fixed1 = float_to_fixed(x);
+    fixed2 = float_to_fixed(y);
+    result_fixed = fixed1 - fixed2;
+    result_float = fixed_to_float(result_fixed);
+    // Expected result: 2.0 - 1.0 = 1.0
+    data->test_passed &= compare_float(result_float, 1.0f, 0.0001f);
 
     return 0;
 }
