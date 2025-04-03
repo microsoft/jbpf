@@ -39,8 +39,8 @@ jbpf_main(void* state)
 
     // Test 3: Basic double-to-fixed and back to float conversion
     double value_double = 1.0;
-    int64_t fixed_value_double = float_to_fixed(value_double);
-    double double_value = fixed_to_float(fixed_value_double);
+    int64_t fixed_value_double = double_to_fixed(value_double);
+    double double_value = fixed_to_double(fixed_value_double);
 
     // Allow some small error in floating point comparison
     data->test_passed &= compare_double(double_value, 1.0, 0.0001);
@@ -52,6 +52,16 @@ jbpf_main(void* state)
 
     // Allow some small error in floating point comparison
     data->test_passed &= compare_double(double_value_neg_double, -1.0, 0.0001);
+
+    // Test 5: Complex math: Add two fixed-point values
+    float x = 1.0f;
+    float y = 2.0f;
+    int32_t fixed1 = float_to_fixed(x);
+    int32_t fixed2 = float_to_fixed(y);
+    int32_t result_fixed = fixed1 + fixed2;
+    float result_float = fixed_to_float(result_fixed);
+    // Expected result: 1.0 + 2.0 = 3.0
+    data->test_passed &= compare_float(result_float, 3.0f, 0.0001f);
 
     return 0;
 }

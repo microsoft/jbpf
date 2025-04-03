@@ -20,88 +20,6 @@
 void
 test_float_and_double(void)
 {
-    // Test -3: fixed_to_float
-    {
-        int32_t fixed_value = 98304; // 1.5 in Q16.16 format
-        // print_float(1.0);
-        // print_float(1.5);
-        float float_value = fixed_to_float(fixed_value);
-        assert(compare_float(float_value, 1.5f, 0.0001f));
-        printf("Test -3 passed: fixed_to_float (1.5)\n");
-
-        fixed_value = 65536; // 1.0 in Q16.16 format
-        float_value = fixed_to_float(fixed_value);
-        assert(compare_float(float_value, 1.0f, 0.0001f));
-        printf("Test -3 passed: fixed_to_float (1.0)\n");
-
-        fixed_value = -65536; // -1.0 in Q16.16 format
-        float_value = fixed_to_float(fixed_value);
-        assert(compare_float(float_value, -1.0f, 0.0001f));
-        printf("Test -3 passed: fixed_to_float (-1.0)\n");
-
-        fixed_value = 32768; // 0.5 in Q16.16 format
-        float_value = fixed_to_float(fixed_value);
-        assert(compare_float(float_value, 0.5f, 0.0001f));
-        printf("Test -3 passed: fixed_to_float (0.5)\n");
-
-        fixed_value = -32768; // -0.5 in Q16.16 format
-        float_value = fixed_to_float(fixed_value);
-        assert(compare_float(float_value, -0.5f, 0.0001f));
-        printf("Test -3 passed: fixed_to_float (-0.5)\n");
-
-        fixed_value = 0; // 0.0 in Q16.16 format
-        float_value = fixed_to_float(fixed_value);
-        assert(compare_float(float_value, 0.0f, 0.0001f));
-        printf("Test -3 passed: fixed_to_float (0.0)\n");
-    }
-
-    // Test -2: double_to_fixed
-    {
-        double value = 0.0;
-        int64_t fixed_value = double_to_fixed(value);
-        assert(fixed_value == 0); // 0.0 in Q32.32 format
-        printf("Test -2 passed: double_to_fixed (0.0)\n");
-    }
-
-    // Test -1: float_to_fixed
-    {
-        float value = 1.0;
-        int32_t fixed_value = float_to_fixed(value);
-        assert(fixed_value == 65536); // 1.0 in Q16.16 format
-        printf("Test -1 passed: float_to_fixed (1.0)\n");
-
-        value = -1.0;
-        fixed_value = float_to_fixed(value);
-        assert(fixed_value == -65536); // -1.0 in Q16.16 format
-        printf("Test -1 passed: float_to_fixed (-1.0)\n");
-
-        value = 0.5;
-        fixed_value = float_to_fixed(value);
-        assert(fixed_value == 32768); // 0.5 in Q16.16 format
-
-        printf("Test -1 passed: float_to_fixed (0.5)\n");
-
-        value = -0.5;
-        fixed_value = float_to_fixed(value);
-        assert(fixed_value == -32768); // -0.5 in Q16.16 format
-        printf("Test -1 passed: float_to_fixed (-0.5)\n");
-
-        value = 0.0;
-        fixed_value = float_to_fixed(value);
-        assert(fixed_value == 0); // 0.0 in Q16.16 format
-        printf("Test -1 passed: float_to_fixed (0.0)\n");
-
-        value = 1.5;
-        fixed_value = float_to_fixed(value);
-        assert(fixed_value == 98304); // 1.5 in Q16.16 format
-        printf("Test -1 passed: float_to_fixed (1.5)\n");
-
-        value = -1.5;
-        fixed_value = float_to_fixed(value);
-        assert(fixed_value == -98304); // -1.5 in Q16.16 format
-        printf("Test -1 passed: float_to_fixed (-1.5)\n");
-    }
-
     // Test 0: Zeros for both float
     {
         uint32_t ieee_float = 0x00000000; // 0.0 in IEEE 754 format
@@ -293,6 +211,129 @@ test_float_and_double(void)
         // Allow some small error in floating point comparison
         assert(compare_float(float_value, -1.0f, 0.0001f));
         printf("Test 13 passed: negative float-to-fixed and back to float (-1.0)\n");
+    }
+
+    // Test 14: fixed_to_float
+    {
+        int32_t fixed_value = 98304; // 1.5 in Q16.16 format
+        float float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, 1.5f, 0.0001f));
+        printf("Test 14 passed: fixed_to_float (1.5)\n");
+
+        fixed_value = 65536; // 1.0 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, 1.0f, 0.0001f));
+        printf("Test 14 passed: fixed_to_float (1.0)\n");
+
+        fixed_value = -65536; // -1.0 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, -1.0f, 0.0001f));
+        printf("Test 14 passed: fixed_to_float (-1.0)\n");
+
+        fixed_value = 32768; // 0.5 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, 0.5f, 0.0001f));
+        printf("Test 14 passed: fixed_to_float (0.5)\n");
+
+        fixed_value = -32768; // -0.5 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, -0.5f, 0.0001f));
+        printf("Test 14 passed: fixed_to_float (-0.5)\n");
+
+        fixed_value = 0; // 0.0 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, 0.0f, 0.0001f));
+        printf("Test 14 passed: fixed_to_float (0.0)\n");
+    }
+
+    // Test 15: double_to_fixed
+    {
+        double value = 0.0;
+        int64_t fixed_value = double_to_fixed(value);
+        assert(fixed_value == 0); // 0.0 in Q32.32 format
+        printf("Test 15 passed: double_to_fixed (0.0)\n");
+
+        value = 1.0;
+        fixed_value = double_to_fixed(value);
+        assert(fixed_value == 4294967296); // 1.0 in Q32.32 format
+        printf("Test 15 passed: double_to_fixed (1.0)\n");
+
+        value = -1.0;
+        fixed_value = double_to_fixed(value);
+        assert(fixed_value == -4294967296); // -1.0 in Q32.32 format
+        printf("Test 15 passed: double_to_fixed (-1.0)\n");
+
+        value = 0.5;
+        fixed_value = double_to_fixed(value);
+        assert(fixed_value == 2147483648); // 0.5 in Q32.32 format
+        printf("Test 15 passed: double_to_fixed (0.5)\n");
+
+        value = -0.5;
+        fixed_value = double_to_fixed(value);
+        assert(fixed_value == -2147483648); // -0.5 in Q32.32 format
+        printf("Test 15 passed: double_to_fixed (-0.5)\n");
+    }
+
+    // Test 16: float_to_fixed
+    {
+        float value = 1.0;
+        int32_t fixed_value = float_to_fixed(value);
+        assert(fixed_value == 65536); // 1.0 in Q16.16 format
+        printf("Test 16 passed: float_to_fixed (1.0)\n");
+
+        value = -1.0;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == -65536); // -1.0 in Q16.16 format
+        printf("Test 16 passed: float_to_fixed (-1.0)\n");
+
+        value = 0.5;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == 32768); // 0.5 in Q16.16 format
+
+        printf("Test 16 passed: float_to_fixed (0.5)\n");
+
+        value = -0.5;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == -32768); // -0.5 in Q16.16 format
+        printf("Test 16 passed: float_to_fixed (-0.5)\n");
+
+        value = 0.0;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == 0); // 0.0 in Q16.16 format
+        printf("Test 16 passed: float_to_fixed (0.0)\n");
+
+        value = 1.5;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == 98304); // 1.5 in Q16.16 format
+        printf("Test 16 passed: float_to_fixed (1.5)\n");
+
+        value = -1.5;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == -98304); // -1.5 in Q16.16 format
+        printf("Test 16 passed: float_to_fixed (-1.5)\n");
+    }
+
+    // Test 17: fixed_to_double
+    {
+        int64_t fixed_value = 4294967296; // 1.0 in Q32.32 format
+        double double_value = fixed_to_double(fixed_value);
+        assert(compare_double(double_value, 1.0, 0.0001));
+        printf("Test 17 passed: fixed_to_double (1.0)\n");
+
+        fixed_value = -4294967296; // -1.0 in Q32.32 format
+        double_value = fixed_to_double(fixed_value);
+        assert(compare_double(double_value, -1.0, 0.0001));
+        printf("Test 17 passed: fixed_to_double (-1.0)\n");
+
+        fixed_value = 2147483648; // 0.5 in Q32.32 format
+        double_value = fixed_to_double(fixed_value);
+        assert(compare_double(double_value, 0.5, 0.0001));
+        printf("Test 17 passed: fixed_to_double (0.5)\n");
+
+        fixed_value = -2147483648; // -0.5 in Q32.32 format
+        double_value = fixed_to_double(fixed_value);
+        assert(compare_double(double_value, -0.5, 0.0001));
+        printf("Test 17 passed: fixed_to_double (-0.5)\n");
     }
 }
 
