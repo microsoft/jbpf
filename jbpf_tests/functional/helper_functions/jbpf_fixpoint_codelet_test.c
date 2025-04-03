@@ -76,7 +76,7 @@ main(int argc, char** argv)
         // call the hook to perform the tests in the codelet
         hook_test_single_result(&data, 1);
         // check the result which indicates success (set in the codelet)
-        assert(data.test_passed == 1);
+        assert(data.test_passed == 65536);
     }
 
     // Unload the codeletsets
