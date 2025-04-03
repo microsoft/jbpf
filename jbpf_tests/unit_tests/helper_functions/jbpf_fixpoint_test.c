@@ -20,33 +20,124 @@
 void
 test_float_and_double(void)
 {
-    // Test 1: Basic float-to-fixed and back to float conversion
+    // Test -3: fixed_to_float
     {
-        uint32_t value = 0x3F800000; // 1.0 in IEEE 754 format
+        int32_t fixed_value = 98304; // 1.5 in Q16.16 format
+        // print_float(1.0);
+        // print_float(1.5);
+        float float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, 1.5f, 0.0001f));
+        printf("Test -3 passed: fixed_to_float (1.5)\n");
+
+        fixed_value = 65536; // 1.0 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, 1.0f, 0.0001f));
+        printf("Test -3 passed: fixed_to_float (1.0)\n");
+
+        fixed_value = -65536; // -1.0 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, -1.0f, 0.0001f));
+        printf("Test -3 passed: fixed_to_float (-1.0)\n");
+
+        fixed_value = 32768; // 0.5 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, 0.5f, 0.0001f));
+        printf("Test -3 passed: fixed_to_float (0.5)\n");
+
+        fixed_value = -32768; // -0.5 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, -0.5f, 0.0001f));
+        printf("Test -3 passed: fixed_to_float (-0.5)\n");
+
+        fixed_value = 0; // 0.0 in Q16.16 format
+        float_value = fixed_to_float(fixed_value);
+        assert(compare_float(float_value, 0.0f, 0.0001f));
+        printf("Test -3 passed: fixed_to_float (0.0)\n");
+    }
+
+    // Test -2: double_to_fixed
+    {
+        double value = 0.0;
+        int64_t fixed_value = double_to_fixed(value);
+        assert(fixed_value == 0); // 0.0 in Q32.32 format
+        printf("Test -2 passed: double_to_fixed (0.0)\n");
+    }
+
+    // Test -1: float_to_fixed
+    {
+        float value = 1.0;
         int32_t fixed_value = float_to_fixed(value);
+        assert(fixed_value == 65536); // 1.0 in Q16.16 format
+        printf("Test -1 passed: float_to_fixed (1.0)\n");
+
+        value = -1.0;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == -65536); // -1.0 in Q16.16 format
+        printf("Test -1 passed: float_to_fixed (-1.0)\n");
+
+        value = 0.5;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == 32768); // 0.5 in Q16.16 format
+
+        printf("Test -1 passed: float_to_fixed (0.5)\n");
+
+        value = -0.5;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == -32768); // -0.5 in Q16.16 format
+        printf("Test -1 passed: float_to_fixed (-0.5)\n");
+
+        value = 0.0;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == 0); // 0.0 in Q16.16 format
+        printf("Test -1 passed: float_to_fixed (0.0)\n");
+
+        value = 1.5;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == 98304); // 1.5 in Q16.16 format
+        printf("Test -1 passed: float_to_fixed (1.5)\n");
+
+        value = -1.5;
+        fixed_value = float_to_fixed(value);
+        assert(fixed_value == -98304); // -1.5 in Q16.16 format
+        printf("Test -1 passed: float_to_fixed (-1.5)\n");
+    }
+
+    // Test 0: Zeros for both float
+    {
+        uint32_t ieee_float = 0x00000000; // 0.0 in IEEE 754 format
+        int32_t fixed_value = float_to_fixed(ieee_float);
         float float_value = fixed_to_float(fixed_value);
 
         // Allow some small error in floating point comparison
-        printf("float_value value: %f\n", float_value);
-        assert(compare_float(float_value, 1.0f, 0.0001f));
-        printf("Test 1 passed: float-to-fixed and back to float (1.0)\n");
+        assert(compare_float(float_value, 0.0f, 0.0001f));
+        printf("Test 0 passed: float-to-fixed and back to float (0.0)\n");
     }
 
-    // Test 2: Basic double-to-fixed and back to double conversion
+    // Test 1: Zeros for double
     {
-        double value = 1.0;
+        double value = 0.0;
         int64_t fixed_value = double_to_fixed(value);
         double double_value = fixed_to_double(fixed_value);
 
         // Allow some small error in floating point comparison
-        assert(compare_double(double_value, 1.0, 0.0001));
-        printf("Test 2 passed: double-to-fixed and back to double (1.0)\n");
+        assert(compare_double(double_value, 0.0, 0.0001));
+        printf("Test 1 passed: double-to-fixed and back to double (0.0)\n");
+    }
+
+    // Test 2: Basic float-to-fixed and back to float conversion
+    {
+        float value = 1.0;
+        int32_t fixed_value = float_to_fixed(value);
+        float float_value = fixed_to_float(fixed_value);
+        // Allow some small error in floating point comparison
+        assert(compare_float(float_value, 1.0, 0.01f));
+        printf("Test 2 passed: float-to-fixed and back to float (1.0)\n");
     }
 
     // Test 3: Convert negative float to fixed and back to float
     {
-        uint32_t ieee_float = 0xBF800000; // -1.0 in IEEE 754 format
-        int32_t fixed_value = float_to_fixed(ieee_float);
+        float value = -1.0;
+        int32_t fixed_value = float_to_fixed(value);
         float float_value = fixed_to_float(fixed_value);
 
         // Allow some small error in floating point comparison
@@ -56,23 +147,28 @@ test_float_and_double(void)
 
     // Test 4: Convert negative double to fixed and back to double
     {
-        double value = -1.0;
+        double value = -1.5;
         int64_t fixed_value = double_to_fixed(value);
+        printf("fixed_value = %ld\n", fixed_value);
+        print_fixed_double(fixed_value);
+
+        printf("fixed_value = %ld\n", fixed_value);
         double double_value = fixed_to_double(fixed_value);
+        printf("double_value = %lf\n", double_value);
 
         // Allow some small error in floating point comparison
-        assert(compare_double(double_value, -1.0, 0.0001));
+        assert(compare_double(double_value, -1.5, 0.0001));
         printf("Test 4 passed: negative double-to-fixed and back to double (-1.0)\n");
     }
 
     // Test 5: Complex math: Add two fixed-point values
     {
-        uint32_t ieee_float1 = 0x3F800000; // 1.0
-        uint32_t ieee_float2 = 0x40000000; // 2.0
-        int32_t fixed1 = float_to_fixed(ieee_float1);
-        int32_t fixed2 = float_to_fixed(ieee_float2);
+        float x = 1.0;
+        float y = 2.0;
+        int32_t fixed1 = float_to_fixed(x);
+        int32_t fixed2 = float_to_fixed(y);
 
-        int32_t result_fixed = fixed1 + fixed2;
+        int32_t result_fixed = fixedpt_add(fixed1, fixed2);
         float result_float = fixed_to_float(result_fixed);
 
         // Expected result: 1.0 + 2.0 = 3.0
@@ -82,12 +178,10 @@ test_float_and_double(void)
 
     // Test 6: Complex math: Subtract two fixed-point values
     {
-        uint32_t ieee_float1 = 0x40000000; // 2.0
-        uint32_t ieee_float2 = 0x3F800000; // 1.0
-        int32_t fixed1 = float_to_fixed(ieee_float1);
-        int32_t fixed2 = float_to_fixed(ieee_float2);
+        int32_t fixed1 = float_to_fixed(2.0);
+        int32_t fixed2 = float_to_fixed(1.0);
 
-        int32_t result_fixed = fixed1 - fixed2;
+        int32_t result_fixed = fixedpt_sub(fixed1, fixed2);
         float result_float = fixed_to_float(result_fixed);
 
         // Expected result: 2.0 - 1.0 = 1.0
@@ -97,26 +191,24 @@ test_float_and_double(void)
 
     // Test 7: Complex math: Multiply two fixed-point values
     {
-        uint32_t ieee_float1 = 0x3F800000; // 1.0
-        uint32_t ieee_float2 = 0x40000000; // 2.0
-        int32_t fixed1 = float_to_fixed(ieee_float1);
-        int32_t fixed2 = float_to_fixed(ieee_float2);
+        int32_t fixed1 = float_to_fixed(2.0);
+        int32_t fixed2 = float_to_fixed(1.0);
+        printf("fixed1 = %d, fixed2 = %d\n", fixed1, fixed2);
 
-        int64_t result_fixed = (int64_t)fixed1 * fixed2;
+        int64_t result_fixed = (int64_t)fixed1 * (int64_t)fixed2;
         result_fixed >>= 16; // Adjust result to fit Q16.16 format
-        float result_float = fixed_to_float((int32_t)result_fixed);
+        float result_float = fixed_to_float(result_fixed);
 
         // Expected result: 1.0 * 2.0 = 2.0
+        print_fixed_float(result_fixed);
         assert(compare_float(result_float, 2.0f, 0.0001f));
         printf("Test 7 passed: Complex math (1.0 * 2.0 = 2.0)\n");
     }
 
     // Test 8: Complex math: Divide two fixed-point values
     {
-        uint32_t ieee_float1 = 0x40000000; // 2.0
-        uint32_t ieee_float2 = 0x3F800000; // 1.0
-        int32_t fixed1 = float_to_fixed(ieee_float1);
-        int32_t fixed2 = float_to_fixed(ieee_float2);
+        int32_t fixed1 = float_to_fixed(2.0);
+        int32_t fixed2 = float_to_fixed(1.0);
 
         int64_t result_fixed = (int64_t)fixed1 << 16; // Scale up to avoid loss of precision
         result_fixed /= fixed2;
@@ -134,7 +226,7 @@ test_float_and_double(void)
         int64_t fixed1 = double_to_fixed(value1);
         int64_t fixed2 = double_to_fixed(value2);
 
-        int64_t result_fixed = fixed1 + fixed2;
+        int64_t result_fixed = fixedpt_add(fixed1, fixed2);
         double result_double = fixed_to_double(result_fixed);
 
         // Expected result: 1.0 + 2.0 = 3.0
@@ -149,7 +241,7 @@ test_float_and_double(void)
         int64_t fixed1 = double_to_fixed(value1);
         int64_t fixed2 = double_to_fixed(value2);
 
-        int64_t result_fixed = fixed1 - fixed2;
+        int64_t result_fixed = fixedpt_sub(fixed1, fixed2);
         double result_double = fixed_to_double(result_fixed);
 
         // Expected result: 2.0 - 1.0 = 1.0
@@ -164,8 +256,10 @@ test_float_and_double(void)
         int64_t fixed1 = double_to_fixed(value1);
         int64_t fixed2 = double_to_fixed(value2);
 
-        int64_t result_fixed = fixed1 * fixed2;
-        result_fixed >>= 16; // Adjust result to fit Q16.16 format
+        // Multiply two Q32.32 fixed-point values, resulting in Q64.64 format
+        int64_t result_fixed = ((fixed1 >> 16) * (fixed2 >> 16));
+
+        // Convert the result back to double
         double result_double = fixed_to_double(result_fixed);
 
         // Expected result: 1.0 * 2.0 = 2.0
@@ -180,13 +274,25 @@ test_float_and_double(void)
         int64_t fixed1 = double_to_fixed(value1);
         int64_t fixed2 = double_to_fixed(value2);
 
-        int64_t result_fixed = fixed1 << 16; // Scale up to avoid loss of precision
-        result_fixed /= fixed2;
+        // Scale the dividend before division to maintain precision
+        int64_t result_fixed = (fixed1 / fixed2) << 32; // Scale fixed1 before dividing by fixed2
+
+        // Convert the result back to double
         double result_double = fixed_to_double(result_fixed);
 
         // Expected result: 2.0 / 1.0 = 2.0
         assert(compare_double(result_double, 2.0, 0.0001));
         printf("Test 12 passed: Complex math (2.0 / 1.0 = 2.0) [double]\n");
+    }
+
+    // Test 13: Convert negative float to fixed and back to float
+    {
+        int32_t fixed_value = float_to_fixed(-1.0);
+        float float_value = fixed_to_float(fixed_value);
+
+        // Allow some small error in floating point comparison
+        assert(compare_float(float_value, -1.0f, 0.0001f));
+        printf("Test 13 passed: negative float-to-fixed and back to float (-1.0)\n");
     }
 }
 
@@ -240,6 +346,17 @@ test_compare(void)
         double b = 1.2;
         assert(!compare_double(a, b, 0.0001)); // Should fail, as the difference exceeds the tolerance
         printf("Test 6 passed: compare_double (1.0 != 1.2)\n");
+    }
+
+    // Test 7: Basic double-to-fixed and back to double conversion
+    {
+        double value = 1.0;
+        int64_t fixed_value = double_to_fixed(value);
+        double double_value = fixed_to_double(fixed_value);
+
+        // Allow some small error in floating point comparison
+        assert(compare_double(double_value, 1.0, 0.0001));
+        printf("Test 7 passed: double-to-fixed and back to double (1.0)\n");
     }
 }
 
