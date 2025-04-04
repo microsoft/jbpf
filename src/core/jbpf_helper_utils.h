@@ -74,6 +74,7 @@
 #endif
 
 #include <stdint.h>
+#include <string.h>
 
 #if FIXEDPT_BITS == 32
 typedef int32_t fixedpt;
@@ -101,6 +102,8 @@ typedef __uint128_t fixedptud;
 
 #define FIXEDPT_FBITS (FIXEDPT_BITS - FIXEDPT_WBITS)
 #define FIXEDPT_FMASK (((fixedpt)1 << FIXEDPT_FBITS) - 1)
+// Smallest difference between fixed-point numbers with FIXEDPT_BITS fractional bits
+#define FIXEDPT_EPSILON ((fixedpt)100)
 
 #define fixedpt_rconst(R) ((fixedpt)((R)*FIXEDPT_ONE + ((R) >= 0 ? 0.5 : -0.5)))
 #define fixedpt_fromint(I) ((fixedptd)(I) << FIXEDPT_FBITS)
@@ -111,6 +114,7 @@ typedef __uint128_t fixedptud;
 #define fixedpt_xdiv(A, B) ((fixedpt)(((fixedptd)(A) << FIXEDPT_FBITS) / (fixedptd)(B)))
 #define fixedpt_fracpart(A) ((fixedpt)(A)&FIXEDPT_FMASK)
 
+#define FIXEDPT_ZERO ((fixedpt)0)
 #define FIXEDPT_ONE ((fixedpt)((fixedpt)1 << FIXEDPT_FBITS))
 #define FIXEDPT_ONE_HALF (FIXEDPT_ONE >> 1)
 #define FIXEDPT_TWO (FIXEDPT_ONE + FIXEDPT_ONE)
@@ -458,6 +462,176 @@ fixedpt_pow(fixedpt n, fixedpt exp)
     if (n < 0)
         return 0;
     return (fixedpt_exp(fixedpt_mul(fixedpt_ln(n), exp)));
+}
+
+/**
+ * @brief Converts a fixed-point number to a double-precision floating-point number.
+ * @param fixed The fixed-point number to convert.
+ * @return The double-precision floating-point representation of the fixed-point number.
+ */
+static inline double
+fixed_to_double(fixedpt fixed)
+{
+    // Handle zero case directly
+    if (fixed == FIXEDPT_ZERO) {
+        return 0.0;
+    }
+
+    // Extract the sign of the fixed-point value
+    int sign = (fixed < 0) ? 1 : 0;
+    uint64_t abs_value = sign == 0 ? fixed : -fixed; // Work with absolute value
+
+    int exponent = 1023;
+
+    // Use the entire fixed-point value as the mantissa
+    uint64_t mantissa = (uint64_t)abs_value;
+#if FIXEDPT_FBITS <= 52
+    mantissa <<= (52 - FIXEDPT_FBITS); // Shift left to bring fractional bits into mantissa
+#else
+    mantissa >>= (FIXEDPT_FBITS - 52); // Shift right to fit into mantissa
+#endif
+
+    // Normalize the mantissa and adjust the exponent accordingly
+    while (mantissa >= (1ULL << 53) && (exponent < 2047)) { // Ensure mantissa fits in 53-bit range (1.xxxxx format)
+        mantissa >>= 1;
+        exponent++;
+    }
+
+    while (mantissa < (1ULL << 52) && exponent > 0) { // Ensure mantissa is properly normalized
+        mantissa <<= 1;
+        exponent--;
+    }
+
+    // Remove implicit leading 1 (IEEE 754 does not store it)
+    mantissa &= 0xFFFFFFFFFFFFF;
+
+    // Construct the IEEE 754 double representation
+    uint64_t ieee_double = ((uint64_t)sign << 63) | ((uint64_t)(exponent & 0x7FF) << 52) | mantissa;
+
+    // Convert bit representation to double
+    double result;
+    memcpy(&result, &ieee_double, sizeof(double));
+
+    return result;
+}
+
+/**
+ * @brief Converts a fixed-point number to a floating-point IEEE 754 number (single precision).
+ * @param fixed The fixed-point number to convert.
+ * @return The floating-point representation of the fixed-point number.
+ */
+static inline float
+fixed_to_float(fixedpt fixed)
+{
+    // Handle zero case directly
+    if (fixed == FIXEDPT_ZERO) {
+        return 0.0f;
+    }
+
+    // Extract the sign of the fixed-point value
+    int sign = (fixed < 0) ? 1 : 0;
+    uint32_t abs_value = sign == 0 ? fixed : -fixed; // Work with absolute value
+
+    int exponent = 127;
+    uint32_t mantissa = abs_value;
+
+// Use the entire fixed-point value as the mantissa
+#if FIXEDPT_FBITS <= 23
+    mantissa <<= (23 - FIXEDPT_FBITS); // Shift left to bring fractional bits into mantissa
+#else
+    mantissa >>= (FIXEDPT_FBITS - 23); // Shift right to fit into mantissa
+#endif
+
+    while (mantissa >= (1 << 24) && (exponent < 256)) { // Ensure mantissa fits in 24-bit range (1.xxxxx format)
+        mantissa >>= 1;
+        exponent++;
+    }
+
+    while (mantissa < (1 << 23) && exponent > 0) { // Ensure mantissa is properly normalized
+        mantissa <<= 1;
+        exponent--;
+    }
+
+    // Remove implicit leading 1 (IEEE 754 does not store it)
+    mantissa &= 0x7FFFFF;
+
+    // Construct the IEEE 754 float representation
+    uint32_t ieee_float = (sign << 31) | ((exponent & 0xFF) << 23) | mantissa;
+
+    // Convert bit representation to float
+    float result;
+    memcpy(&result, &ieee_float, sizeof(float));
+
+    return result;
+}
+
+/**
+ * @brief Converts a floating-point IEEE 754 number (single precision) to a fixed-point Q16.16 number.
+ * @param value The floating-point number to convert.
+ * @return The fixed-point representation of the floating-point number.
+ */
+static inline fixedpt
+float_to_fixed(float value)
+{
+    uint32_t ieee_float;
+    memcpy(&ieee_float, &value, sizeof(float));
+
+    // Extract sign, exponent, and mantissa
+    int sign = (ieee_float >> 31) & 1;
+    int exponent = ((ieee_float >> 23) & 0xFF) - 127; // Unbiased exponent
+    uint32_t mantissa = ieee_float & 0x7FFFFF;        // Extract mantissa (23 bits)
+
+    // Handle normalized numbers (add implicit leading 1)
+    if (exponent != -127) {
+        mantissa |= (1 << 23);
+    }
+
+    int32_t fixed_value;
+    int shift = exponent - 23 + FIXEDPT_FBITS;
+
+    if (shift > 0) {
+        fixed_value = (int32_t)(mantissa << shift); // Shift left for large exponent
+    } else {
+        fixed_value = (int32_t)(mantissa >> -shift); // Shift right for small exponent
+    }
+
+    // Apply sign
+    return sign ? -fixed_value : fixed_value;
+}
+
+/**
+ * @brief Converts a double-precision floating-point number to a fixed-point Q32.32 number.
+ * @param value The double-precision floating-point number to convert.
+ * @return The fixed-point representation of the double-precision floating-point number.
+ */
+static inline fixedpt
+double_to_fixed(double value)
+{
+    uint64_t ieee_double;
+    memcpy(&ieee_double, &value, sizeof(double));
+
+    // Extract sign, exponent, and mantissa
+    int sign = (ieee_double >> 63) & 1;
+    int exponent = ((ieee_double >> 52) & 0x7FF) - 1023; // Unbiased exponent (1023 is the bias for double)
+    uint64_t mantissa = ieee_double & 0xFFFFFFFFFFFFF;   // Extract mantissa (52 bits)
+
+    // Handle normalized numbers (add implicit leading 1)
+    if (exponent != -1023) {
+        mantissa |= (1ULL << 52); // Add implicit leading 1 for normalized numbers
+    }
+
+    // Convert to Q32.32 fixed-point format
+    int shift = exponent - 52 + FIXEDPT_FBITS;
+
+    int64_t fixed_value;
+    if (shift > 0) {
+        fixed_value = (int64_t)(mantissa << shift); // Shift left for large exponent
+    } else {
+        fixed_value = (int64_t)(mantissa >> -shift); // Shift right for small exponent
+    }
+
+    // Apply sign to the fixed value
+    return sign ? -fixed_value : fixed_value;
 }
 
 #endif

@@ -2,8 +2,12 @@
 /**
  * This codelet tests the fixpoint helper function.
  * It loads the jbpf_helper_fixpoint codeletset and calls the test_single_result hook.
- * Inside the hook call, a few tests related to the fixpoint functions are performed.
- * The test should pass and the test_passed field should be set to 1.
+ * Inside the hook call, the codelet will call the helper functions:
+ * 1. float_to_fixed
+ * 2. fixed_to_float
+ * 3. double_to_fixed
+ * 4. fixed_to_double
+ * The test should expect the data.test_passed value to be 10.0 e.g. 3.0+7.0 = 10.0
  * The test is repeated 10000 times.
  */
 
@@ -12,6 +16,7 @@
 
 #include "jbpf.h"
 #include "jbpf_agent_common.h"
+#include "jbpf_helper_utils.h"
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
@@ -76,7 +81,7 @@ main(int argc, char** argv)
         // call the hook to perform the tests in the codelet
         hook_test_single_result(&data, 1);
         // check the result which indicates success (set in the codelet)
-        assert(data.test_passed == 65536);
+        assert(data.test_passed == fixedpt_rconst(10.0));
     }
 
     // Unload the codeletsets

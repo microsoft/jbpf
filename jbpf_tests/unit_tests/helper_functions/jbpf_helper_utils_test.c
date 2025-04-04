@@ -1,15 +1,38 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
 /**
- * This contains unit tests for the @jbpf_helper_utils.h functions.
- * It includes tests for fixed-point arithmetic, conversion functions,
- * and trigonometric functions.
+ * This contains unit tests for the jbpf_helper_utils functions.
+ *
+ * The functions tested include:
+ * - float_to_fixed
+ * - fixed_to_float
+ * - double_to_fixed
+ * - fixed_to_double
+ * - fixedpt_add
+ * - fixedpt_sub
+ * - fixedpt_mul
+ * - fixedpt_div
+ * - fixedpt_fracpart
+ * - fixedpt_str
+ * - fixedpt_cstr
+ * - fixedpt_sqrt
+ * - fixedpt_sin
+ * - fixedpt_cos
+ * - fixedpt_tan
+ * - fixedpt_pow
+ * - fixedpt_exp
+ * - fixedpt_ln
+ * - fixedpt_sqrt
+ * - fixedpt_fromint
+ * - fixedpt_toint
+ * - fixedpt_log
+ * - fixedpt_abs
+ *
  */
-#include <assert.h>
 #include <stdio.h>
-#include <string.h>
+#include <stdint.h>
+#include <assert.h>
+#include <math.h>
 #include "jbpf_helper_utils.h"
-
-#define abs(x) ((x) < 0 ? -(x) : (x))
-#define FIXEDPT_EPSILON (1 << 16) // Smallest difference between fixed-point numbers with 16 fractional bits
 
 void
 test_fixedpt_fromint(void)
@@ -111,7 +134,7 @@ test_fixedpt_sin(void)
     fixedpt a = FIXEDPT_PI / 2; // 90 degrees in fixedpt
     fixedpt result = fixedpt_sin(a);
     // assert(result == FIXEDPT_ONE); // sin(90 degrees) = 1
-    assert(abs(result - FIXEDPT_ONE) < FIXEDPT_EPSILON); // Allow small epsilon error
+    assert(fixedpt_abs(result - FIXEDPT_ONE) < FIXEDPT_EPSILON); // Allow small epsilon error
     printf("test_fixedpt_sin passed\n");
 }
 
@@ -121,7 +144,7 @@ test_fixedpt_cos(void)
     fixedpt a = FIXEDPT_PI; // 180 degrees in fixedpt
     fixedpt result = fixedpt_cos(a);
     // assert(result == -FIXEDPT_ONE); // cos(180 degrees) = -1
-    assert(abs(result - -FIXEDPT_ONE) < FIXEDPT_EPSILON); // Allow small epsilon error
+    assert(fixedpt_abs(result - -FIXEDPT_ONE) < FIXEDPT_EPSILON); // Allow small epsilon error
     printf("test_fixedpt_cos passed\n");
 }
 
@@ -152,6 +175,117 @@ test_fixedpt_ln(void)
     printf("test_fixedpt_ln passed\n");
 }
 
+void
+test_fixedpt_log(void)
+{
+    fixedpt a = fixedpt_rconst(8); // log2(8)
+    fixedpt base = fixedpt_rconst(2);
+    fixedpt result = fixedpt_log(a, base);
+    // assert(result == fixedpt_rconst(3)); // log2(8) = 3
+    assert(fixedpt_abs(result - fixedpt_rconst(3)) < FIXEDPT_EPSILON); // Allow small epsilon error
+    printf("test_fixedpt_log passed\n");
+}
+
+void
+test_fixedpt_abs(void)
+{
+    fixedpt a = fixedpt_rconst(-5); // -5 in fixedpt
+    fixedpt result = fixedpt_abs(a);
+    assert(result == fixedpt_rconst(5)); // Absolute value should be 5
+    fixedpt b = fixedpt_rconst(3);       // 3 in fixedpt
+    fixedpt result2 = fixedpt_abs(b);
+    assert(result2 == fixedpt_rconst(3)); // Absolute value should be 3
+    printf("test_fixedpt_abs passed\n");
+}
+
+void
+test_fixedpt_pow(void)
+{
+    fixedpt base = fixedpt_rconst(2); // 2 in fixedpt
+    fixedpt exp = fixedpt_rconst(3);  // 3 in fixedpt
+    fixedpt result = fixedpt_pow(base, exp);
+    // allow small epsilon error
+    assert(fixedpt_abs(result - fixedpt_rconst(8)) < FIXEDPT_EPSILON); // 2^3 = 8
+    // assert(result == fixedpt_rconst(8)); // 2^3 = 8
+    printf("test_fixedpt_pow passed\n");
+}
+
+void
+test_fixed_to_float(void)
+{
+    fixedptd a = fixedpt_rconst(5.25); // 5.25 in fixedpt
+    float result = fixed_to_float(a);
+    assert(fabs(result - 5.25) < 0.0001); // Allow small epsilon error
+    printf("test_fixed_to_float passed\n");
+}
+
+void
+test_fixed_to_double(void)
+{
+    fixedptd a = fixedpt_rconst(5.25); // 5.25 in fixedpt
+    double result = fixed_to_double(a);
+    assert(fabs(result - 5.25) < 0.0001); // Allow small epsilon error
+    printf("test_fixed_to_double passed\n");
+}
+
+void
+test_float_to_fixed(void)
+{
+    float a = 5.25; // 5.25 in float
+    fixedpt result = float_to_fixed(a);
+    assert(result == fixedpt_rconst(5.25)); // Should be equal to fixedpt representation of 5.25
+    printf("test_float_to_fixed passed\n");
+}
+
+void
+test_double_to_fixed(void)
+{
+    double a = 5.25; // 5.25 in double
+    fixedpt result = double_to_fixed(a);
+    assert(result == fixedpt_rconst(5.25)); // Should be equal to fixedpt representation of 5.25
+    printf("test_double_to_fixed passed\n");
+}
+
+void
+test_convert_float_to_fixed_and_back(void)
+{
+    float a = 5.25; // 5.25 in float
+    fixedpt fixed_value = float_to_fixed(a);
+    float result = fixed_to_float(fixed_value);
+    assert(fabs(result - a) < 0.0001); // Allow small epsilon error
+    printf("test_convert_float_to_fixed_and_back passed\n");
+}
+
+void
+test_convert_double_to_fixed_and_back(void)
+{
+    double a = 5.25; // 5.25 in double
+    fixedpt fixed_value = double_to_fixed(a);
+    double result = fixed_to_double(fixed_value);
+    assert(fabs(result - a) < 0.0001); // Allow small epsilon error
+    printf("test_convert_double_to_fixed_and_back passed\n");
+}
+
+void
+test_convert_fixed_to_float_and_back(void)
+{
+    fixedpt a = fixedpt_rconst(5.25); // 5.25 in fixedpt
+    float float_value = fixed_to_float(a);
+    fixedpt result = float_to_fixed(float_value);
+    assert(result == a); // Should be equal to original fixedpt value
+    printf("test_convert_fixed_to_float_and_back passed\n");
+}
+
+void
+test_convert_fixed_to_double_and_back(void)
+{
+    fixedpt a = fixedpt_rconst(5.25); // 5.25 in fixedpt
+    double double_value = fixed_to_double(a);
+    fixedpt result = double_to_fixed(double_value);
+    assert(result == a); // Should be equal to original fixedpt value
+    printf("test_convert_fixed_to_double_and_back passed\n");
+}
+
 int
 main(void)
 {
@@ -170,7 +304,17 @@ main(void)
     test_fixedpt_tan();
     test_fixedpt_exp();
     test_fixedpt_ln();
-
+    test_fixedpt_log();
+    test_fixedpt_abs();
+    test_fixedpt_pow();
+    test_fixed_to_float();
+    test_fixed_to_double();
+    test_float_to_fixed();
+    test_double_to_fixed();
+    test_convert_float_to_fixed_and_back();
+    test_convert_double_to_fixed_and_back();
+    test_convert_fixed_to_float_and_back();
+    test_convert_fixed_to_double_and_back();
     printf("All tests passed\n");
     return 0;
 }
