@@ -21,6 +21,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include <math.h>
 
 jbpf_io_stream_id_t stream_id_c1 = {
     .id = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}};
@@ -83,8 +84,10 @@ main(int argc, char** argv)
         hook_test_single_result(&data, 1);
         // check the result which indicates success (set in the codelet)
         assert(data.test_passed == fixedpt_rconst(10.0));
-        assert(abs(data.test_passed_32 - 12.3) < 0.0001);
-        assert(abs(data.test_passed_64 - 45.6) < 0.0001);
+        // precision loss when converting fixed to float
+        assert(fabs(data.test_passed_32 - 12.3) < 0.001);
+        // precision loss when converting fixed to double
+        assert(fabs(data.test_passed_64 - 45.6) < 0.01);
     }
 
     // Unload the codeletsets

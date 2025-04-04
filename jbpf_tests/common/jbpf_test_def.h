@@ -14,8 +14,8 @@ struct packet
 struct test_packet
 {
     int test_passed;
-    int32_t test_passed_32;
-    int64_t test_passed_64;
+    float test_passed_32;
+    double test_passed_64;
 };
 
 struct packet4
