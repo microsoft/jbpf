@@ -34,5 +34,8 @@ jbpf_main(void* state)
     // 7.0 in fixedpt, so  3.0 + 7.0 = 10.0 which should be passed to the test_passed value
     data->test_passed += double_to_fixed(aa) + double_to_fixed(bb);
 
+    data->test_passed_32 = fixed_to_float(fixedpt_rconst(12.3));
+    data->test_passed_64 = fixed_to_double(fixedpt_rconst(45.6));
+
     return 0;
 }

@@ -26,7 +26,14 @@
  * - fixedpt_toint
  * - fixedpt_log
  * - fixedpt_abs
- *
+ * - fixedpt_fixed_to_float
+ * - fixedpt_fixed_to_double
+ * - fixedpt_float_to_fixed
+ * - fixedpt_double_to_fixed
+ * - fixedpt_convert_float_to_fixed_and_back
+ * - fixedpt_convert_double_to_fixed_and_back
+ * - fixedpt_convert_fixed_to_float_and_back
+ * - fixedpt_convert_fixed_to_double_and_back
  */
 #include <stdio.h>
 #include <stdint.h>

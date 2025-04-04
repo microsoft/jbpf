@@ -8,6 +8,7 @@
  * 3. double_to_fixed
  * 4. fixed_to_double
  * The test should expect the data.test_passed value to be 10.0 e.g. 3.0+7.0 = 10.0
+ * The test should also expect the data.test_passed_32 and data.test_passed_64 values to be 12.3 and 45.6 respectively.
  * The test is repeated 10000 times.
  */
 
@@ -82,6 +83,8 @@ main(int argc, char** argv)
         hook_test_single_result(&data, 1);
         // check the result which indicates success (set in the codelet)
         assert(data.test_passed == fixedpt_rconst(10.0));
+        assert(abs(data.test_passed_32 - 12.3) < 0.0001);
+        assert(abs(data.test_passed_64 - 45.6) < 0.0001);
     }
 
     // Unload the codeletsets
