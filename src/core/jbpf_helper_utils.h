@@ -105,14 +105,14 @@ typedef __uint128_t fixedptud;
 // Smallest difference between fixed-point numbers with FIXEDPT_BITS fractional bits
 #define FIXEDPT_EPSILON ((fixedpt)100)
 
-#define fixedpt_rconst(R) ((fixedpt)((R)*FIXEDPT_ONE + ((R) >= 0 ? 0.5 : -0.5)))
+#define fixedpt_rconst(R) ((fixedpt)((R) * FIXEDPT_ONE + ((R) >= 0 ? 0.5 : -0.5)))
 #define fixedpt_fromint(I) ((fixedptd)(I) << FIXEDPT_FBITS)
 #define fixedpt_toint(F) ((F) >> FIXEDPT_FBITS)
 #define fixedpt_add(A, B) ((A) + (B))
 #define fixedpt_sub(A, B) ((A) - (B))
 #define fixedpt_xmul(A, B) ((fixedpt)(((fixedptd)(A) * (fixedptd)(B)) >> FIXEDPT_FBITS))
 #define fixedpt_xdiv(A, B) ((fixedpt)(((fixedptd)(A) << FIXEDPT_FBITS) / (fixedptd)(B)))
-#define fixedpt_fracpart(A) ((fixedpt)(A)&FIXEDPT_FMASK)
+#define fixedpt_fracpart(A) ((fixedpt)(A) & FIXEDPT_FMASK)
 
 #define FIXEDPT_ZERO ((fixedpt)0)
 #define FIXEDPT_ONE ((fixedpt)((fixedpt)1 << FIXEDPT_FBITS))
@@ -469,7 +469,7 @@ fixedpt_pow(fixedpt n, fixedpt exp)
  * @param fixed The fixed-point number to convert.
  * @return The double-precision floating-point representation of the fixed-point number.
  */
-static inline double
+static __always_inline double
 fixed_to_double(fixedpt fixed)
 {
     // Handle zero case directly
@@ -520,7 +520,7 @@ fixed_to_double(fixedpt fixed)
  * @param fixed The fixed-point number to convert.
  * @return The floating-point representation of the fixed-point number.
  */
-static inline float
+static __always_inline float
 fixed_to_float(fixedpt fixed)
 {
     // Handle zero case directly
@@ -570,7 +570,7 @@ fixed_to_float(fixedpt fixed)
  * @param value The floating-point number to convert.
  * @return The fixed-point representation of the floating-point number.
  */
-static inline fixedpt
+static __always_inline fixedpt
 float_to_fixed(float value)
 {
     uint32_t ieee_float;
@@ -604,7 +604,7 @@ float_to_fixed(float value)
  * @param value The double-precision floating-point number to convert.
  * @return The fixed-point representation of the double-precision floating-point number.
  */
-static inline fixedpt
+static __always_inline fixedpt
 double_to_fixed(double value)
 {
     uint64_t ieee_double;

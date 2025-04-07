@@ -26,14 +26,6 @@
  * - fixedpt_toint
  * - fixedpt_log
  * - fixedpt_abs
- * - fixedpt_fixed_to_float
- * - fixedpt_fixed_to_double
- * - fixedpt_float_to_fixed
- * - fixedpt_double_to_fixed
- * - fixedpt_convert_float_to_fixed_and_back
- * - fixedpt_convert_double_to_fixed_and_back
- * - fixedpt_convert_fixed_to_float_and_back
- * - fixedpt_convert_fixed_to_double_and_back
  */
 #include <stdio.h>
 #include <stdint.h>
@@ -293,6 +285,38 @@ test_convert_fixed_to_double_and_back(void)
     printf("test_convert_fixed_to_double_and_back passed\n");
 }
 
+void
+test_convert_float_to_fixed_and_do_some_math_and_then_convert_back(void)
+{
+    float a = 1.25; // 5.25 in float
+    fixedpt fixed_value = float_to_fixed(a);
+    fixedpt result = fixedpt_add(fixed_value, fixedpt_rconst(2)); // Add 2 in fixedpt
+    result = fixedpt_sub(result, fixedpt_rconst(1));              // Subtract 1 in fixedpt
+    result = fixedpt_mul(result, fixedpt_rconst(2));              // Multiply by 2 in fixedpt
+    result = fixedpt_div(result, fixedpt_rconst(0.5));            // Divide by 2 in fixedpt
+    // Convert back to float
+    // (1.25 + 2 - 1) * 2 / 0.5 = 9
+    float final_result = fixed_to_float(result);
+    assert(fabs(final_result - 9) < 0.0001); // Should be equal to original float value
+    printf("test_convert_float_to_fixed_and_do_some_math_and_then_convert_back passed\n");
+}
+
+void
+test_convert_double_to_fixed_and_do_some_math_and_then_convert_back(void)
+{
+    double a = 1.25; // 5.25 in double
+    fixedpt fixed_value = double_to_fixed(a);
+    fixedpt result = fixedpt_add(fixed_value, fixedpt_rconst(2)); // Add 2 in fixedpt
+    result = fixedpt_sub(result, fixedpt_rconst(1));              // Subtract 1 in fixedpt
+    result = fixedpt_mul(result, fixedpt_rconst(2));              // Multiply by 2 in fixedpt
+    result = fixedpt_div(result, fixedpt_rconst(0.5));            // Divide by 2 in fixedpt
+    // Convert back to double
+    // (1.25 + 2 - 1) * 2 / 0.5 = 9
+    double final_result = fixed_to_double(result);
+    assert(fabs(final_result - 9) < 0.0001); // Should be equal to original double value
+    printf("test_convert_double_to_fixed_and_do_some_math_and_then_convert_back passed\n");
+}
+
 int
 main(void)
 {
@@ -322,6 +346,8 @@ main(void)
     test_convert_double_to_fixed_and_back();
     test_convert_fixed_to_float_and_back();
     test_convert_fixed_to_double_and_back();
+    test_convert_float_to_fixed_and_do_some_math_and_then_convert_back();
+    test_convert_double_to_fixed_and_do_some_math_and_then_convert_back();
     printf("All tests passed\n");
     return 0;
 }
