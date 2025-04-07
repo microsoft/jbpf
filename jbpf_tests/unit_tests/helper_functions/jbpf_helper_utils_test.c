@@ -288,32 +288,34 @@ test_convert_fixed_to_double_and_back(void)
 void
 test_convert_float_to_fixed_and_do_some_math_and_then_convert_back(void)
 {
-    float a = 1.25; // 5.25 in float
+    float a = 2.25f;
     fixedpt fixed_value = float_to_fixed(a);
     fixedpt result = fixedpt_add(fixed_value, fixedpt_rconst(2)); // Add 2 in fixedpt
     result = fixedpt_sub(result, fixedpt_rconst(1));              // Subtract 1 in fixedpt
     result = fixedpt_mul(result, fixedpt_rconst(2));              // Multiply by 2 in fixedpt
-    result = fixedpt_div(result, fixedpt_rconst(0.5));            // Divide by 2 in fixedpt
+    result = fixedpt_div(result, fixedpt_rconst(0.6));            // Divide by 2 in fixedpt
     // Convert back to float
-    // (1.25 + 2 - 1) * 2 / 0.5 = 9
+    // (2.25 + 2 - 1) * 2 / 0.6 = 10.83333
     float final_result = fixed_to_float(result);
-    assert(fabs(final_result - 9) < 0.0001); // Should be equal to original float value
+    // precision loss is allowed
+    assert(fabs(final_result - 10.8333) < 0.1);
     printf("test_convert_float_to_fixed_and_do_some_math_and_then_convert_back passed\n");
 }
 
 void
 test_convert_double_to_fixed_and_do_some_math_and_then_convert_back(void)
 {
-    double a = 1.25; // 5.25 in double
+    double a = 1.345;
     fixedpt fixed_value = double_to_fixed(a);
     fixedpt result = fixedpt_add(fixed_value, fixedpt_rconst(2)); // Add 2 in fixedpt
     result = fixedpt_sub(result, fixedpt_rconst(1));              // Subtract 1 in fixedpt
     result = fixedpt_mul(result, fixedpt_rconst(2));              // Multiply by 2 in fixedpt
-    result = fixedpt_div(result, fixedpt_rconst(0.5));            // Divide by 2 in fixedpt
+    result = fixedpt_div(result, fixedpt_rconst(1.5));            // Divide by 2 in fixedpt
     // Convert back to double
-    // (1.25 + 2 - 1) * 2 / 0.5 = 9
+    // (1.345 + 2 - 1) * 2 / 1.5 = 3.1266666
     double final_result = fixed_to_double(result);
-    assert(fabs(final_result - 9) < 0.0001); // Should be equal to original double value
+    // precision loss is allowed
+    assert(fabs(final_result - 3.126) < 0.001);
     printf("test_convert_double_to_fixed_and_do_some_math_and_then_convert_back passed\n");
 }
 
