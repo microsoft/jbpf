@@ -8,6 +8,7 @@
 
 #include "jbpf_defs.h"
 #include "jbpf_helper_api_defs.h"
+#include "jbpf_helper_utils.h"
 
 /**
  * @brief Perform a lookup in map for a value associated kith key

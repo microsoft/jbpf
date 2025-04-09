@@ -13,7 +13,22 @@ struct packet
 
 struct test_packet
 {
-    int test_passed;
+    int32_t test_passed;
+    // extra fields for testing fixedpt
+    float test_float_1;
+    float test_float_2;
+    float test_float_3;
+    float test_float_4;
+    float test_float_5;
+    float test_float_6;
+    double test_double_1;
+    double test_double_2;
+    double test_double_3;
+    double test_double_4;
+    double test_double_5;
+    double test_double_6;
+    int32_t test_int_1;
+    int64_t test_int64_1;
 };
 
 struct packet4
