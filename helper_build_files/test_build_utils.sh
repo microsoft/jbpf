@@ -240,4 +240,20 @@ if ! test_flags "-DBUILD_TESTING=on" "When BUILD_TESTING is unset flags should c
     exit 1
 fi
 
+### env parameter: INITIALIZE_SUBMODULES
+INITIALIZE_SUBMODULES=1
+if ! test_flags "-DINITIALIZE_SUBMODULES=on" "When INITIALIZE_SUBMODULES=1 flags should contain -DINITIALIZE_SUBMODULES=on"; then
+    exit 1
+fi
+
+INITIALIZE_SUBMODULES=0 
+if ! test_flags "-DINITIALIZE_SUBMODULES=off" "When INITIALIZE_SUBMODULES=0 flags should contain -DINITIALIZE_SUBMODULES=off"; then
+    exit 1
+fi
+
+INITIALIZE_SUBMODULES=
+if ! test_flags "-DINITIALIZE_SUBMODULES=on" "When INITIALIZE_SUBMODULES is unset flags should contain -DINITIALIZE_SUBMODULES=on"; then
+    exit 1
+fi
+
 echo ---------------- All Passed ----------------
