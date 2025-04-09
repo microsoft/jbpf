@@ -7,8 +7,12 @@
  * 2. fixed_to_float
  * 3. double_to_fixed
  * 4. fixed_to_double
- * The test should expect the data.test_passed value to be 10.0 e.g. 3.0+7.0 = 10.0
- * The test should also expect the data.test_passed_32 and data.test_passed_64 values to be 12.3 and 45.6 respectively.
+ * 5. fixedpt_add
+ * 6. fixedpt_sub
+ * 7. fixedpt_mul
+ * 8. fixedpt_div
+ * 9. fixedpt_rconst
+ * The values are verified here.
  * The test is repeated 10000 times.
  */
 
@@ -82,12 +86,46 @@ main(int argc, char** argv)
     for (int iter = 0; iter < MAX_ITERATION; ++iter) {
         // call the hook to perform the tests in the codelet
         hook_test_single_result(&data, 1);
-        // check the result which indicates success (set in the codelet)
-        assert(data.test_passed == fixedpt_rconst(10.0));
-        // precision loss when converting fixed to float
-        assert(fabs(data.test_passed_32 - 12.3) < 0.001);
-        // precision loss when converting fixed to double
-        assert(fabs(data.test_passed_64 - 45.6) < 0.01);
+        // verify the correctness of the results
+        // the values are computed in the codelet
+        // Test case 1: convert two floats to fixedpt and add them, then convert back to float
+        // 1.23 + 2.34 = 3.57
+        assert(fabs(data.test_float_1 - 3.57) < 0.01);
+        // Test case 2: convert two doubles to fixedpt and add them, then convert back to double
+        // 3.45 + 4.56 = 8.01
+        assert(fabs(data.test_double_1 - 8.01) < 0.01);
+        // Test case 3: test fixed_to_float
+        assert(fabs(data.test_float_2 - 3.14) < 0.01);
+        // Test case 4: test fixed_to_double
+        assert(fabs(data.test_double_2 - 2.71) < 0.01);
+        // Test case 5: test float_to_fixed
+        assert(data.test_int_1 == fixedpt_rconst(1.2));
+        // Test case 6: test double_to_fixed
+        assert(data.test_int64_1 == fixedpt_rconst(2.345));
+        // Test case 7: test fixedpt_sub
+        // 5.1 - 2.9 = 2.2
+        assert(fabs(data.test_float_3 - 2.2) < 0.01);
+        // Test case 8: test fixedpt_mul
+        // 2.5 * 1.3 = 3.25
+        assert(fabs(data.test_float_4 - 3.25) < 0.01);
+        // Test case 9: test fixedpt_div
+        // 7.5 / 2.5 = 3.0
+        assert(fabs(data.test_float_5 - 3.0) < 0.01);
+        // Test case 10: test fixedpt_sub for double
+        // 5.1 - 2.9 = 2.2
+        assert(fabs(data.test_double_3 - 2.2) < 0.01);
+        // Test case 11: test fixedpt_mul for double
+        // 2.5 * 1.3 = 3.25
+        assert(fabs(data.test_double_4 - 3.25) < 0.01);
+        // Test case 12: test fixedpt_div for double
+        // 7.5 / 2.5 = 3.0
+        assert(fabs(data.test_double_5 - 3.0) < 0.01);
+        // Test case 13: mixed operations for float
+        // (1.23 + 2.34 * 3.45) / 4.56 = 2.04
+        assert(fabs(data.test_float_6 - 2.04) < 0.01);
+        // Test case 14: mixed operations for double
+        // (1.23 + 2.34 * 3.45) / 4.56 = 2.04
+        assert(fabs(data.test_double_6 - 2.04) < 0.01);
     }
 
     // Unload the codeletsets
