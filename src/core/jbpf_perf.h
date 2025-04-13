@@ -34,7 +34,7 @@ jbpf_free_perf_hook(struct jbpf_hook* hook);
 static inline uint64_t
 jbpf_measure_start_time(void)
 {
-#if defined(JBPF_PERF_OPT) && defined(__x86_64__)
+#ifdef JBPF_PERF_OPT
     return jbpf_start_time();
 #else
     struct timespec ts;
@@ -46,7 +46,7 @@ jbpf_measure_start_time(void)
 static inline uint64_t
 jbpf_measure_stop_time(void)
 {
-#if defined(JBPF_PERF_OPT) && defined(__x86_64__)
+#ifdef JBPF_PERF_OPT
     return jbpf_end_time();
 #else
     struct timespec ts;
@@ -58,35 +58,24 @@ jbpf_measure_stop_time(void)
 __attribute__((always_inline)) static uint64_t inline jbpf_get_time_diff_ns(uint64_t start_time, uint64_t end_time)
 {
 
-    uint64_t et;
+    if (start_time == end_time)
+        return 0;
+
+    uint64_t elapsed_time_calc =
+        (end_time >= start_time) ? (end_time - start_time) : (0xFFFFFFFFFFFFFFFF - start_time + end_time + 1);
 
 #ifdef JBPF_PERF_OPT
-    double elapsed_time;
-    uint64_t elapsed_time_ticks;
-    if (start_time == end_time) {
-        return 0;
-    } else if (start_time < end_time) {
-        elapsed_time_ticks = end_time - start_time;
-    } else { /* Wrap around of time */
-        elapsed_time_ticks = 0xFFFFFFFFFFFFFFFF - start_time + end_time;
-    }
+#if defined(__x86_64__)
+    double elapsed_time = (double)elapsed_time_calc / g_jbpf_ticks_per_ns;
+    return (uint64_t)elapsed_time;
 
-    elapsed_time = (double)elapsed_time_ticks / g_jbpf_ticks_per_ns;
-    et = (uint64_t)elapsed_time;
-
-#else
-
-    if (start_time == end_time) {
-        return 0;
-    } else if (start_time < end_time) {
-        et = (end_time - start_time);
-    } else { /* Wrap around of time */
-        et = 0xFFFFFFFFFFFFFFFF - start_time + end_time;
-    }
-
+#elif defined(__aarch64__)
+    uint64_t freq;
+    asm volatile("mrs %0, cntfrq_el0" : "=r"(freq));
+    return (elapsed_time_calc * 1000000000ULL) / freq;
 #endif
 
-    return et;
+    return elapsed_time_calc;
 }
 
 static inline void

@@ -26,9 +26,9 @@ _jbpf_calibrate_ticks()
     uint64_t begin = 0, end = 0;
     jbpf_logger(JBPF_INFO, "Calibrating clock ticks\n");
     clock_gettime(CLOCK_MONOTONIC_RAW, &start_ts);
-    begin = jbpf_measure_start_time();
+    begin = jbpf_start_time();
     nanosleep(&sleep_period, NULL);
-    end = jbpf_measure_stop_time();
+    end = jbpf_end_time();
     clock_gettime(CLOCK_MONOTONIC_RAW, &end_ts);
     ns_runtime = _jbpf_difftimespec_ns(&end_ts, &start_ts);
 
