@@ -74,6 +74,7 @@ __attribute__((always_inline)) static uint64_t inline jbpf_get_time_diff_ns(uint
     asm volatile("mrs %0, cntfrq_el0" : "=r"(freq));
     return (elapsed_time_calc * 1000000000ULL) / freq;
 #endif
+#endif
 
     return elapsed_time_calc;
 }

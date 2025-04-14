@@ -96,7 +96,7 @@ static __inline uint64_t __attribute__((__gnu_inline__, __always_inline__, __art
 #elif defined(__aarch64__)
     asm volatile("mrs %0, cntvct_el0" : "=r"(x));
 #else
-#pragma message "Non x86_64 or aarch64 architecture. Will measure time using clock_gettime()
+#pragma message "Non x86_64 or aarch64 architecture. Will measure time using clock_gettime()"
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     x = (uint64_t)ts.tv_sec * (uint64_t)1000000000 + (uint64_t)ts.tv_nsec;
@@ -121,7 +121,7 @@ static __inline uint64_t __attribute__((__gnu_inline__, __always_inline__, __art
 #elif defined(__aarch64__)
     asm volatile("mrs %0, cntvct_el0" : "=r"(x));
 #else
-#pragma message "Non x86_64 or aarch64 architecture. Will measure time using clock_gettime()
+#pragma message "Non x86_64 or aarch64 architecture. Will measure time using clock_gettime()"
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     x = (uint64_t)ts.tv_sec * (uint64_t)1000000000 + (uint64_t)ts.tv_nsec;
