@@ -31,12 +31,14 @@ jbpf_lcm_ipc_send_req(jbpf_lcm_ipc_address_t* address, jbpf_lcm_ipc_req_msg_s* m
     int res = JBPF_LCM_IPC_REQ_FAIL;
 
     if (!address || !msg) {
+        jbpf_logger(JBPF_ERROR, "Invalid address or message\n");
         return JBPF_LCM_IPC_REQ_FAIL;
     }
 
     sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (sockfd == -1) {
+        jbpf_logger(JBPF_ERROR, "Error creating socket: %s\n", strerror(errno));
         goto out;
     }
 
@@ -50,10 +52,12 @@ jbpf_lcm_ipc_send_req(jbpf_lcm_ipc_address_t* address, jbpf_lcm_ipc_req_msg_s* m
     }
 
     if (send_all(sockfd, msg, sizeof(jbpf_lcm_ipc_req_msg_s), 0) != sizeof(jbpf_lcm_ipc_req_msg_s)) {
+        jbpf_logger(JBPF_ERROR, "Error sending message to %s: %s\n", server_addr.sun_path, strerror(errno));
         goto out;
     }
 
     if (recv_all(sockfd, &resp, sizeof(jbpf_lcm_ipc_resp_msg_s), MSG_WAITALL) != sizeof(jbpf_lcm_ipc_resp_msg_s)) {
+        jbpf_logger(JBPF_ERROR, "Error receiving response from %s: %s\n", server_addr.sun_path, strerror(errno));
         goto out;
     }
 
@@ -70,12 +74,14 @@ jbpf_lcm_ipc_server_init(jbpf_lcm_ipc_server_config_t* config)
     struct jbpf_lcm_ipc_server_ctx* server;
 
     if (!config) {
+        jbpf_logger(JBPF_ERROR, "Invalid server configuration\n");
         return NULL;
     }
 
     server = calloc(1, sizeof(struct jbpf_lcm_ipc_server_ctx));
 
     if (!server) {
+        jbpf_logger(JBPF_ERROR, "Failed to allocate memory for server context\n");
         return NULL;
     }
 
@@ -216,6 +222,7 @@ jbpf_lcm_ipc_send_codeletset_load_req(jbpf_lcm_ipc_address_t* address, jbpf_code
     jbpf_lcm_ipc_req_msg_s msg = {0};
 
     if (!address || !load_req) {
+        jbpf_logger(JBPF_ERROR, "Invalid address or load request\n");
         return -1;
     }
 
@@ -232,6 +239,7 @@ jbpf_lcm_ipc_send_codeletset_unload_req(jbpf_lcm_ipc_address_t* address, jbpf_co
     jbpf_lcm_ipc_req_msg_s msg = {0};
 
     if (!address || !unload_req) {
+        jbpf_logger(JBPF_ERROR, "Invalid address or unload request\n");
         return -1;
     }
 

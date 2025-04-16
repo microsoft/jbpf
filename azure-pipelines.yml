@@ -3,11 +3,12 @@ trigger:
     include:
       - main
       - gh-readonly-queue/main/*
+      - dev
 
 pr:
   branches:
     include:
-      - '*'
+      - main
 
 pool:
   name: agent-pool-onprem-ubuntu
