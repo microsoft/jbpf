@@ -2,13 +2,13 @@ trigger:
   branches:
     include:
       - main
-      - stable
       - gh-readonly-queue/main/*
+      - dev
 
 pr:
   branches:
     include:
-      - '*'
+      - main
 
 pool:
   name: agent-pool-onprem-ubuntu
