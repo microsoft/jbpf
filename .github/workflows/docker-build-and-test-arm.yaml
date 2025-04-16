@@ -1,12 +1,14 @@
-name: Docker Build and Test
+name: JBPF Docker Build and Tests (ARM)
 
 on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
+      - dev
 
 env:
   ACR: jbpfpipeline

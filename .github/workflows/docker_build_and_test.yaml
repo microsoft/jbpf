@@ -1,4 +1,4 @@
-name: Docker Build and Test
+name: JBPF Docker Build and Tests
 
 on:
   push:
