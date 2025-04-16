@@ -1,4 +1,4 @@
-name: JBPF Docker Build and Tests (ARM)
+name: JBPF Docker Build and Tests (ARM & AMD)
 
 on:
   push:
@@ -11,7 +11,6 @@ on:
       - dev
 
 env:
-  ACR: jbpfpipeline
   IMAGE_TAG: ${{ github.run_id }}-${{ github.sha }}
 
 jobs:
@@ -21,12 +20,13 @@ jobs:
       matrix:
         dockerType: [ "mariner", "ubuntu22.04", "ubuntu24.04" ]
         testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
+        arch: [ "amd64", "arm64" ]
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: true  # Ensure submodules are initialized
+          submodules: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -35,7 +35,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Set Build Parameters
-        id: set_params
         run: |
           case "${{ matrix.testCase }}" in
             test0) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
@@ -52,22 +51,22 @@ jobs:
         run: |
           echo "Docker Type: ${{ matrix.dockerType }}"
           echo "Test Case: ${{ matrix.testCase }}"
+          echo "Arch: ${{ matrix.arch }}"
           echo "Static Build Param: ${{ env.staticBuildParam }}"
           echo "Sanitizer Build Param: ${{ env.sanitizerBuildParam }}"
 
       - name: Disable Git SSL Verification (Temporary)
-        run: |
-          git config --global http.sslVerify false
+        run: git config --global http.sslVerify false
 
-      - name: Build Multi-Arch Docker Image
+      - name: Build Docker Image for ${{ matrix.arch }}
         run: |
           docker buildx create --use
           docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
+            --platform linux/${{ matrix.arch }} \
+            --load \
+            -t jbpf_lib:${{ matrix.dockerType }}-${{ matrix.arch }}-${{ env.IMAGE_TAG }} \
             -f deploy/${{ matrix.dockerType }}.Dockerfile \
-            --load .
-          docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
+            .
 
       - name: Run Container to Build JBPF
         run: |
@@ -78,7 +77,8 @@ jobs:
             -v "$(pwd)"/3p:/jbpf/3p \
             -v "$(pwd)":/jbpf_out_lib \
             -e INITIALIZE_SUBMODULES=0 \
-            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            jbpf_lib:${{ matrix.dockerType }}-${{ matrix.arch }}-${{ env.IMAGE_TAG }}
 
       - name: Run Tests
         run: |
@@ -91,7 +91,8 @@ jobs:
             -e JBPF_PATH=/jbpf \
             -e INITIALIZE_SUBMODULES=0 \
             ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
-            -e RUN_TESTS=1 jbpf_lib
+            -e RUN_TESTS=1 \
+            jbpf_lib:${{ matrix.dockerType }}-${{ matrix.arch }}-${{ env.IMAGE_TAG }}
 
           TEST_OUTCOME=$?
           mkdir -p ${{ github.workspace }}/artifacts
