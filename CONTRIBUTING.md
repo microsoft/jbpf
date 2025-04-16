@@ -17,6 +17,9 @@ or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any addi
 
 We welcome contributions from everyone. The following guidelines will help you understand our expectations and streamline the review process.
 
+## Branch
+All PRs should be made against the `dev` branch. Please ensure your branch is up to date with the latest changes before submitting a pull request. And the `main` branch is used for release. Consider `main` as the stable branch and `dev` as the development branch.
+
 ## Code Style
 
 We follow the LLVM coding style for all C/C++ code. Please ensure your code conforms to this style. To automate this process, we use `clang-format`:
