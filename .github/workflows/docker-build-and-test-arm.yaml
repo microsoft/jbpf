@@ -20,7 +20,7 @@ jobs:
       matrix:
         dockerType: [ "mariner", "ubuntu22.04", "ubuntu24.04" ]
         testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
-        arch: [ "amd64", "arm64" ]
+        arch: [ "arm64" ]
 
     steps:
       - name: Checkout Repository
