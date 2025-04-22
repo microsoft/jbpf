@@ -98,7 +98,11 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    int res = jbpf_init(&config);
+    assert(res == 0);
+#ifdef NDEBUG
+    (void)res; // suppress unused-variable warning in release mode
+#endif
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -152,7 +156,8 @@ main(int argc, char** argv)
     strcpy(cod_desc->hook_name, "ctrl_test0");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(codset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    res = jbpf_codeletset_load(codset_req, NULL);
+    assert(res == JBPF_CODELET_LOAD_SUCCESS);
 
     // Send NUM_IN_MESSAGES messages to the input channel
     for (int i = 0; i < NUM_IN_MESSAGES; i++) {
@@ -161,7 +166,8 @@ main(int argc, char** argv)
 
         JBPF_UNUSED(control_input);
 
-        assert(jbpf_send_input_msg(&in_stream_id, &control_input, sizeof(control_input)) == 0);
+        res = jbpf_send_input_msg(&in_stream_id, &control_input, sizeof(control_input));
+        assert(res == 0);
     }
 
     // Call the hooks NUM_ITERATIONS times and check that we got the expected data
@@ -193,7 +199,8 @@ main(int argc, char** argv)
     jbpf_codeletset_unload_req_s codeletset_unload_req;
     jbpf_codeletset_unload_req_s* codset_unload_req = &codeletset_unload_req;
     codset_unload_req->codeletset_id = codset_req->codeletset_id;
-    assert(jbpf_codeletset_unload(codset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    res = jbpf_codeletset_unload(codset_unload_req, NULL);
+    assert(res == JBPF_CODELET_UNLOAD_SUCCESS);
 
     // Stop
     jbpf_stop();

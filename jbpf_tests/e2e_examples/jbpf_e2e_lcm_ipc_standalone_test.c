@@ -86,7 +86,11 @@ run_jbpf_agent(void)
     jbpf_set_default_config_options(&config);
     sem_init(&sem, 0, 0);
 
-    assert(jbpf_init(&config) == 0);
+    int res = jbpf_init(&config);
+    assert(res == 0);
+#ifdef NDEBUG
+    (void)res; // suppress unused-variable warning in release mode
+#endif
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();

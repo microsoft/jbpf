@@ -37,7 +37,11 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    int res = jbpf_init(&config);
+    assert(res == 0);
+#ifdef NDEBUG
+    (void)res; // suppress unused-variable warning in release mode
+#endif
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -86,7 +90,9 @@ main(int argc, char** argv)
     // Load the codeletset
     // Note that the laod will fail because the Serde is not known, but it is checking that the message shows that the
     // file does not exist, as opposed to being too long
-    assert(jbpf_codeletset_load(&codeletset_req_c1, &err_msg) == JBPF_CODELET_PARAM_INVALID);
+    res = jbpf_codeletset_load(&codeletset_req_c1, &err_msg);
+    assert(res == JBPF_CODELET_PARAM_INVALID);
+
     assert(strlen(err_msg.err_msg) > 0);
     assert(
         strncmp(

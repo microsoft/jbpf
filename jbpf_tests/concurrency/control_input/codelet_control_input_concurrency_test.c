@@ -124,7 +124,11 @@ main(int argc, char** argv)
     strcpy(codeletset_req.codelet_descriptor[0].codelet_name, "simple_input_output");
     strcpy(codeletset_req.codelet_descriptor[0].hook_name, "test1");
 
-    assert(jbpf_init(&config) == 0);
+    int res = jbpf_init(&config);
+    assert(res == 0);
+#ifdef NDEBUG
+    (void)res; // suppress unused-variable warning in release mode
+#endif
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -135,7 +139,8 @@ main(int argc, char** argv)
     sem_init(&sem, 0, 0);
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    res = jbpf_codeletset_load(&codeletset_req, NULL);
+    assert(res == JBPF_CODELET_LOAD_SUCCESS);
 
     pthread_t control_threads[NUM_THREADS_CONTROL];
     struct thread_params** params = malloc(NUM_THREADS_CONTROL * sizeof(struct thread_params*));

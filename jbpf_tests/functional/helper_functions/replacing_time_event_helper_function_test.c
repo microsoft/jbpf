@@ -70,7 +70,11 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    int res = jbpf_init(&config);
+    assert(res == 0);
+#ifdef NDEBUG
+    (void)res; // suppress unused-variable warning in release mode
+#endif
 
     // replacing the helper function jbpf_time_get_ns
     jbpf_helper_func_def_t helper_func1;
@@ -115,7 +119,8 @@ main(int argc, char** argv)
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, "test1");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    res = jbpf_codeletset_load(&codeletset_req_c1, NULL);
+    assert(res == JBPF_CODELET_LOAD_SUCCESS);
 
     // Call the hooks NUM_ITERATIONS times and check that we got the expected data
     struct packet p = {0, 0};

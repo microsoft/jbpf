@@ -33,7 +33,11 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    int res = jbpf_init(&config);
+    assert(res == 0);
+#ifdef NDEBUG
+    (void)res; // suppress unused-variable warning in release mode
+#endif
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -92,7 +96,8 @@ main(int argc, char** argv)
 
         // Load the codeletsets
         // printf("Loading codeletset %s\n", codset_req->codeletset_id.name);
-        assert(jbpf_codeletset_load(codset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+        res = jbpf_codeletset_load(codset_req, NULL);
+        assert(res == JBPF_CODELET_LOAD_SUCCESS);
     }
 
     usleep(1000000);

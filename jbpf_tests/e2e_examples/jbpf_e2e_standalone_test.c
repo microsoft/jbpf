@@ -34,6 +34,7 @@ int expected_c2_c3_value = 100;
 static void
 io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_bufs, void* ctx)
 {
+    jbpf_logger(JBPF_INFO, "io_channel_check_output called\n");
     int* c1_output;
     int* c2_c3_output;
 
@@ -62,6 +63,8 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
 
     if (expected_c1_value == NUM_ITERATIONS && expected_c2_c3_value == 105) {
         sem_post(&sem);
+    } else {
+        jbpf_logger(JBPF_ERROR, "Unexpected output: %d %d\n", expected_c1_value, expected_c2_c3_value);
     }
 }
 
@@ -78,7 +81,13 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    int res = jbpf_init(&config);
+    assert(res == 0);
+#ifdef NDEBUG
+    (void)res; // suppress unused-variable warning in release mode
+#endif
+
+    jbpf_logger(JBPF_INFO, "jbpf initialized\n");
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -117,7 +126,9 @@ main(int argc, char** argv)
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, "test1");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    res = jbpf_codeletset_load(&codeletset_req_c1, NULL);
+    assert(res == JBPF_CODELET_LOAD_SUCCESS);
+    jbpf_logger(JBPF_INFO, "Codeletset loaded successfully\n");
 
     // Next, we load the codeletset with codelets C2 and C3 in hooks "test1" and "test2"
     strcpy(codeletset_req_c2_c3.codeletset_id.name, "shared_map_input_output_codeletset");
@@ -170,7 +181,8 @@ main(int argc, char** argv)
     strcpy(codeletset_req_c2_c3.codelet_descriptor[1].hook_name, "test2");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c2_c3, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    res = jbpf_codeletset_load(&codeletset_req_c2_c3, NULL);
+    assert(res == JBPF_CODELET_LOAD_SUCCESS);
 
     // Send 5 control inputs
     for (int i = 0; i < NUM_ITERATIONS; i++) {
@@ -181,6 +193,7 @@ main(int argc, char** argv)
     // Call the hooks 5 times and check that we got the expected data
     struct packet p = {0, 0};
 
+    jbpf_logger(JBPF_INFO, "Calling hooks\n");
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         hook_test1(&p, 1);
         hook_test2(&p, 2);
@@ -189,14 +202,18 @@ main(int argc, char** argv)
     }
 
     // Wait for all the output checks to finish
+    jbpf_logger(JBPF_INFO, "Waiting for output checks to finish\n");
     sem_wait(&sem);
+    jbpf_logger(JBPF_INFO, "Output checks finished\n");
 
     // Unload the codeletsets
     strcpy(codeletset_unload_req_c1.codeletset_id.name, "simple_output_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    res = jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL);
+    assert(res == JBPF_CODELET_UNLOAD_SUCCESS);
 
     strcpy(codeletset_unload_req_c2_c3.codeletset_id.name, "shared_map_input_output_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c2_c3, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    res = jbpf_codeletset_unload(&codeletset_unload_req_c2_c3, NULL);
+    assert(res == JBPF_CODELET_UNLOAD_SUCCESS);
 
     // Stop
     jbpf_stop();

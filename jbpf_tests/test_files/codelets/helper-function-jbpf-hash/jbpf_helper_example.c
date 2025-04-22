@@ -21,7 +21,7 @@ jbpf_main(void* state)
     char msg[14] = {0};
     strcpy(msg, "Hello, World!");
     uint32_t hash = jbpf_hash(msg, 14);
-    // jbpf_printf_debug("Hash: %x\n", hash);
+    jbpf_printf_debug("Hash: %x\n", hash);
     data->test_passed = hash == 0xb3a4ed74;
     return 0;
 }

@@ -62,7 +62,11 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    int res = jbpf_init(&config);
+    assert(res == 0);
+#ifdef NDEBUG
+    (void)res; // suppress unused-variable warning in release mode
+#endif
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -98,7 +102,8 @@ main(int argc, char** argv)
     snprintf(codeletset_req_c1.codelet_descriptor[0].hook_name, JBPF_HOOK_NAME_LEN, "test1");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    res = jbpf_codeletset_load(&codeletset_req_c1, NULL);
+    assert(res == JBPF_CODELET_LOAD_SUCCESS);
 
     struct thread_params* data[NUMBER_OF_WORKERS];
     for (int i = 0; i < NUMBER_OF_WORKERS; ++i) {
