@@ -17,7 +17,11 @@ RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
   elif [ "$TARGET_ARCHITECTURE" = "arm64" ]; then \
     apt-get install -y libc6-dev; \
   fi
-RUN apt install -y libyaml-cpp-dev
+RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
+  apt-get install -y libyaml-cpp-dev; \
+elif [ "$TARGET_ARCHITECTURE" = "arm64" ]; then \
+  apt-get install -y --no-install-recommends libyaml-cpp-dev || true; \
+fi
 
 WORKDIR /jbpf
 COPY . /jbpf
