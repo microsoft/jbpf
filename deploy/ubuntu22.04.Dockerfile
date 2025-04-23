@@ -17,17 +17,16 @@ RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
   elif [ "$TARGET_ARCHITECTURE" = "arm64" ]; then \
     apt-get install -y libc6-dev; \
   fi
-# RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
-#   apt-get install -y libyaml-cpp-dev; \
-# elif [ "$TARGET_ARCHITECTURE" = "arm64" ]; then \
-#   apt-get install -y --no-install-recommends libyaml-cpp-dev libyaml-cpp-dev-common || true; \
-# fi
-RUN git clone --branch yaml-cpp-0.7.0 https://github.com/jbeder/yaml-cpp.git /tmp/yaml-cpp && \
-    cd /tmp/yaml-cpp && \
+
+# Build yaml-cpp from source
+RUN git clone https://github.com/jbeder/yaml-cpp.git && \
+    cd yaml-cpp && \
     mkdir build && cd build && \
-    cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DYAML_CPP_BUILD_TESTS=OFF && \
-    make -j$(nproc) && make install && \
-    rm -rf /tmp/yaml-cpp
+    cmake .. -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_INSTALL=ON && \
+    make -j$(nproc) && \
+    make install
+
+RUN apt-get update && apt-get install -y pkg-config
 
 WORKDIR /jbpf
 COPY . /jbpf

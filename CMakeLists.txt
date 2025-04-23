@@ -227,6 +227,8 @@ set_target_properties(libubpf PROPERTIES
 add_dependencies(libubpf ubpf)
 
 ################ prevail verifier ################
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 add_subdirectory(3p/ebpf-verifier)
 set_target_properties(conformance_check PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
