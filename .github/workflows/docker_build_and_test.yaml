@@ -91,3 +91,8 @@ jobs:
             echo "Error running tests, result code is $TEST_OUTCOME"
             exit 1
           fi
+
+      - name: Cleanup Docker
+        run: |
+          docker image prune -af || true
+          docker container prune -f || true

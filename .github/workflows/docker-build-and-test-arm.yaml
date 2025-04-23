@@ -1,14 +1,10 @@
-name: JBPF Docker Build and Tests (ARM & AMD)
+name: JBPF Docker Build and Tests (ARM64)
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
   pull_request:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
 
 env:
   IMAGE_TAG: ${{ github.run_id }}-${{ github.sha }}
@@ -18,9 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dockerType: [ "mariner", "ubuntu22.04", "ubuntu24.04" ]
-        testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
-        arch: [ "arm64" ]
+        dockerType: ["mariner", "ubuntu22.04", "ubuntu24.04"]
+        testCase: ["test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7"]
 
     steps:
       - name: Checkout Repository
@@ -33,6 +28,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Disable Git SSL Verification (Temporary)
+        run: git config --global http.sslVerify false
 
       - name: Set Build Parameters
         run: |
@@ -47,59 +45,49 @@ jobs:
             test7) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
           esac
 
-      - name: Display Build Parameters
+      - name: Build Docker Image (arm64)
         run: |
-          echo "Docker Type: ${{ matrix.dockerType }}"
-          echo "Test Case: ${{ matrix.testCase }}"
-          echo "Arch: ${{ matrix.arch }}"
-          echo "Static Build Param: ${{ env.staticBuildParam }}"
-          echo "Sanitizer Build Param: ${{ env.sanitizerBuildParam }}"
-
-      - name: Disable Git SSL Verification (Temporary)
-        run: git config --global http.sslVerify false
-
-      - name: Build Docker Image for ${{ matrix.arch }}
-        run: |
-          docker buildx create --use
           docker buildx build \
-            --platform linux/${{ matrix.arch }} \
+            --platform linux/arm64 \
             --load \
-            -t jbpf_lib:${{ matrix.dockerType }}-${{ matrix.arch }}-${{ env.IMAGE_TAG }} \
+            -t jbpf_lib:${{ matrix.dockerType }}-arm64-${{ env.IMAGE_TAG }} \
             -f deploy/${{ matrix.dockerType }}.Dockerfile \
             .
 
       - name: Run Container to Build JBPF
         run: |
-          set -ex
-          source setup_jbpf_env.sh
           ./init_and_patch_submodules.sh
           docker run \
             -v "$(pwd)"/3p:/jbpf/3p \
             -v "$(pwd)":/jbpf_out_lib \
             -e INITIALIZE_SUBMODULES=0 \
             ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
-            jbpf_lib:${{ matrix.dockerType }}-${{ matrix.arch }}-${{ env.IMAGE_TAG }}
+            jbpf_lib:${{ matrix.dockerType }}-arm64-${{ env.IMAGE_TAG }}
 
       - name: Run Tests
         run: |
-          set -x
-          source setup_jbpf_env.sh
           docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
             --mount type=tmpfs,destination=/dev/shm \
-            -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
+            -v "$(pwd)":/jbpf_out_lib \
+            -v "$(pwd)"/build:/jbpf/build \
             -v "$(pwd)"/3p:/jbpf/3p \
             -e JBPF_PATH=/jbpf \
             -e INITIALIZE_SUBMODULES=0 \
             ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
             -e RUN_TESTS=1 \
-            jbpf_lib:${{ matrix.dockerType }}-${{ matrix.arch }}-${{ env.IMAGE_TAG }}
+            jbpf_lib:${{ matrix.dockerType }}-arm64-${{ env.IMAGE_TAG }}
 
           TEST_OUTCOME=$?
           mkdir -p ${{ github.workspace }}/artifacts
           cp ./build/Testing/Temporary/LastTest.log ${{ github.workspace }}/artifacts/ || true
-          cp "$(pwd)"/out/jbpf_tests.xml ${{ github.workspace }}/artifacts/ || true
+          cp ./out/jbpf_tests.xml ${{ github.workspace }}/artifacts/ || true
 
           if [ "$TEST_OUTCOME" -ne 0 ]; then
             echo "Error running tests, result code is $TEST_OUTCOME"
             exit 1
           fi
+
+      - name: Cleanup Docker
+        run: |
+          docker image prune -af || true
+          docker container prune -f || true
