@@ -47,10 +47,6 @@ jobs:
           echo "Static Build Param: ${{ env.staticBuildParam }}"
           echo "Sanitizer Build Param: ${{ env.sanitizerBuildParam }}"
 
-      - name: Disable Git SSL Verification (Temporary)
-        run: |
-          git config --global http.sslVerify false
-
       - name: Build Docker Image
         run: |
           docker build \
