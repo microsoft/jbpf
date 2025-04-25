@@ -26,21 +26,26 @@ jobs:
       - name: Wait for dpkg lock (self-hosted only)
         if: runner.os == 'Linux' && runner.arch == 'ARM64' # optional
         run: |
+          sudo systemctl disable --now unattended-upgrades
           while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
             echo "Another apt/dpkg process is running. Waiting..."
             sleep 5
           done
 
-      - name: Update apt and install prerequisites
+      - name: Update apt and install prerequisites (with 5 retries)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          for i in {1..5}; do
+            sudo apt-get update && break || sleep 5
+          done
+          for i in {1..5}; do
+            sudo apt-get install -y \
             apt-transport-https \
             ca-certificates \
             curl \
             gnupg \
             lsb-release \
-            git
+            git || sleep 5
+          done
 
       - name: Add Docker's official GPG key and repo
         run: |
@@ -51,10 +56,14 @@ jobs:
             $(lsb_release -cs) stable" | \
             sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-      - name: Install Docker Engine
+      - name: Install Docker Engine (with 5 retries)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+          for i in {1..5}; do
+            sudo apt-get update && break || sleep 5
+          done
+          for i in {1..5}; do
+            sudo apt-get install -y docker-ce docker-ce-cli containerd.io || sleep 5
+          done
 
       - name: Verify Docker
         run: docker --version
@@ -123,6 +132,12 @@ jobs:
             echo "Error running tests, result code is $TEST_OUTCOME"
             exit 1
           fi
+
+      - name: Upload Test Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jbpf-arm64-test-artifacts-${{ matrix.dockerType }}-${{ matrix.testCase }}
+          path: ${{ github.workspace }}/artifacts
 
       - name: Cleanup Docker
         run: |

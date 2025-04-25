@@ -92,6 +92,12 @@ jobs:
             exit 1
           fi
 
+      - name: Upload Test Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jbpf-amd64-test-artifacts-${{ matrix.dockerType }}-${{ matrix.testCase }}
+          path: ${{ github.workspace }}/artifacts
+
       - name: Cleanup Docker
         run: |
           docker image prune -af || true
