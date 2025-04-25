@@ -23,6 +23,34 @@ jobs:
         testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
 
     steps:
+      - name: Update apt and install prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            apt-transport-https \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release \
+            git
+
+      - name: Add Docker’s official GPG key and repo
+        run: |
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          echo \
+            "deb [arch=arm64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+      - name: Install Docker Engine
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+      - name: Verify Docker
+        run: docker --version
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
