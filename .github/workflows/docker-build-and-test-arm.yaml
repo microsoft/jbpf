@@ -34,7 +34,7 @@ jobs:
             lsb-release \
             git
 
-      - name: Add Docker’s official GPG key and repo
+      - name: Add Docker's official GPG key and repo
         run: |
           sudo mkdir -p /etc/apt/keyrings
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -80,7 +80,7 @@ jobs:
           sudo docker build \
             -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
             -f deploy/${{ matrix.dockerType }}.Dockerfile .
-          docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
+          sudo docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
 
       - name: Run Container to Build JBPF
         run: |
