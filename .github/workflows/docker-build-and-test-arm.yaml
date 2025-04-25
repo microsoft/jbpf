@@ -23,6 +23,14 @@ jobs:
         testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
 
     steps:
+      - name: Wait for dpkg lock (self-hosted only)
+        if: runner.os == 'Linux' && runner.arch == 'ARM64' # optional
+        run: |
+          while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+            echo "Another apt/dpkg process is running. Waiting..."
+            sleep 5
+          done
+
       - name: Update apt and install prerequisites
         run: |
           sudo apt-get update
