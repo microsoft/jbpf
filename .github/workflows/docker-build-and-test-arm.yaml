@@ -77,7 +77,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build \
+          sudo -E docker build \
             -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
             -f deploy/${{ matrix.dockerType }}.Dockerfile .
           docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
@@ -87,7 +87,7 @@ jobs:
           set -ex
           source setup_jbpf_env.sh
           ./init_and_patch_submodules.sh
-          docker run \
+          sudo -E docker run \
             -v "$(pwd)"/3p:/jbpf/3p \
             -v "$(pwd)":/jbpf_out_lib \
             -e INITIALIZE_SUBMODULES=0 \
@@ -97,7 +97,7 @@ jobs:
         run: |
           set -x
           source setup_jbpf_env.sh
-          docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
+          sudo -E docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
             --mount type=tmpfs,destination=/dev/shm \
             -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
             -v "$(pwd)"/3p:/jbpf/3p \
@@ -118,5 +118,5 @@ jobs:
 
       - name: Cleanup Docker
         run: |
-          docker image prune -af || true
-          docker container prune -f || true
+          sudo -E docker image prune -af || true
+          sudo -E docker container prune -f || true
