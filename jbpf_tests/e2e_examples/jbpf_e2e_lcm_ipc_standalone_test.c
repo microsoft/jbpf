@@ -188,7 +188,8 @@ run_lcm_ipc_loader(void)
     strcpy(codeletset_unload_req_c1.codeletset_id.name, "simple_output_codeletset");
 
     // Make a request to unload an existing codeletset
-    __assert__(jbpf_lcm_ipc_send_codeletset_unload_req(&address, &codeletset_unload_req_c1) == JBPF_LCM_IPC_REQ_SUCCESS);
+    __assert__(
+        jbpf_lcm_ipc_send_codeletset_unload_req(&address, &codeletset_unload_req_c1) == JBPF_LCM_IPC_REQ_SUCCESS);
 
     // Make a request to load a codeletset that will fail, due to non-existent hook
     strcpy(codeletset_req_error.codeletset_id.name, "error_codeletset");
@@ -198,7 +199,8 @@ run_lcm_ipc_loader(void)
 
     // Make a request to unload a non-existent codeletset
     strcpy(codeletset_unload_req_error.codeletset_id.name, "non-existent-codeletset");
-    __assert__(jbpf_lcm_ipc_send_codeletset_unload_req(&address, &codeletset_unload_req_error) == JBPF_LCM_IPC_REQ_FAIL);
+    __assert__(
+        jbpf_lcm_ipc_send_codeletset_unload_req(&address, &codeletset_unload_req_error) == JBPF_LCM_IPC_REQ_FAIL);
 
     // Tests are done. Let the agent know that it can terminate
     sem_post(lcm_ipc_agent_sem);

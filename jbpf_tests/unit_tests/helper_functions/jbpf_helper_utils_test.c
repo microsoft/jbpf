@@ -192,7 +192,7 @@ test_fixedpt_abs(void)
     fixedpt a = fixedpt_rconst(-5); // -5 in fixedpt
     fixedpt result = fixedpt_abs(a);
     __assert__(result == fixedpt_rconst(5)); // Absolute value should be 5
-    fixedpt b = fixedpt_rconst(3);       // 3 in fixedpt
+    fixedpt b = fixedpt_rconst(3);           // 3 in fixedpt
     fixedpt result2 = fixedpt_abs(b);
     __assert__(result2 == fixedpt_rconst(3)); // Absolute value should be 3
     printf("test_fixedpt_abs passed\n");
