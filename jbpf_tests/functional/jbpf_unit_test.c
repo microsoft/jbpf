@@ -366,19 +366,19 @@ test_hashmap_map(void** state)
     /* Add the same element again */
     res = jbpf_bpf_hashmap_update_elem(map, &key1, &val1, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 1);
+    __assert__(jbpf_bpf_hashmap_size(map) == 1);
 
     res = jbpf_bpf_hashmap_update_elem(map, &key2, &val2, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 2);
+    __assert__(jbpf_bpf_hashmap_size(map) == 2);
 
     res = jbpf_bpf_hashmap_update_elem(map, &key3, &val3, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 3);
+    __assert__(jbpf_bpf_hashmap_size(map) == 3);
 
     res = jbpf_bpf_hashmap_update_elem(map, key4, &val4, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 4);
+    __assert__(jbpf_bpf_hashmap_size(map) == 4);
 
     /* The map should be full by now */
     res = jbpf_bpf_hashmap_update_elem(map, &key5, &val5, 0);
@@ -409,7 +409,7 @@ test_hashmap_map(void** state)
     /* Delete an existing key */
     res = jbpf_bpf_hashmap_delete_elem(map, &key1);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 3);
+    __assert__(jbpf_bpf_hashmap_size(map) == 3);
 
     /* Lookup and delete a non-existent pair */
     val = jbpf_bpf_hashmap_lookup_elem(map, &key5);
@@ -439,19 +439,19 @@ test_hashmap_map_dump(void** state)
     /* Add the same element again */
     res = jbpf_bpf_hashmap_update_elem(map, &key1, &val1, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 1);
+    __assert__(jbpf_bpf_hashmap_size(map) == 1);
 
     res = jbpf_bpf_hashmap_update_elem(map, &key2, &val2, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 2);
+    __assert__(jbpf_bpf_hashmap_size(map) == 2);
 
     res = jbpf_bpf_hashmap_update_elem(map, &key3, &val3, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 3);
+    __assert__(jbpf_bpf_hashmap_size(map) == 3);
 
     res = jbpf_bpf_hashmap_update_elem(map, &key4, &val4, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 4);
+    __assert__(jbpf_bpf_hashmap_size(map) == 4);
 
     /* There is enough space, so all elements should be dumped */
     res = jbpf_bpf_hashmap_dump(map, reg1, sizeof(reg1), 0);
@@ -520,19 +520,19 @@ test_hashmap_map_clear(void** state)
 
     res = jbpf_bpf_hashmap_update_elem(map, &key2, &val2, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 2);
+    __assert__(jbpf_bpf_hashmap_size(map) == 2);
 
     res = jbpf_bpf_hashmap_update_elem(map, &key3, &val3, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 3);
+    __assert__(jbpf_bpf_hashmap_size(map) == 3);
 
     res = jbpf_bpf_hashmap_update_elem(map, &key4, &val4, 0);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 4);
+    __assert__(jbpf_bpf_hashmap_size(map) == 4);
 
     res = jbpf_bpf_hashmap_clear(map);
     assert(res == 0);
-    assert(jbpf_bpf_hashmap_size(map) == 0);
+    __assert__(jbpf_bpf_hashmap_size(map) == 0);
 }
 
 int

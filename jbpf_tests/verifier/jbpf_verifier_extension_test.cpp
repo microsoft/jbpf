@@ -3,6 +3,7 @@
 #include "jbpf_verifier.hpp"
 #include "jbpf_defs.h"
 #include "jbpf_helper_api_defs_ext.h"
+#include "jbpf_test_lib.h"
 
 // Contains the def extensions for the new program types and helper functions
 #include "jbpf_verifier_extension_defs.h"
@@ -17,7 +18,7 @@ main(int argc, char** argv)
 
     std::string codelet = "/jbpf_tests/test_files/codelets/verifier_extensions/verifier_extensions.o";
 
-    assert(jbpf_path != nullptr);
+    __assert__(jbpf_path != nullptr);
     full_path = std::string(jbpf_path);
     full_path.append(codelet);
 
@@ -31,7 +32,7 @@ main(int argc, char** argv)
     new_map_type.name = "NEW_TYPE";
     new_map_type.is_array = false;
 
-    assert(jbpf_verifier_register_map_type(CUSTOM_MAP_START_ID, new_map_type) >= 0);
+    __assert__(jbpf_verifier_register_map_type(CUSTOM_MAP_START_ID, new_map_type) >= 0);
 
     // The test should still fail
     result = jbpf_verify(full_path.c_str(), nullptr, nullptr);

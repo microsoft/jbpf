@@ -36,6 +36,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_ITERATIONS 5
 
@@ -108,7 +109,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     sem_init(&sem, 0, 0);
 
@@ -123,10 +124,10 @@ main(int argc, char** argv)
             "new_helper_func", helper_id, (jbpf_helper_func_t)new_helper_implementation};
         helper_func.reloc_id = helper_id;
         if (helper_id < MAX_HELPER_FUNC) {
-            assert(jbpf_register_helper_function(helper_func) == 0); // new registration
+            __assert__(jbpf_register_helper_function(helper_func) == 0); // new registration
         } else {
             // check that we can't register more than MAX_HELPER_FUNC
-            assert(jbpf_register_helper_function(helper_func) < 0); // failure
+            __assert__(jbpf_register_helper_function(helper_func) < 0); // failure
         }
     }
 
@@ -168,7 +169,7 @@ main(int argc, char** argv)
     ch->has_serde = false;
 
     // The path of the codelet
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         cod->codelet_path,
         JBPF_PATH_LEN,
@@ -183,7 +184,7 @@ main(int argc, char** argv)
     assert(result.verification_pass);
 
     // Load the codeletset. Loading should fail
-    assert(jbpf_codeletset_load(codset, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(codset, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Call hook
     for (int i = CUSTOM_HELPER_START_ID; i < MAX_HELPER_FUNC; i++) {
@@ -199,7 +200,7 @@ main(int argc, char** argv)
     sem_wait(&sem);
 
     codset_ul->codeletset_id = codset->codeletset_id;
-    assert(jbpf_codeletset_unload(codset_ul, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(codset_ul, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     // We reset the helper functions. The codelet should fail to load again
     jbpf_reset_helper_functions();

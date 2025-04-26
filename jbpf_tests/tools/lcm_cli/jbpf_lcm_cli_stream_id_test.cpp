@@ -3,6 +3,7 @@
 
 #include "stream_id.hpp"
 #include "jbpf_lcm_api.h"
+#include "jbpf_test_lib.h"
 
 struct from_hex_test_case_t
 {
@@ -63,7 +64,7 @@ main(int argc, char** argv)
     // All the below test cases should fail to generate a stream id
     for (auto hex : error_from_hex_test) {
         jbpf_io_stream_id_t stream_id;
-        assert(jbpf_lcm_cli::stream_id::from_hex(hex, &stream_id));
+        __assert__(jbpf_lcm_cli::stream_id::from_hex(hex, &stream_id));
     }
 
     // All the below test cases should generate a stream id
@@ -78,7 +79,7 @@ main(int argc, char** argv)
     // All the below test cases should fail to generate a stream id
     for (auto seed : error_generate_from_strings_test) {
         jbpf_io_stream_id_t stream_id;
-        assert(jbpf_lcm_cli::stream_id::generate_from_strings(seed, &stream_id));
+        __assert__(jbpf_lcm_cli::stream_id::generate_from_strings(seed, &stream_id));
     }
 
     return 0;

@@ -18,6 +18,7 @@ is received exactly once.
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define COUNT 1000
 #define NUM_THREADS_CONTROL 4
@@ -115,7 +116,7 @@ main(int argc, char** argv)
     // The input channel of the codelet does not have a serializer
     codeletset_req.codelet_descriptor[0].out_io_channel[0].has_serde = false;
 
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -124,7 +125,7 @@ main(int argc, char** argv)
     strcpy(codeletset_req.codelet_descriptor[0].codelet_name, "simple_input_output");
     strcpy(codeletset_req.codelet_descriptor[0].hook_name, "test1");
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -135,7 +136,7 @@ main(int argc, char** argv)
     sem_init(&sem, 0, 0);
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(&codeletset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     pthread_t control_threads[NUM_THREADS_CONTROL];
     struct thread_params** params = malloc(NUM_THREADS_CONTROL * sizeof(struct thread_params*));
@@ -164,7 +165,7 @@ main(int argc, char** argv)
 
     // Unload the codeletset
     strcpy(codeletset_unload_req.codeletset_id.name, "simple_input_output_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     sem_destroy(&sem);
 

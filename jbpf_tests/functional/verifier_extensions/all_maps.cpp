@@ -36,6 +36,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_ITERATIONS 5
 
@@ -82,7 +83,7 @@ main(int argc, char** argv)
         new_map_type.is_array = false;
         new_map_type.value_type = EbpfMapValueType::ANY;
         printf("Registering new_map1\n");
-        assert(jbpf_verifier_register_map_type(map_id, new_map_type) >= 0);
+        __assert__(jbpf_verifier_register_map_type(map_id, new_map_type) >= 0);
         map_id++;
     }
 
@@ -94,7 +95,7 @@ main(int argc, char** argv)
         new_map_type.is_array = true;
         new_map_type.value_type = EbpfMapValueType::ANY;
         printf("Registering new_map2\n");
-        assert(jbpf_verifier_register_map_type(map_id, new_map_type) >= 0);
+        __assert__(jbpf_verifier_register_map_type(map_id, new_map_type) >= 0);
         map_id++;
     }
 
@@ -106,7 +107,7 @@ main(int argc, char** argv)
         new_map_type.is_array = true;
         new_map_type.value_type = EbpfMapValueType::MAP;
         printf("Registering new_map3\n");
-        assert(jbpf_verifier_register_map_type(map_id, new_map_type) >= 0);
+        __assert__(jbpf_verifier_register_map_type(map_id, new_map_type) >= 0);
         map_id++;
     }
 
@@ -118,7 +119,7 @@ main(int argc, char** argv)
         new_map_type.is_array = true;
         new_map_type.value_type = EbpfMapValueType::MAP;
         printf("Registering new_map4\n");
-        assert(jbpf_verifier_register_map_type(map_id, new_map_type) >= 0);
+        __assert__(jbpf_verifier_register_map_type(map_id, new_map_type) >= 0);
         map_id++;
     }
 
@@ -131,7 +132,7 @@ main(int argc, char** argv)
         new_map_type.is_array = false;
         new_map_type.value_type = EbpfMapValueType::PROGRAM;
         printf("Registering new_map5\n");
-        assert(jbpf_verifier_register_map_type(map_id, new_map_type) < 0);
+        __assert__(jbpf_verifier_register_map_type(map_id, new_map_type) < 0);
     }
 
     // map 6
@@ -143,7 +144,7 @@ main(int argc, char** argv)
         new_map_type.is_array = true;
         new_map_type.value_type = EbpfMapValueType::PROGRAM;
         printf("Registering new_map6\n");
-        assert(jbpf_verifier_register_map_type(map_id, new_map_type) < 0);
+        __assert__(jbpf_verifier_register_map_type(map_id, new_map_type) < 0);
     }
 
     // helper func
@@ -152,7 +153,7 @@ main(int argc, char** argv)
 
         jbpf_helper_func_def_t helper_func = {"new_helper_func", helper_id, (jbpf_helper_func_t)helper_func_1};
         helper_func.reloc_id = helper_id;
-        assert(jbpf_register_helper_function(helper_func) == 0); // new registration
+        __assert__(jbpf_register_helper_function(helper_func) == 0); // new registration
 
         // prototype for the function
         static const struct EbpfHelperPrototype helper_proto = {
@@ -166,7 +167,7 @@ main(int argc, char** argv)
         jbpf_verifier_register_helper(helper_id, helper_proto);
     }
 
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     char codelet_path[JBPF_PATH_LEN];
     snprintf(codelet_path, JBPF_PATH_LEN, "%s/jbpf_tests/test_files/codelets/helper_funcs/all_maps.o", jbpf_path);
 

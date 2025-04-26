@@ -15,6 +15,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 int
 main(int argc, char** argv)
@@ -29,7 +30,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -62,7 +63,7 @@ main(int argc, char** argv)
     strcpy(codeletset_req_c1.codelet_descriptor[0].codelet_name, "bad_object_codeletset");
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, "test1");
 
-    assert(jbpf_codeletset_load(&codeletset_req_c1, &err_msg) == JBPF_CODELET_CREATION_FAIL);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, &err_msg) == JBPF_CODELET_CREATION_FAIL);
     assert(strlen(err_msg.err_msg) > 0);
 
     // Stop

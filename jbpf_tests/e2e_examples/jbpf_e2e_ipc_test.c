@@ -22,6 +22,7 @@
 #include "jbpf_io_defs.h"
 #include "jbpf_io_queue.h"
 #include "jbpf_io_channel.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_ITERATIONS 5
 
@@ -119,7 +120,7 @@ run_primary_process(void)
 
     assert(io_ctx);
 
-    assert(jbpf_io_register_thread());
+    __assert__(jbpf_io_register_thread());
 
     // Primary is initialized. Signal secondary and
     // wait until codelets are loaded
@@ -130,7 +131,7 @@ run_primary_process(void)
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         custom_api control_input = {.command = i + 100};
         JBPF_UNUSED(control_input);
-        assert(jbpf_io_channel_send_msg(io_ctx, &stream_id_c2, &control_input, sizeof(control_input)) == 0);
+        __assert__(jbpf_io_channel_send_msg(io_ctx, &stream_id_c2, &control_input, sizeof(control_input)) == 0);
     }
 
     // Wait until the secondary has finished with its responses
@@ -170,7 +171,7 @@ run_jbpf_agent(void)
     // Primary is ready, so let's initialize the agent
     sem_wait(primary_sem);
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     jbpf_register_thread();
 
@@ -195,7 +196,7 @@ run_jbpf_agent(void)
     codeletset_req_c1.codelet_descriptor[0].num_linked_maps = 0;
 
     // The path of the codelet
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c1.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -205,7 +206,7 @@ run_jbpf_agent(void)
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, "test1");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Next, we load the codeletset with codelets C2 and C3 in hooks "test1" and "test2"
     strcpy(codeletset_req_c2_c3.codeletset_id.name, "shared_map_input_output_codeletset");
@@ -223,7 +224,7 @@ run_jbpf_agent(void)
     // The input channel of the codelet does not have a serializer
     codeletset_req_c2_c3.codelet_descriptor[0].in_io_channel[0].has_serde = false;
 
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c2_c3.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -247,7 +248,7 @@ run_jbpf_agent(void)
     // The name of the linked map as it appears in C2
     strcpy(codeletset_req_c2_c3.codelet_descriptor[1].linked_maps[0].linked_map_name, "shared_map");
 
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c2_c3.codelet_descriptor[1].codelet_path,
         JBPF_PATH_LEN,
@@ -257,7 +258,7 @@ run_jbpf_agent(void)
     strcpy(codeletset_req_c2_c3.codelet_descriptor[1].hook_name, "test2");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c2_c3, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c2_c3, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Wait until the primary sends the inputs
     sem_post(secondary_sem);
@@ -281,10 +282,10 @@ run_jbpf_agent(void)
 
     // Unload the codeletsets
     strcpy(codeletset_unload_req_c1.codeletset_id.name, "simple_output_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     strcpy(codeletset_unload_req_c2_c3.codeletset_id.name, "shared_map_input_output_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c2_c3, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req_c2_c3, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     // Stop
     jbpf_stop();

@@ -37,4 +37,13 @@ jbpf_run_test(
 #define JBPF_CREATE_TEST(test_func, setup_func, teardown_func, initial_state) \
     __jbpf_create_test(test_func, setup_func, teardown_func, initial_state, #test_func)
 
+// Macro to assert and avoid unused variable warnings when assert is optimised out
+// in release builds. This is a workaround for the fact that assert is a no-op in
+#define __assert__(condition) \
+    do { \
+        int __assert_result = (int)(condition); \
+        assert(__assert_result); \
+        (void)__assert_result; \
+    } while (0)
+
 #endif // JBPF_TEST_LIB_H

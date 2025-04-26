@@ -18,6 +18,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_ITERATIONS 5
 #define NUM_CODELET_SETS (2)
@@ -91,7 +92,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -125,7 +126,7 @@ main(int argc, char** argv)
         cs_load_req->codelet_descriptor[0].out_io_channel[0].has_serde = false;
 
         // The path of the codelet
-        assert(jbpf_path != NULL);
+        __assert__(jbpf_path != NULL);
         snprintf(
             cs_load_req->codelet_descriptor[0].codelet_path,
             JBPF_PATH_LEN,
@@ -137,7 +138,7 @@ main(int argc, char** argv)
         cs_load_req->codelet_descriptor[0].num_linked_maps = 0;
 
         // Load the codeletset
-        assert(jbpf_codeletset_load(cs_load_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+        __assert__(jbpf_codeletset_load(cs_load_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
     }
 
     // Call the hooks 5 times and check that we got the expected data
@@ -154,7 +155,7 @@ main(int argc, char** argv)
     // Unload the codeletsets
     for (int i = 0; i < sizeof(codeletset_load_req) / sizeof(codeletset_load_req[0]); i++) {
         codeletset_unload_req[i].codeletset_id = codeletset_load_req[i].codeletset_id;
-        assert(jbpf_codeletset_unload(&codeletset_unload_req[i], NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+        __assert__(jbpf_codeletset_unload(&codeletset_unload_req[i], NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
     }
 
     // Stop

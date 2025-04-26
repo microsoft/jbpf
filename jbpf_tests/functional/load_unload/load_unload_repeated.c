@@ -20,6 +20,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_CODELET_SETS (JBPF_MAX_LOADED_CODELETSETS)
 #define NUM_CODELETS_IN_CODELETSET (1)
@@ -69,7 +70,7 @@ load_codelet_set(jbpf_codeletset_load_req_s* codset_req, int codset)
         cod_desc->num_linked_maps = 0;
 
         // The path of the codelet
-        assert(jbpf_path != NULL);
+        __assert__(jbpf_path != NULL);
         snprintf(
             cod_desc->codelet_path,
             JBPF_PATH_LEN,
@@ -81,7 +82,7 @@ load_codelet_set(jbpf_codeletset_load_req_s* codset_req, int codset)
 
     // Load the codeletsets
     printf("Loading codeletset %s\n", codset_req->codeletset_id.name);
-    assert(jbpf_codeletset_load(codset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(codset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 }
 
 int
@@ -96,7 +97,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -112,10 +113,10 @@ main(int argc, char** argv)
     int codset_id = 0;
 
     struct jbpf_ctx_t* jbpf_ctx = jbpf_get_ctx();
-    assert(jbpf_ctx != NULL);
+    __assert__(jbpf_ctx != NULL);
     assert(ck_ht_count(&jbpf_ctx->codeletset_registry) == 64);
-    assert(jbpf_ctx->total_num_codelets == 64);
-    assert(jbpf_ctx->nmap_reg == 128);
+    __assert__(jbpf_ctx->total_num_codelets == 64);
+    __assert__(jbpf_ctx->nmap_reg == 128);
 
     for (int i = 0; i < 1000; i++) {
 
@@ -136,12 +137,12 @@ main(int argc, char** argv)
             snprintf(
                 codset_unload_req->codeletset_id.name, JBPF_CODELETSET_NAME_LEN, "simple_output_codeletset%d", cs_id);
             printf("Unloading codeletset %s\n", codset_unload_req->codeletset_id.name);
-            assert(jbpf_codeletset_unload(codset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+            __assert__(jbpf_codeletset_unload(codset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
             total_unloaded++;
 
             assert(ck_ht_count(&jbpf_ctx->codeletset_registry) == old_codeletset_registry_count - 1);
-            assert(jbpf_ctx->total_num_codelets == jbpf_ctx_old.total_num_codelets - 1);
-            assert(jbpf_ctx->nmap_reg == jbpf_ctx_old.nmap_reg - 2);
+            __assert__(jbpf_ctx->total_num_codelets == jbpf_ctx_old.total_num_codelets - 1);
+            __assert__(jbpf_ctx->nmap_reg == jbpf_ctx_old.nmap_reg - 2);
         }
 
         // load 8 codeletSets
@@ -158,8 +159,8 @@ main(int argc, char** argv)
             load_codelet_set(&codeletset_req, cs_id);
             total_loaded++;
             assert(ck_ht_count(&jbpf_ctx->codeletset_registry) == old_codeletset_registry_count + 1);
-            assert(jbpf_ctx->total_num_codelets == jbpf_ctx_old.total_num_codelets + 1);
-            assert(jbpf_ctx->nmap_reg == jbpf_ctx_old.nmap_reg + 2);
+            __assert__(jbpf_ctx->total_num_codelets == jbpf_ctx_old.total_num_codelets + 1);
+            __assert__(jbpf_ctx->nmap_reg == jbpf_ctx_old.nmap_reg + 2);
         }
 
         codset_id += 8;
@@ -183,26 +184,26 @@ main(int argc, char** argv)
         int old_codeletset_registry_count = ck_ht_count(&jbpf_ctx->codeletset_registry);
         JBPF_UNUSED(jbpf_ctx_old);
         JBPF_UNUSED(old_codeletset_registry_count);
-        assert(jbpf_codeletset_unload(codset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+        __assert__(jbpf_codeletset_unload(codset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
         total_unloaded++;
         assert(ck_ht_count(&jbpf_ctx->codeletset_registry) == old_codeletset_registry_count - 1);
-        assert(jbpf_ctx->total_num_codelets == jbpf_ctx_old.total_num_codelets - 1);
-        assert(jbpf_ctx->nmap_reg == jbpf_ctx_old.nmap_reg - 2);
+        __assert__(jbpf_ctx->total_num_codelets == jbpf_ctx_old.total_num_codelets - 1);
+        __assert__(jbpf_ctx->nmap_reg == jbpf_ctx_old.nmap_reg - 2);
     }
 
     printf("Total codeletsets loaded %d unloaded %d\n", total_loaded, total_unloaded);
 
     // check the stats of the jbpf_ctx
     jbpf_ctx = jbpf_get_ctx();
-    assert(jbpf_ctx != NULL);
+    __assert__(jbpf_ctx != NULL);
     // printf(
     //     "jbpf_ctx after unloading all codelets : num_codeletSets = %ld nmap_reg %d total_num_codelets %d \n",
     //     ck_ht_count(&jbpf_ctx->codeletset_registry),
     //     jbpf_ctx->nmap_reg,
     //     jbpf_ctx->total_num_codelets);
     assert(ck_ht_count(&jbpf_ctx->codeletset_registry) == 0);
-    assert(jbpf_ctx->total_num_codelets == 0);
-    assert(jbpf_ctx->nmap_reg == 0);
+    __assert__(jbpf_ctx->total_num_codelets == 0);
+    __assert__(jbpf_ctx->nmap_reg == 0);
 
     // Cleanup and stop
     jbpf_stop();

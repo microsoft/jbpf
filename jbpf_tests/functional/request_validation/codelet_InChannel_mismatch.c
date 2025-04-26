@@ -16,6 +16,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 jbpf_io_stream_id_t stream_id_c1 = {
     .id = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}};
@@ -35,7 +36,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -67,7 +68,7 @@ main(int argc, char** argv)
     codeletset_req_c1.codelet_descriptor[0].num_linked_maps = 0;
 
     // The path of the codelet
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c1.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -77,7 +78,7 @@ main(int argc, char** argv)
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, "test1");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c1, &err_msg) == JBPF_CODELET_CREATION_FAIL);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, &err_msg) == JBPF_CODELET_CREATION_FAIL);
     assert(strlen(err_msg.err_msg) > 0);
 
     // Cleanup and stop

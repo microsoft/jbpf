@@ -17,6 +17,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 jbpf_io_stream_id_t stream_ids[] = {
     {.id = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x00}}};
@@ -33,7 +34,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -62,7 +63,7 @@ main(int argc, char** argv)
     cs_load_req->codelet_descriptor[0].out_io_channel[0].has_serde = false;
 
     // The path of the codelet
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         cs_load_req->codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -74,15 +75,15 @@ main(int argc, char** argv)
     cs_load_req->codelet_descriptor[0].num_linked_maps = 0;
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(cs_load_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(cs_load_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // unload unknown codeletSet
     snprintf(codeletset_unload_req.codeletset_id.name, JBPF_CODELETSET_NAME_LEN, "unknown_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req, NULL) == JBPF_CODELET_UNLOAD_FAIL);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req, NULL) == JBPF_CODELET_UNLOAD_FAIL);
 
     // unload the correct codeletSet
     codeletset_unload_req.codeletset_id = codeletset_load_req.codeletset_id;
-    assert(jbpf_codeletset_unload(&codeletset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     // Stop
     jbpf_stop();

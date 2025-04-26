@@ -27,6 +27,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define LCM_CLI_SEM_NAME "/jbpf_lcm_cli_loader_e2e_standalone_sem"
 #define LCM_CLI_AGENT_SEM_NAME "/jbpf_lcm_cli_loader_e2e_agent_sem"
@@ -62,7 +63,7 @@ run_jbpf_agent()
     jbpf_set_default_config_options(&config);
     sem_init(&sem, 0, 0);
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // Register jbpf thread
     jbpf_register_thread();

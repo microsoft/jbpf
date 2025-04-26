@@ -15,6 +15,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define HOOK_CALLED_TIME (100000)
 #define NUMBER_OF_WORKERS (5)
@@ -89,7 +90,7 @@ load_codeletset(jbpf_io_stream_id_t stream_id, const char* codelet_set_name, con
 
     // The path of the codelet
     const char* jbpf_path = getenv("JBPF_PATH");
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c1.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -100,7 +101,7 @@ load_codeletset(jbpf_io_stream_id_t stream_id, const char* codelet_set_name, con
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, hook_name);
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 }
 
 #define DEFINE_THREAD_LOAD_FUNC(NAME, STREAM_ID, CODDELETSET_NAME, HOOK_NAME) \
@@ -127,7 +128,7 @@ unload_func(jbpf_codeletset_id_t codeletset_id)
     struct jbpf_codeletset_unload_req codeletset_unload_req_c1 = {0};
 
     codeletset_unload_req_c1.codeletset_id = codeletset_id;
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 }
 
 #define DEFINE_THREAD_UNLOAD_FUNC(NAME, CODELET_SET_ID)             \
@@ -162,7 +163,7 @@ main(int argc, char** argv)
     struct jbpf_config config = {0};
     jbpf_set_default_config_options(&config);
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
     jbpf_register_thread();
 
     for (int iter = 0; iter < ITERATIONS; ++iter) {

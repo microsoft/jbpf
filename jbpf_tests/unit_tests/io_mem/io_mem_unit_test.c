@@ -237,12 +237,12 @@ test_jbpf_get_mempool_size_valid(void** state)
         mbuf[i] = jbpf_mbuf_alloc(mempool);
         assert(mbuf != NULL);
         assert(mbuf[i]->ref_cnt == 1);
-        assert(jbpf_get_mempool_size(mempool) == size - i - 1);
+        __assert__(jbpf_get_mempool_size(mempool) == size - i - 1);
     }
     for (int i = 0; i < size; i++) {
         jbpf_mbuf_free(mbuf[i], false);
         assert(mbuf[i]->ref_cnt == 0);
-        assert(jbpf_get_mempool_size(mempool) == i + 1);
+        __assert__(jbpf_get_mempool_size(mempool) == i + 1);
     }
     free(mbuf);
 }
@@ -266,19 +266,19 @@ test_jbpf_get_mempool_size_valid_shared(void** state)
         assert(mbuf != NULL);
         assert(shared_mbuf[i] != NULL);
         assert(mbuf[i]->ref_cnt == 2);
-        assert(jbpf_get_mempool_size(mempool) == size - i - 1);
+        __assert__(jbpf_get_mempool_size(mempool) == size - i - 1);
     }
     // free one by one - ref cnt should be 1
     for (int i = 0; i < size; i++) {
         jbpf_mbuf_free(mbuf[i], false);
         assert(mbuf[i]->ref_cnt == 1);
-        assert(jbpf_get_mempool_size(mempool) == 0);
+        __assert__(jbpf_get_mempool_size(mempool) == 0);
     }
     // free one by one - ref cnt should be 0, and size should update
     for (int i = 0; i < size; i++) {
         jbpf_mbuf_free(shared_mbuf[i], false);
         assert(shared_mbuf[i]->ref_cnt == 0);
-        assert(jbpf_get_mempool_size(mempool) == i + 1);
+        __assert__(jbpf_get_mempool_size(mempool) == i + 1);
     }
     free(mbuf);
     free(shared_mbuf);

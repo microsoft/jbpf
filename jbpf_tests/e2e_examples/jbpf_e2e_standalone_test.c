@@ -16,6 +16,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_ITERATIONS 5
 
@@ -78,7 +79,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -107,7 +108,7 @@ main(int argc, char** argv)
     codeletset_req_c1.codelet_descriptor[0].num_linked_maps = 0;
 
     // The path of the codelet
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c1.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -117,7 +118,7 @@ main(int argc, char** argv)
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, "test1");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Next, we load the codeletset with codelets C2 and C3 in hooks "test1" and "test2"
     strcpy(codeletset_req_c2_c3.codeletset_id.name, "shared_map_input_output_codeletset");
@@ -135,7 +136,7 @@ main(int argc, char** argv)
     // The input channel of the codelet does not have a serializer
     codeletset_req_c2_c3.codelet_descriptor[0].in_io_channel[0].has_serde = false;
 
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c2_c3.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -159,7 +160,7 @@ main(int argc, char** argv)
     // The name of the linked map as it appears in C2
     strcpy(codeletset_req_c2_c3.codelet_descriptor[1].linked_maps[0].linked_map_name, "shared_map");
 
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c2_c3.codelet_descriptor[1].codelet_path,
         JBPF_PATH_LEN,
@@ -170,7 +171,7 @@ main(int argc, char** argv)
     strcpy(codeletset_req_c2_c3.codelet_descriptor[1].hook_name, "test2");
 
     // Load the codeletset
-    assert(jbpf_codeletset_load(&codeletset_req_c2_c3, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c2_c3, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Send 5 control inputs
     for (int i = 0; i < NUM_ITERATIONS; i++) {
@@ -193,10 +194,10 @@ main(int argc, char** argv)
 
     // Unload the codeletsets
     strcpy(codeletset_unload_req_c1.codeletset_id.name, "simple_output_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     strcpy(codeletset_unload_req_c2_c3.codeletset_id.name, "shared_map_input_output_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c2_c3, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req_c2_c3, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     // Stop
     jbpf_stop();

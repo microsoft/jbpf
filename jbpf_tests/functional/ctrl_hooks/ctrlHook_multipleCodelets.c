@@ -14,6 +14,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_CODELET_SETS (1)
 #define NUM_CODELETS_IN_CODELETSET (2)
@@ -36,7 +37,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -85,7 +86,7 @@ main(int argc, char** argv)
             cod_desc->num_linked_maps = 0;
 
             // The path of the codelet
-            assert(jbpf_path != NULL);
+            __assert__(jbpf_path != NULL);
             snprintf(
                 cod_desc->codelet_path,
                 JBPF_PATH_LEN,
@@ -98,7 +99,7 @@ main(int argc, char** argv)
         }
 
         // Load the codeletset
-        assert(jbpf_codeletset_load(codset_req, &err_msg) == JBPF_CODELET_LOAD_FAIL);
+        __assert__(jbpf_codeletset_load(codset_req, &err_msg) == JBPF_CODELET_LOAD_FAIL);
         assert(strlen(err_msg.err_msg) > 0);
         printf("err_msg = %s", err_msg.err_msg);
     }
@@ -112,7 +113,7 @@ main(int argc, char** argv)
             JBPF_CODELETSET_NAME_LEN,
             "control-input-withFailures_codeletset-%d",
             codset);
-        assert(jbpf_codeletset_unload(codset_unload_req, &err_msg) == JBPF_CODELET_UNLOAD_FAIL);
+        __assert__(jbpf_codeletset_unload(codset_unload_req, &err_msg) == JBPF_CODELET_UNLOAD_FAIL);
         assert(strlen(err_msg.err_msg) > 0);
         printf("err_msg = %s", err_msg.err_msg);
     }

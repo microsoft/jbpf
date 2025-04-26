@@ -27,6 +27,7 @@
 #include "jbpf_io_queue.h"
 #include "jbpf_io_channel.h"
 #include "jbpf_io_utils.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_INSERTIONS 4
 
@@ -204,16 +205,16 @@ main(int argc, char* argv[])
         0);
 
     // Channel with stream id 1 exists
-    assert(jbpf_io_find_channel(io_ctx, stream_id2, true));
+    __assert__(jbpf_io_find_channel(io_ctx, stream_id2, true) != NULL);
 
     // Channel with stream id 1 is output channel
-    assert(!jbpf_io_find_channel(io_ctx, stream_id2, false));
+    __assert__(jbpf_io_find_channel(io_ctx, stream_id2, false) == NULL);
 
     // Channel with stream id 2 exists
-    assert(jbpf_io_find_channel(io_ctx, stream_id2, true));
+    __assert__(jbpf_io_find_channel(io_ctx, stream_id2, true) != NULL);
 
     // Channel with stream id 3 does not exist
-    assert(jbpf_io_find_channel(io_ctx, stream_id2, true));
+    __assert__(jbpf_io_find_channel(io_ctx, stream_id2, true) != NULL);
 
     for (int i = 0; i < NUM_INSERTIONS - 1; i++) {
         test_data1 = jbpf_io_channel_reserve_buf(io_channel);
@@ -245,9 +246,9 @@ main(int argc, char* argv[])
         JBPF_IO_UNUSED(buf);
 
         // Check that serialization will fail if we don't give big enough buffer
-        assert(jbpf_io_channel_pack_msg(io_ctx, test_data1, serialized, 4) == -1);
+        __assert__(jbpf_io_channel_pack_msg(io_ctx, test_data1, serialized, 4) == -1);
 #endif
-        assert(jbpf_io_channel_submit_buf(io_channel) == 0);
+        __assert__(jbpf_io_channel_submit_buf(io_channel) == 0);
     }
 
     test_data_tmp.counter_a = NUM_INSERTIONS - 1;
@@ -255,7 +256,7 @@ main(int argc, char* argv[])
 
     jbpf_io_channel_send_data(io_channel, &test_data_tmp, sizeof(test_data_tmp));
 
-    assert(jbpf_io_channel_submit_buf(io_channel) == -2);
+    __assert__(jbpf_io_channel_submit_buf(io_channel) == -2);
 
     for (int i = 0; i < NUM_INSERTIONS; i++) {
         test_data2 = jbpf_io_channel_reserve_buf(io_channel2);
@@ -272,7 +273,7 @@ main(int argc, char* argv[])
             strncmp(serialized + JBPF_IO_STREAM_ID_LEN, serialized_output, serialized_size - JBPF_IO_STREAM_ID_LEN) ==
             0);
 #endif
-        assert(jbpf_io_channel_submit_buf(io_channel2) == 0);
+        __assert__(jbpf_io_channel_submit_buf(io_channel2) == 0);
     }
 
     // Write some data to each channel and make sure you get the same data out

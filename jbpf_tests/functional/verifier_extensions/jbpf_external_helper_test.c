@@ -17,6 +17,7 @@
 
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
+#include "jbpf_test_lib.h"
 
 static bool helper_function_called = false;
 static bool get_time_ns_replaced = false;
@@ -59,7 +60,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    __assert__(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -77,7 +78,7 @@ main(int argc, char** argv)
     codeletset_req_c1.codelet_descriptor[0].num_out_io_channel = 0;
 
     // The path of the codelet
-    assert(jbpf_path != NULL);
+    __assert__(jbpf_path != NULL);
     snprintf(
         codeletset_req_c1.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
@@ -87,7 +88,7 @@ main(int argc, char** argv)
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, "test1");
 
     // Load the codeletset. Loading should fail
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_CREATION_FAIL);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_CREATION_FAIL);
 
     jbpf_helper_func_def_t helper_func = {
         "new_helper_func", CUSTOM_HELPER_START_ID, (jbpf_helper_func_t)new_helper_implementation};
@@ -96,15 +97,15 @@ main(int argc, char** argv)
 
     // Try to register a function with relocation id that is out of range
     helper_func.reloc_id = 0;
-    assert(jbpf_register_helper_function(helper_func) == -1);
+    __assert__(jbpf_register_helper_function(helper_func) == -1);
     helper_func.reloc_id = 1000;
-    assert(jbpf_register_helper_function(helper_func) == -1);
+    __assert__(jbpf_register_helper_function(helper_func) == -1);
     // Now register the proper one
     helper_func.reloc_id = CUSTOM_HELPER_START_ID;
-    assert(jbpf_register_helper_function(helper_func) == 0);
+    __assert__(jbpf_register_helper_function(helper_func) == 0);
 
     // Codelet loading should now succeed
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Call hook and make sure that the helper was called
     struct packet p = {0};
@@ -114,40 +115,40 @@ main(int argc, char** argv)
 
     // Unload the codeletset
     strcpy(codeletset_unload_req_c1.codeletset_id.name, "new_helper_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     // Now we will replace the helper function get_time_ns with a custom one
     jbpf_helper_func_def_t helper_func_replacement = {
         "helper_func_replacement", JBPF_TIME_GET_NS, (jbpf_helper_func_t)jbpf_time_get_ns_replacement};
 
     JBPF_UNUSED(helper_func_replacement);
-    assert(jbpf_register_helper_function(helper_func_replacement) == 1);
+    __assert__(jbpf_register_helper_function(helper_func_replacement) == 1);
 
     // We load the codelet again and see that it loads and the function has been replaced
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Call hook and make sure that the helper was called
     hook_test1(&p, 999);
     assert(helper_function_called);
     assert(get_time_ns_replaced);
     strcpy(codeletset_unload_req_c1.codeletset_id.name, "new_helper_codeletset");
-    assert(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
+    __assert__(jbpf_codeletset_unload(&codeletset_unload_req_c1, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
 
     // We reset the helper functions. The codelet should fail to load again
     jbpf_reset_helper_functions();
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_CREATION_FAIL);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_CREATION_FAIL);
 
     // Deregister an invalid helper function
-    assert(jbpf_deregister_helper_function(1000) == -2);
+    __assert__(jbpf_deregister_helper_function(1000) == -2);
 
     // Deregister the registered helper function
-    assert(jbpf_deregister_helper_function(JBPF_TIME_GET_NS) == 0);
+    __assert__(jbpf_deregister_helper_function(JBPF_TIME_GET_NS) == 0);
 
     // Since the helper function is no longer available, the test should fail
-    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_CREATION_FAIL);
+    __assert__(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_CREATION_FAIL);
 
     // Function is already deregistered
-    assert(jbpf_deregister_helper_function(JBPF_TIME_GET_NS) == -1);
+    __assert__(jbpf_deregister_helper_function(JBPF_TIME_GET_NS) == -1);
 
     printf("Test completed successfully\n");
     return 0;

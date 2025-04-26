@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "jbpf_verifier.hpp"
+#include "jbpf_test_lib.h"
 
 std::string correct_codelets[] = {
     "/jbpf_tests/test_files/codelets/codelet-control-input/codelet-control-input.o",
@@ -39,7 +40,7 @@ main(int argc, char** argv)
 
     jbpf_verifier_result_t result;
     char* jbpf_path = getenv("JBPF_PATH");
-    assert(jbpf_path != nullptr);
+    __assert__(jbpf_path != nullptr);
 
     // All the below codelets should pass verification
     for (auto codelet : correct_codelets) {

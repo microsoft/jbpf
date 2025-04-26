@@ -37,6 +37,7 @@
 #include "jbpf_io_queue.h"
 #include "jbpf_io_channel.h"
 #include "jbpf_io_utils.h"
+#include "jbpf_test_lib.h"
 
 #define NUM_ITERS 3
 #define PRIMARY_SEM_NAME "/jbpf_io_ipc_test_primary_sem"
@@ -183,7 +184,7 @@ local_channel_thread(void* args)
 
     local_data->counter_a = 19821924;
 
-    assert(jbpf_io_channel_submit_buf(local_channel) == 0);
+    __assert__(jbpf_io_channel_submit_buf(local_channel) == 0);
 
     local_output_sent = true;
 
@@ -260,7 +261,7 @@ run_primary(char* serde1, char* serde2)
     assert(!jbpf_io_find_channel(io_ctx, local_stream_id, true));
 
     // Now send a control input and notify the secondary
-    assert(jbpf_io_channel_send_msg(io_ctx, &input_stream_id, (char*)&test_input, sizeof(struct test_struct)) == 0);
+    __assert__(jbpf_io_channel_send_msg(io_ctx, &input_stream_id, (char*)&test_input, sizeof(struct test_struct)) == 0);
     sem_post(primary_sem);
 }
 
@@ -345,7 +346,7 @@ run_secondary(char* serde1, char* serde2)
     JBPF_IO_UNUSED(tmp_s);
 #endif
 
-    assert(jbpf_io_channel_submit_buf(io_channel) == 0);
+    __assert__(jbpf_io_channel_submit_buf(io_channel) == 0);
 
     // Repeat with a second buffer
     data = jbpf_io_channel_reserve_buf(io_channel);
@@ -355,7 +356,7 @@ run_secondary(char* serde1, char* serde2)
     data->counter_a = 400;
     data->counter_b = 800;
 
-    assert(jbpf_io_channel_submit_buf(io_channel) == 0);
+    __assert__(jbpf_io_channel_submit_buf(io_channel) == 0);
 
     // Create 2 more output channels
     io_channel2 = jbpf_io_create_channel(
@@ -391,11 +392,11 @@ run_secondary(char* serde1, char* serde2)
     // Signal the primary that all is ready for the test
 
     // This is a channel of a different process, so assertion should fail
-    assert(!jbpf_io_find_channel(io_ctx, local_stream_id, true));
+    __assert__(jbpf_io_find_channel(io_ctx, local_stream_id, true) == NULL);
 
     // Those channels are local, so they should be found
-    assert(jbpf_io_find_channel(io_ctx, stream_id1, true));
-    assert(jbpf_io_find_channel(io_ctx, input_stream_id, false));
+    __assert__(jbpf_io_find_channel(io_ctx, stream_id1, true) != NULL);
+    __assert__(jbpf_io_find_channel(io_ctx, input_stream_id, false) != NULL);
 
     // Send some data from the new channels
     struct test_struct2* data2;
@@ -405,7 +406,7 @@ run_secondary(char* serde1, char* serde2)
 
     data2->counter_a = 1234;
 
-    assert(jbpf_io_channel_submit_buf(io_channel2) == 0);
+    __assert__(jbpf_io_channel_submit_buf(io_channel2) == 0);
 
     data = jbpf_io_channel_reserve_buf(io_channel3);
 
@@ -414,7 +415,7 @@ run_secondary(char* serde1, char* serde2)
     data->counter_a = 4444;
     data->counter_b = 8888;
 
-    assert(jbpf_io_channel_submit_buf(io_channel3) == 0);
+    __assert__(jbpf_io_channel_submit_buf(io_channel3) == 0);
 
     // Send some data from the remaining channels
     data = jbpf_io_channel_reserve_buf(io_channel);
@@ -424,14 +425,14 @@ run_secondary(char* serde1, char* serde2)
     data->counter_a = 7000;
     data->counter_b = 14000;
 
-    assert(jbpf_io_channel_submit_buf(io_channel) == 0);
+    __assert__(jbpf_io_channel_submit_buf(io_channel) == 0);
 
     for (int i = 0; i < NUM_ITERS; i++) {
         data = jbpf_io_channel_reserve_buf(io_channel3);
         assert(data);
         data->counter_a = i;
         data->counter_b = i * 2;
-        assert(jbpf_io_channel_submit_buf(io_channel3) == 0);
+        __assert__(jbpf_io_channel_submit_buf(io_channel3) == 0);
     }
 
     sem_post(secondary_sem);
