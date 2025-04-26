@@ -39,11 +39,11 @@ jbpf_run_test(
 
 // Macro to assert and avoid unused variable warnings when assert is optimised out
 // in release builds.
-#define __assert__(condition) \
-    do { \
+#define __assert__(condition)                   \
+    do {                                        \
         int __assert_result = (int)(condition); \
-        assert(__assert_result); \
-        (void)__assert_result; \
+        assert(__assert_result);                \
+        (void)__assert_result;                  \
     } while (0)
 
 #endif // JBPF_TEST_LIB_H
