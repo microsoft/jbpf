@@ -96,6 +96,8 @@ elseif(CMAKE_BUILD_TYPE MATCHES Debug)
   add_compile_options(--coverage -g)
   add_link_options(--coverage)
 else()
+  set(CMAKE_BUILD_TYPE Release)
+  message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release")
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
 endif()
 
