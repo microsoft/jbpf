@@ -1427,8 +1427,9 @@ jbpf_codeletset_load(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_
         linked_map = (struct jbpf_linked_map*)ck_ht_entry_value(cursor);
         if (linked_map->ref_count != linked_map->total_refs) {
             char msg[JBPF_MAX_ERR_MSG_SIZE];
-            sprintf(
+            snprintf(
                 msg,
+                JBPF_MAX_ERR_MSG_SIZE,
                 "Error in linking map %s for codelet %s. Please ensure that the map is used across all linked codelets "
                 "and that the definitions of the linked maps match.",
                 linked_map->map->name,
