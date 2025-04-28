@@ -62,11 +62,7 @@ run_jbpf_agent()
     jbpf_set_default_config_options(&config);
     sem_init(&sem, 0, 0);
 
-    int res = jbpf_init(&config);
-    assert(res == 0);
-#ifdef NDEBUG
-    (void)res; // suppress unused-variable warning in release mode
-#endif
+    assert(jbpf_init(&config) == 0);
 
     // Register jbpf thread
     jbpf_register_thread();

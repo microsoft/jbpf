@@ -170,11 +170,7 @@ run_jbpf_agent(void)
     // Primary is ready, so let's initialize the agent
     sem_wait(primary_sem);
 
-    int res = jbpf_init(&config);
-    assert(res == 0);
-#ifdef NDEBUG
-    (void)res; // suppress unused-variable warning in release mode
-#endif
+    assert(jbpf_init(&config) == 0);
 
     jbpf_register_thread();
 
@@ -209,8 +205,7 @@ run_jbpf_agent(void)
     strcpy(codeletset_req_c1.codelet_descriptor[0].hook_name, "test1");
 
     // Load the codeletset
-    res = jbpf_codeletset_load(&codeletset_req_c1, NULL);
-    assert(res == JBPF_CODELET_LOAD_SUCCESS);
+    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Next, we load the codeletset with codelets C2 and C3 in hooks "test1" and "test2"
     strcpy(codeletset_req_c2_c3.codeletset_id.name, "shared_map_input_output_codeletset");
@@ -262,8 +257,7 @@ run_jbpf_agent(void)
     strcpy(codeletset_req_c2_c3.codelet_descriptor[1].hook_name, "test2");
 
     // Load the codeletset
-    res = jbpf_codeletset_load(&codeletset_req_c2_c3, NULL);
-    assert(res == JBPF_CODELET_LOAD_SUCCESS);
+    assert(jbpf_codeletset_load(&codeletset_req_c2_c3, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Wait until the primary sends the inputs
     sem_post(secondary_sem);

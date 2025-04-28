@@ -39,11 +39,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    int res = jbpf_init(&config);
-    assert(res == 0);
-#ifdef NDEBUG
-    (void)res; // suppress unused-variable warning in release mode
-#endif
+    assert(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -102,11 +98,10 @@ main(int argc, char** argv)
 
         // Load the codeletsets
         // printf("Loading codletset %s\n", codset_req->codeletset_id.name);
-        res = jbpf_codeletset_load(codset_req, NULL);
         if (codset == NUM_CODELET_SETS - 1) {
-            assert(res == JBPF_CODELET_CREATION_FAIL);
+            assert(jbpf_codeletset_load(codset_req, NULL) == JBPF_CODELET_CREATION_FAIL);
         } else {
-            assert(res == JBPF_CODELET_LOAD_SUCCESS);
+            assert(jbpf_codeletset_load(codset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
         }
 
         // check the stats of the jbpf_ctx
@@ -135,11 +130,10 @@ main(int argc, char** argv)
         jbpf_codeletset_unload_req_s* codset_unload_req = &codeletset_unload_req;
         snprintf(codset_unload_req->codeletset_id.name, JBPF_CODELETSET_NAME_LEN, "simple_output_codeletset%d", codset);
         // printf("Unloading codeletset %s\n", codset_unload_req->codeletset_id.name);
-        res = jbpf_codeletset_unload(codset_unload_req, NULL);
         if (codset == NUM_CODELET_SETS - 1) {
-            assert(res == JBPF_CODELET_UNLOAD_FAIL);
+            assert(jbpf_codeletset_unload(codset_unload_req, NULL) == JBPF_CODELET_UNLOAD_FAIL);
         } else {
-            assert(res == JBPF_CODELET_UNLOAD_SUCCESS);
+            assert(jbpf_codeletset_unload(codset_unload_req, NULL) == JBPF_CODELET_UNLOAD_SUCCESS);
         }
     }
 

@@ -35,11 +35,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    int res = jbpf_init(&config);
-    assert(res == 0);
-#ifdef NDEBUG
-    (void)res; // suppress unused-variable warning in release mode
-#endif
+    assert(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -75,8 +71,7 @@ main(int argc, char** argv)
     snprintf(codeletset_req_c1.codelet_descriptor[0].hook_name, JBPF_HOOK_NAME_LEN, "test_single_result");
 
     // Load the codeletset
-    res = jbpf_codeletset_load(&codeletset_req_c1, NULL);
-    assert(res == JBPF_CODELET_LOAD_SUCCESS);
+    assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // iterate the increment operation
     for (int iter = 0; iter < MAX_ITERATION; ++iter) {

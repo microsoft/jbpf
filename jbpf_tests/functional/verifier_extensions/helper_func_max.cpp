@@ -108,11 +108,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    int res = jbpf_init(&config);
-    assert(res == 0);
-#ifdef NDEBUG
-    (void)res; // suppress unused-variable warning in release mode
-#endif
+    assert(jbpf_init(&config) == 0);
 
     sem_init(&sem, 0, 0);
 
@@ -187,8 +183,7 @@ main(int argc, char** argv)
     assert(result.verification_pass);
 
     // Load the codeletset. Loading should fail
-    res = jbpf_codeletset_load(codset, NULL);
-    assert(res == JBPF_CODELET_LOAD_SUCCESS);
+    assert(jbpf_codeletset_load(codset, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     // Call hook
     for (int i = CUSTOM_HELPER_START_ID; i < MAX_HELPER_FUNC; i++) {

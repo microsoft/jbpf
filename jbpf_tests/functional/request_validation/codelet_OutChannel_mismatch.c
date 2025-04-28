@@ -32,11 +32,7 @@ main(int argc, char** argv)
 
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    int res = jbpf_init(&config);
-    assert(res == 0);
-#ifdef NDEBUG
-    (void)res; // suppress unused-variable warning in release mode
-#endif
+    assert(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
@@ -81,8 +77,7 @@ main(int argc, char** argv)
     int rety = jbpf_codeletset_load(&codeletset_req_c1, &err_msg);
     printf("Return code: %d\n", rety);
 
-    res = jbpf_codeletset_load(&codeletset_req_c1, &err_msg);
-    assert(res == JBPF_CODELET_CREATION_FAIL);
+    assert(jbpf_codeletset_load(&codeletset_req_c1, &err_msg) == JBPF_CODELET_CREATION_FAIL);
     assert(strlen(err_msg.err_msg) > 0);
 
     // Cleanup and stop

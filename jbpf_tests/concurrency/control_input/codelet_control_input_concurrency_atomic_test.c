@@ -101,18 +101,13 @@ main(int argc, char** argv)
     strcpy(codeletset_req.codelet_descriptor[0].codelet_name, "simple_input_output_atomic");
     strcpy(codeletset_req.codelet_descriptor[0].hook_name, "test1");
 
-    int res = jbpf_init(&config);
-    assert(res == 0);
-#ifdef NDEBUG
-    (void)res; // suppress unused-variable warning in release mode
-#endif
+    assert(jbpf_init(&config) == 0);
 
     // The thread will be calling hooks, so we need to register it
     jbpf_register_thread();
 
     // Load the codeletset
-    res = jbpf_codeletset_load(&codeletset_req, NULL);
-    assert(res == JBPF_CODELET_LOAD_SUCCESS);
+    assert(jbpf_codeletset_load(&codeletset_req, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     pthread_barrier_init(&barrier_control, NULL, NUM_THREADS_CONTROL);
     pthread_t control_threads[NUM_THREADS_CONTROL];
