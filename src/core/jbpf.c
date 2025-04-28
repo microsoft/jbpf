@@ -1427,7 +1427,13 @@ jbpf_codeletset_load(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_
         linked_map = (struct jbpf_linked_map*)ck_ht_entry_value(cursor);
         if (linked_map->ref_count != linked_map->total_refs) {
             char msg[JBPF_MAX_ERR_MSG_SIZE];
-            sprintf(msg, "Validation error in linked map");
+            sprintf(
+                msg,
+                "Validation error in linked map %s. Check that all linked maps are indeed linked (Ref count %d != "
+                "total refs %d)\n",
+                linked_map->map->name,
+                linked_map->ref_count,
+                linked_map->total_refs);
             jbpf_logger(JBPF_ERROR, "%s\n", msg);
             outcome = JBPF_CODELET_LOAD_FAIL;
             if (err) {
