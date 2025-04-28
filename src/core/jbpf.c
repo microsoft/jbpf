@@ -1429,11 +1429,10 @@ jbpf_codeletset_load(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_
             char msg[JBPF_MAX_ERR_MSG_SIZE];
             sprintf(
                 msg,
-                "Validation error in linked map %s. Check that all linked maps are indeed linked (Ref count %d != "
-                "total refs %d)\n",
+                "Error in linking map %s for codelet %s. Please ensure that the map is used across all linked codelets "
+                "and that the definitions of the linked maps match.",
                 linked_map->map->name,
-                linked_map->ref_count,
-                linked_map->total_refs);
+                new_codeletset->codeletset_id.name);
             jbpf_logger(JBPF_ERROR, "%s\n", msg);
             outcome = JBPF_CODELET_LOAD_FAIL;
             if (err) {
