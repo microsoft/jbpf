@@ -3,8 +3,8 @@
     This tests if we can load a codelet which uses a large hashmap.
     The codelet is loaded and the hook is called once.
     The codelet is then unloaded.
-    The codelet should be unloaded successfully, and the hook should be called successfully
-    The assertion should pass to confirm the hashmap was created and used successfully
+    The codelet should be unloaded successfully, and the hook should be called successfully.
+    The assertion should pass to confirm the hashmap was created and used successfully.
 */
 
 #include <assert.h>
@@ -62,7 +62,8 @@ main(int argc, char** argv)
     snprintf(
         codeletset_req_c1.codelet_descriptor[0].codelet_path,
         JBPF_PATH_LEN,
-        "%s/jbpf_tests/test_files/codelets/codelet-with-a-single-largest-hashmap/codelet-with-a-single-largest-hashmap.o",
+        "%s/jbpf_tests/test_files/codelets/codelet-with-a-single-largest-hashmap/"
+        "codelet-with-a-single-largest-hashmap.o",
         jbpf_path);
     strcpy(codeletset_req_c1.codelet_descriptor[0].codelet_name, "codelet-hashmap-large");
 
