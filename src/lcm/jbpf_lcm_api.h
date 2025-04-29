@@ -45,7 +45,7 @@ extern "C"
      */
     typedef char jbpf_map_name_t[JBPF_MAP_NAME_LEN];
 
-#define JBPF_MAX_ERR_MSG_SIZE (512U)
+#define JBPF_MAX_ERR_MSG_SIZE (1024U)
     /**
      * @brief Error message type for jbpf.
      * @ingroup lcm
