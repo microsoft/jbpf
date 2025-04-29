@@ -73,8 +73,7 @@ main(int argc, char** argv)
     assert(jbpf_codeletset_load(&codeletset_req_c1, NULL) == JBPF_CODELET_LOAD_SUCCESS);
 
     struct packet* data = (struct packet*)malloc(sizeof(struct packet));
-    data->counter_a = 1;
-    data->counter_b = 0;
+    data->counter_a = 0;
 
     // call the hook
     hook_test1(data, 1);
