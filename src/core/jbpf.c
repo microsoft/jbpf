@@ -622,7 +622,7 @@ jbpf_create_map(const char* name, const struct jbpf_load_map_def* map_def, const
         goto map_not_created;
     }
     if (!map->data) {
-        jbpf_logger(JBPF_ERROR, "The map->data is NULL.\n");
+        jbpf_logger(JBPF_ERROR, "Couldn't allocate map in memory.\n");
         goto map_not_created;
     }
 
