@@ -26,6 +26,7 @@ const int EMULATOR_RETURN_FILE_NOT_EXIST = 1;
 const int EMULATOR_RETURN_PYTHON_ERROR = 2;
 const int EMULATOR_RETURN_HELPER_FUNCTION_ERROR = 3;
 const int EMULATOR_RETURN_NO_TEST_FILE = 4;
+const int EMULATOR_RETURN_JBPF_INIT_ERROR = 5;
 
 /* Compiler magic to make address sanitizer ignore
    memory leaks originating from libpython */
@@ -652,7 +653,11 @@ main(int argc, char** argv)
     jbpf_set_default_config_options(&config);
     config.lcm_ipc_config.has_lcm_ipc_thread = false;
 
-    assert(jbpf_init(&config) == 0);
+    if (jbpf_init(&config) != 0) {
+        jbpf_logger(JBPF_ERROR, "Failed to initialize JBPF\n");
+        ret = EMULATOR_RETURN_JBPF_INIT_ERROR;
+        goto cleanup;
+    }
 
     // init the queues
     TAILQ_INIT(&head);
