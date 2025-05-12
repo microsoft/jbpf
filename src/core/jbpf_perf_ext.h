@@ -19,7 +19,7 @@
 /**
  * @brief Maximum number of hooks
  */
-#define MAX_NUM_HOOKS 64
+#define MAX_NUM_HOOKS 96
 
 /**
  * @brief JBPF performance data structure
