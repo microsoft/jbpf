@@ -58,12 +58,17 @@ endif()
 ################ Definitions ################
 
 if(JBPF_THREADS_LARGE)
-add_definitions(-DJBPF_MAX_NUM_REG_THREADS=256)
+  add_definitions(-DJBPF_MAX_NUM_REG_THREADS=256)
 endif(JBPF_THREADS_LARGE)
 
 if(NOT JBPF_STATIC)
   add_definitions(-DJBPF_SHARED_LIB)
 endif(NOT JBPF_STATIC)
+
+# To build static library on ARM, disable out-of-line helpers for atomics 
+if ((JBPF_STATIC) AND (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64"))
+  add_compile_options(-mno-outline-atomics)
+endif()
 
 if(USE_JBPF_PERF_OPT)
   add_definitions(-DJBPF_PERF_OPT)
