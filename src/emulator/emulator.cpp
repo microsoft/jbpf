@@ -452,7 +452,7 @@ run_benchmark_test(char* dir, char* python_file)
     PyObject* pyTempPath;
     bool ok = true;
 
-    sysPath = PySys_GetObject(static_cast<char*>("path"));
+    sysPath = PySys_GetObject("path");
 
     // Append the dir to sys.path
     pyDir = PyUnicode_FromString(dir);
@@ -659,6 +659,8 @@ main(int argc, char** argv)
         goto cleanup;
     }
 
+    jbpf_register_thread();
+
     // init the queues
     TAILQ_INIT(&head);
 
@@ -675,8 +677,6 @@ main(int argc, char** argv)
         ret = EMULATOR_RETURN_HELPER_FUNCTION_ERROR;
         goto cleanup;
     }
-
-    jbpf_register_thread();
 
     if (argc != 3) {
         jbpf_logger(JBPF_INFO, "Usage: %s /path/to/tests test\n", argv[0]);

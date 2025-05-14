@@ -69,6 +69,23 @@ jobs:
             -e INITIALIZE_SUBMODULES=0 \
             ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
 
+      - name: JBPF Emulator Tests
+        run: |
+          set -x
+          source setup_jbpf_env.sh
+          if [[ -z "${{ env.staticBuildParam }}" ]]; then
+            echo "he emulator doesn't work on dynamic builds: the hook_report_stats and hook_periodic_call tests fail. Skipping emulator tests."
+            exit 0
+          fi
+          docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
+            --mount type=tmpfs,destination=/dev/shm \
+            -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            -e JBPF_PATH=/jbpf \
+            -e INITIALIZE_SUBMODULES=0 \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            -e RUN_EMULATOR_TESTS=1 jbpf_lib
+
       - name: Run Tests
         run: |
           set -x
