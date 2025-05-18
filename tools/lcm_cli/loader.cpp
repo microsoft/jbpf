@@ -191,29 +191,20 @@ run_lcm_subproc(const std::vector<std::string>& str_args, const std::string& inl
     // so we need to reset the getopts global to start from the beginning
     optind = 1;
 
-    size_t argc = str_args.size() + 1;
-    // Use unique_ptr with custom deleter for the char* array
-    std::unique_ptr<char*[]> args(new char*[argc]);
+    // Store all argument strings including the binary name
+    std::vector<std::string> all_args;
+    all_args.reserve(str_args.size() + 1);
+    all_args.emplace_back(inline_bin_arg);
+    all_args.insert(all_args.end(), str_args.begin(), str_args.end());
 
-    // Allocate and copy the inline binary argument
-    args[0] = new char[inline_bin_arg.length() + 1];
-    strcpy(args[0], inline_bin_arg.c_str());
-
-    // Smart pointers for individual strings to ensure proper cleanup
-    std::vector<std::unique_ptr<char[]>> arg_strings;
-    arg_strings.reserve(str_args.size());
-
-    for (size_t i = 0; i < str_args.size(); ++i) {
-        auto cstr = std::make_unique<char[]>(str_args[i].length() + 1);
-        strcpy(cstr.get(), str_args[i].c_str());
-        args[i + 1] = cstr.get();
-        arg_strings.push_back(std::move(cstr));
+    // Build argv-style array of const char* pointers to the string contents
+    std::vector<char*> argv;
+    argv.reserve(all_args.size());
+    for (auto& arg : all_args) {
+        argv.emplace_back(const_cast<char*>(arg.c_str()));
     }
 
-    auto ret = jbpf_lcm_cli::loader::run_loader(static_cast<int>(argc), args.get());
-
-    // Memory cleanup is automatic via smart pointers
-    return ret;
+    return jbpf_lcm_cli::loader::run_loader(static_cast<int>(argv.size()), argv.data());
 }
 } // namespace loader
 } // namespace jbpf_lcm_cli
