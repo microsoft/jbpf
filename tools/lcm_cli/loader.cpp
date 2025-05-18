@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
 #include <iostream>
+#include <vector>
+#include <string>
 #include <filesystem>
 #include "yaml-cpp/yaml.h"
 
@@ -180,6 +182,38 @@ run_loader(int ac, char** av)
         cout << "Request failed with response " << ret << endl;
         return JBPF_LCM_CLI_REQ_FAILURE;
     }
+}
+
+load_req_outcome
+run_lcm_subproc(const std::vector<std::string>& str_args, const std::string& inline_bin_arg)
+{
+    // loader reads opts from argv using getopts
+    // so we need to reset the getopts global to start from the beginning
+    optind = 1;
+
+    size_t argc = str_args.size() + 1;
+    // Use unique_ptr with custom deleter for the char* array
+    std::unique_ptr<char*[]> args(new char*[argc]);
+
+    // Allocate and copy the inline binary argument
+    args[0] = new char[inline_bin_arg.length() + 1];
+    strcpy(args[0], inline_bin_arg.c_str());
+
+    // Smart pointers for individual strings to ensure proper cleanup
+    std::vector<std::unique_ptr<char[]>> arg_strings;
+    arg_strings.reserve(str_args.size());
+
+    for (size_t i = 0; i < str_args.size(); ++i) {
+        auto cstr = std::make_unique<char[]>(str_args[i].length() + 1);
+        strcpy(cstr.get(), str_args[i].c_str());
+        args[i + 1] = cstr.get();
+        arg_strings.push_back(std::move(cstr));
+    }
+
+    auto ret = jbpf_lcm_cli::loader::run_loader(static_cast<int>(argc), args.get());
+
+    // Memory cleanup is automatic via smart pointers
+    return ret;
 }
 } // namespace loader
 } // namespace jbpf_lcm_cli
