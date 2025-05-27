@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
 #include <iostream>
+#include <vector>
+#include <string>
 #include <filesystem>
 #include "yaml-cpp/yaml.h"
 
@@ -180,6 +182,29 @@ run_loader(int ac, char** av)
         cout << "Request failed with response " << ret << endl;
         return JBPF_LCM_CLI_REQ_FAILURE;
     }
+}
+
+load_req_outcome
+run_lcm_subproc(const std::vector<std::string>& str_args, const std::string& inline_bin_arg)
+{
+    // loader reads opts from argv using getopts
+    // so we need to reset the getopts global to start from the beginning
+    optind = 1;
+
+    // Store all argument strings including the binary name
+    std::vector<std::string> all_args;
+    all_args.reserve(str_args.size() + 1);
+    all_args.emplace_back(inline_bin_arg);
+    all_args.insert(all_args.end(), str_args.begin(), str_args.end());
+
+    // Build argv-style array of const char* pointers to the string contents
+    std::vector<char*> argv;
+    argv.reserve(all_args.size());
+    for (auto& arg : all_args) {
+        argv.emplace_back(const_cast<char*>(arg.c_str()));
+    }
+
+    return jbpf_lcm_cli::loader::run_loader(static_cast<int>(argv.size()), argv.data());
 }
 } // namespace loader
 } // namespace jbpf_lcm_cli
