@@ -5,7 +5,7 @@ import jbpf_lcm_api
 import jbpf_helpers
 import datetime
 import random
-import yaml
+from ruamel.yaml import YAML
 import json
 
 # Load the Python API
@@ -171,24 +171,24 @@ def yaml_to_json(file_path, placeholders=None):
         dict: JSON object representing the YAML content after replacements.
     """
     try:
+        yaml = YAML(typ='safe')  # Use 'safe' loader equivalent to PyYAML's safe_load
         with open(file_path, "r") as yaml_file:
-            content = yaml_file.read()  # Read the raw YAML content
+            content = yaml_file.read()  # Read raw YAML content as string
 
         # Replace placeholders if provided
         if placeholders:
             for placeholder, value in placeholders.items():
                 content = content.replace(f"{{{{{placeholder}}}}}", value)
 
-        # Parse the YAML content after replacement
-        yaml_content = yaml.safe_load(content)
+        # Parse YAML from string using ruamel.yaml
+        from io import StringIO
+        yaml_content = yaml.load(StringIO(content))
 
-        # Convert to JSON-compatible dictionary
-        return json.loads(json.dumps(yaml_content))
+        return json.loads(json.dumps(yaml_content))  # Convert to standard JSON-compatible dict
 
     except Exception as e:
         print(f"Error reading or processing YAML file: {e}")
         return None
-
 
 class c_ubyte_Array_16(ctypes.Array):
     _type_ = ctypes.c_ubyte

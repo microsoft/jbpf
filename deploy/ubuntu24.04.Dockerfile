@@ -15,7 +15,7 @@ RUN apt install -y libyaml-cpp-dev
 
 ## Emulator
 RUN apt install -y python3-dev python3-pip
-RUN pip3 install ctypesgen pyyaml regex --break-system-packages
+RUN pip3 install ctypesgen ruamel.yaml --break-system-packages
 
 WORKDIR /jbpf
 COPY . /jbpf

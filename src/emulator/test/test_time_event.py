@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# This test emulates the time events, loads a codeletset, calls a hook, and checks the output buffers.
+# The time events are sent in the codelet, which then is checked by the io_channel_check_output function.
 import os, sys, ctypes
 
 JBPF_PATH = os.getenv("JBPF_PATH")

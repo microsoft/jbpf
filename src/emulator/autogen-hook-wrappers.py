@@ -6,7 +6,6 @@
 
 import re
 import sys
-import regex
 
 def remove_c_comments(code):
     pattern = r'/\*.*?\*/'
@@ -122,8 +121,8 @@ def process_header_file(input_file):
     with open(input_file, 'r') as f:
         data = remove_c_comments(f.read())
 
-    def process_hook(hook, data, define_hook):
-        hooks = regex.findall(rf'{hook}\((.*?)\)', data, regex.DOTALL)
+    def process_hook(hook, data, define_hook):        
+        hooks = re.findall(rf'{re.escape(hook)}\((.*?)\)', data, re.DOTALL)
 
         for data in hooks:
             hook = data[:data.find(',')].strip()

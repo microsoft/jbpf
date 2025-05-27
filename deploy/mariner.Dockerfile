@@ -10,7 +10,7 @@ RUN tdnf -y install doxygen
 RUN tdnf -y install clang-tools-extra
 ## emulator
 RUN tdnf -y install python3-devel python3-pip
-RUN pip3 install ctypesgen pyyaml regex 
+RUN pip3 install ctypesgen ruamel.yaml
 
 WORKDIR /jbpf
 COPY . /jbpf

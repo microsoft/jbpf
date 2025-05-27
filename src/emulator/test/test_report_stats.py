@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# This tests loads a codeletset, calls the hook report_stats, and checks the output buffers.
 import os, sys, ctypes
 
 JBPF_PATH = os.getenv("JBPF_PATH")

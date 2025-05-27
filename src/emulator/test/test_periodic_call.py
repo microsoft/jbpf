@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# This test loads a codelet set, calls the hook periodic_call and checks the output buffers.
 import os, sys, ctypes
 
 JBPF_PATH = os.getenv("JBPF_PATH")

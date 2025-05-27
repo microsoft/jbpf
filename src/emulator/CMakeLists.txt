@@ -112,8 +112,8 @@ add_custom_command(TARGET ${JBPF_EMULATOR} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/hook_wrapper.h ${OUTPUT_DIR}/emulator/
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/autogen-hook-wrappers.py ${OUTPUT_DIR}/emulator/
     ## example test files
-    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/helper_functions.hpp ${OUTPUT_DIR}/emulator/test
-    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/hooks.h ${OUTPUT_DIR}/emulator/test
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/helper_functions.hpp ${OUTPUT_DIR}/emulator
+    COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/hooks.h ${OUTPUT_DIR}/emulator
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_0.py ${OUTPUT_DIR}/emulator/test
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_1.py ${OUTPUT_DIR}/emulator/test
     COMMAND ${CMAKE_COMMAND} -E copy ${JBPF_EMULATOR_SRC_DIR}/test/test_2.py ${OUTPUT_DIR}/emulator/test

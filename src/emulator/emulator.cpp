@@ -67,8 +67,8 @@ typedef struct message_t
 static std::queue<message_t*> message_queue;
 
 // user input
-#include "test/hooks.h"
-#include "test/helper_functions.hpp"
+#include "hooks.h"
+#include "helper_functions.hpp"
 
 int
 add_time_event(uint64_t event)

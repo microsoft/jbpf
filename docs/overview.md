@@ -53,7 +53,8 @@ These are the basic terms used in the project:
 * *Map*: A shared memory location that is accessible to one or more codelets, typically used to store data between invocations, share across codelets, or communicate with the rest of the system (see [here](./maps.md) for more on maps). 
 * *Helper function*: A function implemented by the application and exposed to the codelet, typically used to affect the application behaviour or perform complex operations that are hard to verify (see [here](./add_helper_function.md) for more on helper functions). 
 
-
+## Jbpf Emulator
+The [jbpf emulator](./emulator.md) is a testing framework that allows to test *jbpf* codelets using Python.
 
 ## Relevant eBPF/uBPF tutorial
 

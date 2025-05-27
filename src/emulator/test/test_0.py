@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# This file tests the emulator_utils.create_random_stream_id function
+
 import os, sys, time, ctypes
 
 JBPF_PATH = os.getenv("JBPF_PATH")
