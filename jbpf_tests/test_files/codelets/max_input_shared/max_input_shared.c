@@ -122,7 +122,5 @@ jbpf_main(void* state)
         return 1;
     }
 
-
-
     return 0;
 }

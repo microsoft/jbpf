@@ -73,7 +73,6 @@ struct jbpf_load_map_def SEC("maps") shared_map_output9 = {
     .max_entries = 1,
 };
 
-
 SEC("jbpf_ran_fapi")
 uint64_t
 jbpf_main(void* state)
@@ -147,8 +146,7 @@ jbpf_main(void* state)
         return 5;
     }
 
-
-    int *outtmp;
+    int* outtmp;
 
     outtmp = jbpf_map_lookup_elem(&shared_map_output5, &index);
     if (!outtmp) {
@@ -170,6 +168,6 @@ jbpf_main(void* state)
     if (!outtmp) {
         return 1;
     }
-    
+
     return 0;
 }
