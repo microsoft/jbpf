@@ -129,33 +129,6 @@ run_jbpf_agent()
     return 0;
 }
 
-jbpf_lcm_cli::loader::load_req_outcome
-run_lcm_subproc(std::vector<std::string> str_args)
-{
-    // loader reads opts from argv using getopts
-    // so we need to reset the getopts global to start from the beginning
-    optind = 1;
-
-    char** args = new char*[str_args.size() + 1];
-    args[0] = new char[inline_bin_arg.length() + 1];
-    strcpy(args[0], inline_bin_arg.c_str());
-    args[0][inline_bin_arg.length()] = '\0';
-
-    for (int i = 0; i < str_args.size(); i++) {
-        args[i + 1] = new char[str_args[i].length() + 1];
-        strcpy(args[i + 1], str_args[i].c_str());
-        args[i + 1][str_args[i].length()] = '\0';
-    }
-
-    auto ret = jbpf_lcm_cli::loader::run_loader(str_args.size() + 1, args);
-
-    for (int i = 0; i < str_args.size() + 1; i++)
-        delete[] args[i];
-    delete[] args;
-
-    return ret;
-}
-
 int
 run_lcm_ipc_loader()
 {
@@ -170,10 +143,12 @@ run_lcm_ipc_loader()
             "${JBPF_PATH}/jbpf_tests/tools/lcm_cli/codeletset_req_c1.yaml")};
 
     // Make a request to load the codeletset
-    assert(run_lcm_subproc(args) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_SUCCESS);
+    assert(
+        jbpf_lcm_cli::loader::run_lcm_subproc(args, inline_bin_arg) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_SUCCESS);
 
     // Make a 2nd request to load the codeletSet
-    assert(run_lcm_subproc(args) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_SUCCESS);
+    assert(
+        jbpf_lcm_cli::loader::run_lcm_subproc(args, inline_bin_arg) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_SUCCESS);
 
     // Loading was done, so the agent test can move on
     sem_post(lcm_cli_agent_sem);
@@ -191,7 +166,8 @@ run_lcm_ipc_loader()
              "${JBPF_PATH}/jbpf_tests/tools/lcm_cli/codeletset_unload_req_c1.yaml")});
 
     // Make a request to unload an existing codeletset
-    assert(run_lcm_subproc(args) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_SUCCESS);
+    assert(
+        jbpf_lcm_cli::loader::run_lcm_subproc(args, inline_bin_arg) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_SUCCESS);
 
     // Make a request to load a codeletset that will fail, due to non-existent hook
     args.clear();
@@ -202,7 +178,8 @@ run_lcm_ipc_loader()
          jbpf_lcm_cli::parser::expand_environment_variables(
              "${JBPF_PATH}/jbpf_tests/tools/lcm_cli/codeletset_req_error.yaml")});
 
-    assert(run_lcm_subproc(args) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_FAILURE);
+    assert(
+        jbpf_lcm_cli::loader::run_lcm_subproc(args, inline_bin_arg) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_FAILURE);
 
     // Make a request to unload a non-existent codeletset
     args.clear();
@@ -213,7 +190,8 @@ run_lcm_ipc_loader()
          jbpf_lcm_cli::parser::expand_environment_variables(
              "${JBPF_PATH}/jbpf_tests/tools/lcm_cli/codeletset_unload_req_error.yaml")});
 
-    assert(run_lcm_subproc(args) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_FAILURE);
+    assert(
+        jbpf_lcm_cli::loader::run_lcm_subproc(args, inline_bin_arg) == jbpf_lcm_cli::loader::JBPF_LCM_CLI_REQ_FAILURE);
 
     // Tests are done. Let the agent know that it can terminate
     sem_post(lcm_cli_agent_sem);
