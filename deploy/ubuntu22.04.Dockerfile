@@ -10,7 +10,7 @@ RUN echo "*** Installing packages"
 RUN apt-get clean && apt-get update && \
     apt-get install -y --no-install-recommends \
         cmake build-essential libboost-dev libboost-program-options-dev \
-        gcovr doxygen libboost-filesystem-dev libasan6 python3 \
+        git gcovr doxygen libboost-filesystem-dev libasan6 python3 \
         clang-format cppcheck clang gcc-multilib libyaml-cpp-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
