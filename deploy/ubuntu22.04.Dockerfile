@@ -14,6 +14,8 @@ RUN apt-get update && \
 RUN sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g' /etc/apt/sources.list && \
     sed -i 's|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list
 
+RUN apt-get update --allow-releaseinfo-change
+
 # --- Install required packages ---
 RUN echo "*** Installing packages" && \
     apt-get update --fix-missing && \
