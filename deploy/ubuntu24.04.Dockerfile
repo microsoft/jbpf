@@ -14,7 +14,7 @@ RUN sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g' /etc/apt/s
     sed -i 's|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list
 
 RUN echo "*** Installing packages" && \
-    apt update && \
+    apt update --fix-missing && \
     apt install -y --no-install-recommends \
         cmake \
         build-essential \

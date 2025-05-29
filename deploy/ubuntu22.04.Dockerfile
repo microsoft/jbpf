@@ -16,7 +16,7 @@ RUN sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g' /etc/apt/s
 
 # --- Install required packages ---
 RUN echo "*** Installing packages" && \
-    apt-get update && \
+    apt-get update --fix-missing && \
     apt-get install -y --no-install-recommends \
         cmake \
         build-essential \
