@@ -53,7 +53,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build \
+          docker build --no-cache \
             -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
             -f deploy/${{ matrix.dockerType }}.Dockerfile .
           docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
