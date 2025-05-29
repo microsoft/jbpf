@@ -622,7 +622,7 @@ jbpf_create_map(const char* name, const struct jbpf_load_map_def* map_def, const
         goto map_not_created;
     }
     if (!map->data) {
-        jbpf_logger(JBPF_ERROR, "The map->data is NULL.\n");
+        jbpf_logger(JBPF_ERROR, "Couldn't allocate map in memory.\n");
         goto map_not_created;
     }
 
@@ -1427,7 +1427,13 @@ jbpf_codeletset_load(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_
         linked_map = (struct jbpf_linked_map*)ck_ht_entry_value(cursor);
         if (linked_map->ref_count != linked_map->total_refs) {
             char msg[JBPF_MAX_ERR_MSG_SIZE];
-            sprintf(msg, "Validation error in linked map");
+            snprintf(
+                msg,
+                JBPF_MAX_ERR_MSG_SIZE,
+                "Error in linking map %s for codelet %s. Please ensure that the map is used across all linked "
+                "codelets and that the definitions of the linked maps match.",
+                linked_map->map->name,
+                new_codeletset->codeletset_id.name);
             jbpf_logger(JBPF_ERROR, "%s\n", msg);
             outcome = JBPF_CODELET_LOAD_FAIL;
             if (err) {

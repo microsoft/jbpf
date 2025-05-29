@@ -18,7 +18,7 @@ struct jbpf_mempool
     jbpf_ring_ctx_t* ring_free;
     jbpf_mbuf_t* ring_marker;
     uint32_t type;
-    uint16_t num_elems;
+    uint32_t num_elems;
     uint16_t elem_size;
     uint16_t mbuf_size;
 };
