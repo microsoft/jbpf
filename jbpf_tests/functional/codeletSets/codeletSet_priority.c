@@ -25,8 +25,9 @@
 // Contains the struct and hook definitions
 #include "jbpf_test_def.h"
 
+#define NUM_CODELETS 8
 #define NUM_ITERATIONS 5
-#define TOTAL_HOOK_CALLS (NUM_ITERATIONS * JBPF_MAX_CODELETS_IN_CODELETSET)
+#define TOTAL_HOOK_CALLS (NUM_ITERATIONS * NUM_CODELETS)
 
 jbpf_io_stream_id_t stream_ids[] = {
     {.id = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x00}},
@@ -117,7 +118,7 @@ main(int argc, char** argv)
 
     jbpf_set_default_config_options(&config);
 
-    assert((sizeof(stream_ids) / sizeof(stream_ids[0])) == JBPF_MAX_CODELETS_IN_CODELETSET);
+    assert((sizeof(stream_ids) / sizeof(stream_ids[0])) == NUM_CODELETS);
 
     sem_init(&sem, 0, 0);
 
@@ -136,10 +137,10 @@ main(int argc, char** argv)
     // The name of the codeletset
     strcpy(codeletset_req_c1.codeletset_id.name, "simple_output_shared_counter_codeletset");
 
-    // Create max possible codelets
-    codeletset_req_c1.num_codelet_descriptors = JBPF_MAX_CODELETS_IN_CODELETSET;
+    // Create the codelets
+    codeletset_req_c1.num_codelet_descriptors = NUM_CODELETS;
 
-    for (uint16_t i = 0; i < JBPF_MAX_CODELETS_IN_CODELETSET; i++) {
+    for (uint16_t i = 0; i < NUM_CODELETS; i++) {
 
         // The codelet has just one output channel and no shared maps
         codeletset_req_c1.codelet_descriptor[i].num_in_io_channel = 0;

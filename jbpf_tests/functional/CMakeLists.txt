@@ -31,3 +31,6 @@ add_subdirectory(verifier_extensions)
 add_subdirectory(ctrl_hooks)
 add_subdirectory(helper_functions)
 add_subdirectory(array)
+add_subdirectory(perf)
+
+
