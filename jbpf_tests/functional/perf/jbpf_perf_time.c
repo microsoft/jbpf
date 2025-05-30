@@ -72,6 +72,8 @@ main(int argc, char* argv[])
     assert(perf_data[perf_idx].min == min_time); // Minimum should still be the same
     assert(perf_data[perf_idx].max == max_time); // Maximum should still be the same
 
+    jbpf_free_perf_hook(&test_hook);
+
     // Stop
     jbpf_stop();
 }
