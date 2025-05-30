@@ -1,5 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
-# This test loads a codeletset, calls a hook, sends input messages, and checks the output buffers.
+# Test procedure:
+# 1. Load a codeletset using defined codelet_descriptors.
+# 2. Send input messages.
+# 3. Call the hook multiple times.
+# 4. Validate output buffers via jbpf_handle_out_bufs using callbacks.
+# 5. Unload the codeletset.
 import os, sys, time, ctypes
 
 JBPF_PATH = os.getenv("JBPF_PATH")

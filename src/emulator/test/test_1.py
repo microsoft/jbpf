@@ -1,5 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
-# This test loads a codeletset, calls a hook, and checks the output buffers.
+# Test workflow:
+# 1. Load a codeletset.
+# 2. Invoke the hook three times with varying input data.
+# 3. Verify the output buffers contain the expected results after each call.
+# 4. Unload the codeletset.
 import os, sys, time, ctypes
 
 JBPF_PATH = os.getenv("JBPF_PATH")

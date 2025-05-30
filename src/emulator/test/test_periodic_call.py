@@ -1,5 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
-# This test loads a codelet set, calls the hook periodic_call and checks the output buffers.
+# This test loads a codeletset that hooks into periodic_call to verify periodic execution.
+# The codelet sends an output message on each periodic_call, which the test validates.
+# The codeletset is unloaded after the test completes.
+
 import os, sys, ctypes
 
 JBPF_PATH = os.getenv("JBPF_PATH")
