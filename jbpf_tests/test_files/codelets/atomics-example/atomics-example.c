@@ -11,7 +11,6 @@
  * 6. __sync_val_compare_and_swap
  */
 
-#include "jbpf_helper.h"
 #include "jbpf_defs.h"
 #include "jbpf_test_def.h"
 
