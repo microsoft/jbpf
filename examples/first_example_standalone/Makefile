@@ -8,7 +8,7 @@ endif
 
 AGENT_NAME := example_app
 CODELET_NAME := example_codelet.o
-INCLUDES := -I${JBPF_OUT_DIR}/inc
+INCLUDES := -I${JBPF_OUT_DIR}/inc -I/usr/include/aarch64-linux-gnu -I/usr/include/x86_64-linux-gnu
 LDFLAGS := -L${JBPF_OUT_DIR}/lib -ljbpf -lck -lubpf -lmimalloc -lpthread -ldl -lrt ${DEBUG_LDFLAGS}
 AGENT_FILE := example_app.cpp
 CODELET_FILE := example_codelet.c

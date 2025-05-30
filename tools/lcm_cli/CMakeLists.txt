@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 
 project(jbpf_lcm_ipc_cli)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+
 find_package(yaml-cpp REQUIRED)
 include_directories(${YAML_CPP_INCLUDE_DIRS})
 

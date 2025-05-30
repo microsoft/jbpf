@@ -42,6 +42,11 @@ make doc
 
 The documentation will be generated in the `$OUT_DIR/docs/html` directory.
 
+
+## Supported architectures
+jbpf supports both x86_64 and aarch64. However, jbpf uses ubpf to run userspace eBPF code, and ubpf does not support atomics for ARM. Therefore, users compiling for ARM should be aware that certain functionailities of jbpf will not be available.
+
+
 # Further documentation
 
 To learn further, explore our documentation:
