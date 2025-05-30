@@ -108,8 +108,11 @@ extern "C"
 
         et = jbpf_get_time_diff_ns(start_time, end_time);
 
+        if (et == 0)
+            return -1;
+
         // bin_idx = et / JBPF_NSECS_PER_BIN;
-        bin_idx = 63 - __builtin_clzll(et);
+        bin_idx = JBPF_NUM_HIST_BINS - 1 - __builtin_clzll(et);
         /* Any value that is spilling should go to the last bin */
         if (bin_idx >= JBPF_NUM_HIST_BINS)
             bin_idx = JBPF_NUM_HIST_BINS - 1;
