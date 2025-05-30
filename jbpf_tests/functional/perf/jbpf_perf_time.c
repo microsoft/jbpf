@@ -10,8 +10,7 @@
 
 #include "jbpf.h"
 #include "jbpf_perf.h"
-
-#include "jbpf_logging.h"
+#include "jbpf_memory.h"
 
 int
 main(int argc, char* argv[])
@@ -71,6 +70,8 @@ main(int argc, char* argv[])
     assert(perf_data[perf_idx].num == 1);        // Should still have the valid measurement logged
     assert(perf_data[perf_idx].min == min_time); // Minimum should still be the same
     assert(perf_data[perf_idx].max == max_time); // Maximum should still be the same
+
+    jbpf_free_mem(perf_data); // Free the perf data
 
     jbpf_free_perf_hook(&test_hook);
 
