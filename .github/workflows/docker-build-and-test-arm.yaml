@@ -110,6 +110,28 @@ jobs:
             -e INITIALIZE_SUBMODULES=0 \
             ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
 
+      - name: Build codelets /jbpf_tests/test_files
+        run: |
+          set -ex
+          source setup_jbpf_env.sh
+          docker run \
+            -e JBPF_PATH=/jbpf \
+            -v "$(pwd)":/jbpf_out_lib \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            --entrypoint=/bin/bash jbpf_lib -c "cd /jbpf/jbpf_tests/test_files/codelets/ && make clean && make"
+
+      - name: Build codelets /tools/stats_report
+        run: |
+          set -ex
+          source setup_jbpf_env.sh
+          docker run \
+            -e JBPF_PATH=/jbpf \
+            -v "$(pwd)":/jbpf_out_lib \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            --entrypoint=/bin/bash jbpf_lib -c "cd /jbpf/tools/stats_report/ && make clean && make"
+
       - name: Run Tests
         run: |
           set -x
