@@ -3,7 +3,7 @@ ARCH := $(shell uname -m)
 ifeq ($(ARCH),aarch64)
   SYS_INC := -I/usr/include/aarch64-linux-gnu
 else
-  SYS_INC :=
+  SYS_INC := -I/usr/include/x86_64-linux-gnu
 endif
 
 CC = clang
