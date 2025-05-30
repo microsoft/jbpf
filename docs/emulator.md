@@ -18,6 +18,13 @@ There are two kinds of emulator builds:
 1. **Dummy Emulator**: Basic emulator with no custom logic (good for testing the build setup).
 2. **Custom Emulator**: Extended with your hooks and helper functions for real test scenarios.
 
+## Workflow of Emulator
+Jbpf emulator is a C++ app that starts jbpf.
+- Registers custom hooks.
+- Registers custom helper functions.
+- Runs python code which users can load codelet, unload codelet, calls hooks in the similar fashion as those in JBPF C unit tests.
+- Assertions.
+
 ---
 
 ## Building the Dummy Emulator
