@@ -1,4 +1,4 @@
-name: JBPF Docker Build and Tests (AMD64)
+name: JBPF Docker Build and Tests (ARM64)
 
 on:
   push:
@@ -16,13 +16,58 @@ env:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, 1ES.Pool=jbpf-arm-pipeline ]
     strategy:
       matrix:
         dockerType: [ "mariner", "ubuntu22.04", "ubuntu24.04" ]
         testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
 
     steps:
+      - name: Wait for dpkg lock (self-hosted only)
+        if: runner.os == 'Linux' && runner.arch == 'ARM64' # optional
+        run: |
+          sudo systemctl disable --now unattended-upgrades
+          while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+            echo "Another apt/dpkg process is running. Waiting..."
+            sleep 5
+          done
+
+      - name: Update apt and install prerequisites (with 5 retries)
+        run: |
+          for i in {1..5}; do
+            sudo apt-get update && break || sleep 5
+          done
+          for i in {1..5}; do
+            sudo apt-get install -y \
+            apt-transport-https \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release \
+            git || sleep 5
+          done
+
+      - name: Add Docker's official GPG key and repo
+        run: |
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          echo \
+            "deb [arch=arm64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+      - name: Install Docker Engine (with 5 retries)
+        run: |
+          for i in {1..5}; do
+            sudo apt-get update && break || sleep 5
+          done
+          for i in {1..5}; do
+            sudo apt-get install -y docker-ce docker-ce-cli containerd.io || sleep 5
+          done
+
+      - name: Verify Docker
+        run: docker --version
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -47,23 +92,19 @@ jobs:
           echo "Static Build Param: ${{ env.staticBuildParam }}"
           echo "Sanitizer Build Param: ${{ env.sanitizerBuildParam }}"
 
-      - name: Disable Git SSL Verification (Temporary)
-        run: |
-          git config --global http.sslVerify false
-
       - name: Build Docker Image
         run: |
-          docker build --no-cache \
+          sudo docker build \
             -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
             -f deploy/${{ matrix.dockerType }}.Dockerfile .
-          docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
+          sudo docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
 
       - name: Run Container to Build JBPF
         run: |
           set -ex
           source setup_jbpf_env.sh
           ./init_and_patch_submodules.sh
-          docker run \
+          sudo docker run \
             -v "$(pwd)"/3p:/jbpf/3p \
             -v "$(pwd)":/jbpf_out_lib \
             -e INITIALIZE_SUBMODULES=0 \
@@ -73,7 +114,7 @@ jobs:
         run: |
           set -x
           source setup_jbpf_env.sh
-          docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
+          sudo docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
             --mount type=tmpfs,destination=/dev/shm \
             -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
             -v "$(pwd)"/3p:/jbpf/3p \
@@ -95,10 +136,10 @@ jobs:
       - name: Upload Test Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: jbpf-amd64-test-artifacts-${{ matrix.dockerType }}-${{ matrix.testCase }}
+          name: jbpf-arm64-test-artifacts-${{ matrix.dockerType }}-${{ matrix.testCase }}
           path: ${{ github.workspace }}/artifacts
 
       - name: Cleanup Docker
         run: |
-          docker image prune -af || true
-          docker container prune -f || true
+          sudo docker image prune -af || true
+          sudo docker container prune -f || true
