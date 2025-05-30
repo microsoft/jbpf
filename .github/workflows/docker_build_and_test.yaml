@@ -85,6 +85,7 @@ jobs:
             -e INITIALIZE_SUBMODULES=0 \
             ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
             -e RUN_EMULATOR_TESTS=1 jbpf_lib
+
       - name: Build codelets /jbpf_tests/test_files
         run: |
           set -ex
