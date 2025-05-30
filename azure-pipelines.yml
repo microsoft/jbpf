@@ -2,37 +2,25 @@ trigger:
   branches:
     include:
       - main
-      - stable
       - gh-readonly-queue/main/*
+      - dev
 
 pr:
   branches:
     include:
-      - '*'
-
-pool:
-  name: agent-pool-onprem-ubuntu
-  # demands: Agent.CPU -equals 8
+      - main
 
 schedules:
-  - cron: "0 0 1 * *"
-    displayName: Monthly scheduled build
-    branches:
-      include:
-        - main
-    always: true
   - cron: "0 0 * * *"
     displayName: Daily scheduled build
     branches:
       include:
-        - stable
+        - main
+        - dev
     always: true
 
 variables:
-  ociServiceConnection: oci-service-connection-jbpf
   acr: jbpfpipeline
-  baseImageMajor: 1
-  baseImageMinor: $[counter(format('{0}.base',variables['baseImageMajor']),0)]
   containerRegistry: $[format('{0}.azurecr.io',variables['acr'])]
   DOCKER_BUILDKIT: 1
   imageTag: "$[format('pipeline-{0}-{1}', replace(variables['build.buildnumber'], '.', '-'), variables['build.sourceversion'])]"
@@ -93,8 +81,6 @@ stages:
           - template: pipeline/house-keeping.yaml
 
           - template: agentpool/cleanup.yaml@templates
-
-  - template: pipeline/build-for-os.yaml
 
   - stage: Doxygen
     dependsOn: []

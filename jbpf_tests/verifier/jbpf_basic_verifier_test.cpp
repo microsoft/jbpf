@@ -8,6 +8,7 @@ std::string correct_codelets[] = {
     "/jbpf_tests/test_files/codelets/codelet-control-input-output/codelet-control-input.o",
     "/jbpf_tests/test_files/codelets/codelet-hashmap/codelet-hashmap.o",
     "/jbpf_tests/test_files/codelets/codelet-large-map/codelet-large-map.o",
+    "/jbpf_tests/test_files/codelets/codelet-with-a-single-largest-hashmap/codelet-with-a-single-largest-hashmap.o",
     "/jbpf_tests/test_files/codelets/codelet-large-map-output/codelet-large-map.o",
     "/jbpf_tests/test_files/codelets/codelet-map-array/codelet-map-array.o",
     "/jbpf_tests/test_files/codelets/codelet-multithreading-output/codelet-multithreading.o",

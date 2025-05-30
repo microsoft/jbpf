@@ -45,7 +45,7 @@ extern "C"
      */
     typedef char jbpf_map_name_t[JBPF_MAP_NAME_LEN];
 
-#define JBPF_MAX_ERR_MSG_SIZE (512U)
+#define JBPF_MAX_ERR_MSG_SIZE (1024U)
     /**
      * @brief Error message type for jbpf.
      * @ingroup lcm
@@ -53,9 +53,9 @@ extern "C"
     typedef char jbpf_err_msg_t[JBPF_MAX_ERR_MSG_SIZE];
 
 #define JBPF_MAX_IO_CHANNEL (5U)
-#define JBPF_MAX_LINKED_MAPS (5U)
+#define JBPF_MAX_LINKED_MAPS (10U)
 #define JBPF_MAX_CODELETSET_DIGEST_LEN (1024U)
-#define JBPF_MAX_CODELETS_IN_CODELETSET (8U)
+#define JBPF_MAX_CODELETS_IN_CODELETSET (16U)
 #define JBPF_DIGEST_MAX_LEN (1024U)
 
 #define JBPF_CODELET_LOAD_SUCCESS (0)

@@ -46,6 +46,36 @@ struct jbpf_load_map_def SEC("maps") shared_map4 = {
     .value_size = sizeof(int),
     .max_entries = 1,
 };
+struct jbpf_load_map_def SEC("maps") shared_map5 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
+struct jbpf_load_map_def SEC("maps") shared_map6 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
+struct jbpf_load_map_def SEC("maps") shared_map7 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
+struct jbpf_load_map_def SEC("maps") shared_map8 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
+struct jbpf_load_map_def SEC("maps") shared_map9 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
 
 SEC("jbpf_ran_fapi")
 uint64_t
@@ -75,5 +105,22 @@ jbpf_main(void* state)
             return 1;
         }
     }
+
+    if (jbpf_map_update_elem(&shared_map5, &index, &api.command, 0) < 0) {
+        return 1;
+    }
+    if (jbpf_map_update_elem(&shared_map6, &index, &api.command, 0) < 0) {
+        return 1;
+    }
+    if (jbpf_map_update_elem(&shared_map7, &index, &api.command, 0) < 0) {
+        return 1;
+    }
+    if (jbpf_map_update_elem(&shared_map8, &index, &api.command, 0) < 0) {
+        return 1;
+    }
+    if (jbpf_map_update_elem(&shared_map9, &index, &api.command, 0) < 0) {
+        return 1;
+    }
+
     return 0;
 }

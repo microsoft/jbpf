@@ -3,6 +3,9 @@
 #ifndef LOADER_HPP
 #define LOADER_HPP
 
+#include <vector>
+#include <string>
+
 namespace jbpf_lcm_cli {
 namespace loader {
 enum load_req_outcome
@@ -17,6 +20,9 @@ enum load_req_outcome
 
 load_req_outcome
 run_loader(int ac, char** av);
+
+load_req_outcome
+run_lcm_subproc(const std::vector<std::string>& str_args, const std::string& inline_bin_arg);
 } // namespace loader
 } // namespace jbpf_lcm_cli
 

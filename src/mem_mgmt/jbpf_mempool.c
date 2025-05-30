@@ -107,7 +107,7 @@ jbpf_init_mempool_ctx(jbpf_mem_ctx_t* mem_ctx, uint32_t n_elems, size_t elem_siz
 
     for (int i = 0; i < num_elems; i++) {
         if (!ck_ring_enqueue_mpmc(&mempool_ctx->ring_alloc->ring, mempool_ctx->ring_alloc->buf, entry)) {
-            jbpf_logger(JBPF_ERROR, "Could not add element to the ringbuf\n");
+            jbpf_logger(JBPF_ERROR, "Could not add element (%i/%i) to the ringbuf\n", i, num_elems);
             return NULL;
         }
         entry = (jbpf_mbuf_t*)((uint8_t*)entry + mbuf_size);

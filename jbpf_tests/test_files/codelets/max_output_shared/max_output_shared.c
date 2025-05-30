@@ -42,6 +42,36 @@ struct jbpf_load_map_def SEC("maps") shared_map_output4 = {
     .value_size = sizeof(int),
     .max_entries = 1,
 };
+struct jbpf_load_map_def SEC("maps") shared_map_output5 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
+struct jbpf_load_map_def SEC("maps") shared_map_output6 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
+struct jbpf_load_map_def SEC("maps") shared_map_output7 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
+struct jbpf_load_map_def SEC("maps") shared_map_output8 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
+struct jbpf_load_map_def SEC("maps") shared_map_output9 = {
+    .type = JBPF_MAP_TYPE_ARRAY,
+    .key_size = sizeof(int),
+    .value_size = sizeof(int),
+    .max_entries = 1,
+};
 
 SEC("jbpf_ran_fapi")
 uint64_t
@@ -114,6 +144,29 @@ jbpf_main(void* state)
     *outvar4 = *output4;
     if (jbpf_send_output(&output_map4) < 0) {
         return 5;
+    }
+
+    int* outtmp;
+
+    outtmp = jbpf_map_lookup_elem(&shared_map_output5, &index);
+    if (!outtmp) {
+        return 1;
+    }
+    outtmp = jbpf_map_lookup_elem(&shared_map_output6, &index);
+    if (!outtmp) {
+        return 1;
+    }
+    outtmp = jbpf_map_lookup_elem(&shared_map_output7, &index);
+    if (!outtmp) {
+        return 1;
+    }
+    outtmp = jbpf_map_lookup_elem(&shared_map_output8, &index);
+    if (!outtmp) {
+        return 1;
+    }
+    outtmp = jbpf_map_lookup_elem(&shared_map_output9, &index);
+    if (!outtmp) {
+        return 1;
     }
 
     return 0;

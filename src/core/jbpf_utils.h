@@ -80,6 +80,7 @@ check_unsafe_string(char* unsafe);
 static __inline uint64_t __attribute__((__gnu_inline__, __always_inline__, __artificial__)) jbpf_start_time(void)
 {
     uint64_t x;
+#if defined(__x86_64__)
     asm volatile(".intel_syntax noprefix  \n\t"
                  "mfence                  \n\t"
                  "lfence                  \n\t"
@@ -92,12 +93,21 @@ static __inline uint64_t __attribute__((__gnu_inline__, __always_inline__, __art
 
                  :
                  : "rdx");
+#elif defined(__aarch64__)
+    asm volatile("isb; mrs %0, cntvct_el0; isb; " : "=r"(x)::"memory");
+#else
+#pragma message "Non x86_64 or aarch64 architecture. Will measure time using clock_gettime()"
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+    x = (uint64_t)ts.tv_sec * (uint64_t)1000000000 + (uint64_t)ts.tv_nsec;
+#endif
     return x;
 }
 
 static __inline uint64_t __attribute__((__gnu_inline__, __always_inline__, __artificial__)) jbpf_end_time(void)
 {
     uint64_t x;
+#if defined(__x86_64__)
     asm volatile(".intel_syntax noprefix  \n\t"
                  "rdtscp                  \n\t"
                  "lfence                  \n\t"
@@ -108,6 +118,14 @@ static __inline uint64_t __attribute__((__gnu_inline__, __always_inline__, __art
                  : "=a"(x)
                  :
                  : "rdx", "rcx");
+#elif defined(__aarch64__)
+    asm volatile("isb; mrs %0, cntvct_el0; isb; " : "=r"(x)::"memory");
+#else
+#pragma message "Non x86_64 or aarch64 architecture. Will measure time using clock_gettime()"
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+    x = (uint64_t)ts.tv_sec * (uint64_t)1000000000 + (uint64_t)ts.tv_nsec;
+#endif
     return x;
 }
 
