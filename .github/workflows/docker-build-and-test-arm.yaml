@@ -114,7 +114,7 @@ jobs:
         run: |
           set -ex
           source setup_jbpf_env.sh
-          docker run \
+          sudo docker run \
             -e JBPF_PATH=/jbpf \
             -v "$(pwd)":/jbpf_out_lib \
             -v "$(pwd)"/3p:/jbpf/3p \
@@ -125,7 +125,7 @@ jobs:
         run: |
           set -ex
           source setup_jbpf_env.sh
-          docker run \
+          sudo docker run \
             -e JBPF_PATH=/jbpf \
             -v "$(pwd)":/jbpf_out_lib \
             -v "$(pwd)"/3p:/jbpf/3p \
