@@ -20,6 +20,10 @@ RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
     apt-get install -y libc6-dev; \
   fi
 
+## Emulator
+RUN apt install -y python3-dev python3-pip
+RUN pip3 install ctypesgen ruamel.yaml
+
 WORKDIR /jbpf
 COPY . /jbpf
 ENTRYPOINT ["./helper_build_files/build_jbpf_lib.sh"]

@@ -19,6 +19,10 @@ RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
 
 RUN apt-get update && apt-get install -y pkg-config
 
+## Emulator
+RUN apt install -y python3-dev python3-pip
+RUN pip3 install ctypesgen ruamel.yaml --break-system-packages
+
 WORKDIR /jbpf
 COPY . /jbpf
 ENTRYPOINT ["./helper_build_files/build_jbpf_lib.sh"]
