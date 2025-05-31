@@ -7,6 +7,6 @@
 [submodule "3p/ubpf"]
 	path = 3p/ubpf
 	url = https://github.com/iovisor/ubpf.git
-[submodule "3p/ebpf-verifier"]
-	path = 3p/ebpf-verifier
-	url = https://github.com/vbpf/ebpf-verifier.git
+[submodule "3p/prevail"]
+	path = 3p/prevail
+	url = https://github.com/vbpf/prevail.git
