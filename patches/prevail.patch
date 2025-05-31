@@ -1,0 +1,13 @@
+diff --git a/src/crab/ebpf_domain.hpp b/src/crab/ebpf_domain.hpp
+index f285840..8c2e804 100644
+--- a/src/crab/ebpf_domain.hpp
++++ b/src/crab/ebpf_domain.hpp
+@@ -18,7 +18,7 @@ namespace prevail {
+ // the offsets get replaced with 64-bit address pointers.  However, we currently
+ // need to do pointer arithmetic on 64-bit numbers so for now we cap the interval
+ // to 32 bits.
+-constexpr int MAX_PACKET_SIZE = 0xffff;
++constexpr int MAX_PACKET_SIZE = 0xffffff;
+ constexpr int64_t PTR_MAX = std::numeric_limits<int32_t>::max() - MAX_PACKET_SIZE;
+ 
+ class EbpfDomain;
