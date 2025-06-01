@@ -3,7 +3,8 @@ libc.so
 ld-linux-aarch64.so
 ld-linux-x86-64.so
 libpthread.a
-libebpfverifier.a
+libprevail.a
+libbtf.a
 libasan.so
 libck.a
 libbpf_conformance.a

@@ -3,6 +3,8 @@
 #include <bits/stdint-uintn.h>
 #include "spec_type_descriptors.hpp"
 
+using namespace prevail;
+
 const ebpf_context_descriptor_t g_jbpf_unspec_descr = jbpf_unspec_descr;
 const ebpf_context_descriptor_t g_jbpf_generic_descr = jbpf_generic_descr;
 const ebpf_context_descriptor_t g_jbpf_stats_descr = jbpf_stats_descr;
@@ -283,7 +285,7 @@ jbpf_verifier_is_helper_usable(int32_t n)
 
     // If the helper has a context_descriptor, it must match the hook's context_descriptor.
     if ((prototypes[n].context_descriptor != nullptr) &&
-        (prototypes[n].context_descriptor != global_program_info.type.context_descriptor))
+        (prototypes[n].context_descriptor != thread_local_program_info->type.context_descriptor))
         return false;
 
     return true;

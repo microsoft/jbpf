@@ -48,7 +48,7 @@ As explained above, *ubpf* integration requires that each function has to have u
 But for the verification, it is important to provide more semantics about the arguments. 
 In this case, we specify that the first argument is a pointer.
 This allows the verifier to check a valid pointer assignment before the function call. 
-Check the full list of arguments in the Prevail verifier [code](../3p/ebpf-verifier/src/ebpf_base.h).
+Check the full list of arguments in the Prevail verifier [code](../3p/prevail/src/ebpf_base.h).
 
 Finally, the function is registered with the verifier with:
 ```C

@@ -20,8 +20,9 @@ set(JBPF_VERIFIER_HEADERS ${JBPF_VERIFIER_SRC_DIR}
 
 
 ######## jbpf verifier library ########
-add_library(${JBPF_VERIFIER_LIB} ${JBPF_VERIFIER_SOURCES} $<TARGET_OBJECTS:ebpfverifier>)
+add_library(${JBPF_VERIFIER_LIB} ${JBPF_VERIFIER_SOURCES} $<TARGET_OBJECTS:prevail>)
 add_library(jbpf::verifier_lib ALIAS ${JBPF_VERIFIER_LIB})
+target_link_libraries(${JBPF_VERIFIER_LIB} PRIVATE libbtf)
 target_include_directories(${JBPF_VERIFIER_LIB} PUBLIC ${JBPF_VERIFIER_HEADERS} 
                                                         ${EBPF_VERIFIER_HEADERS}
                                                         ${JBPF_COMMON_HEADERS})
@@ -47,7 +48,7 @@ add_custom_command(TARGET ${JBPF_VERIFIER_LIB} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy  ${JBPF_VERIFIER_SRC_DIR}/jbpf_verifier.hpp ${OUTPUT_DIR}/inc/  
 )
 
-add_dependencies(${JBPF_VERIFIER_LIB} ebpfverifier copy-verifier-headers)
+add_dependencies(${JBPF_VERIFIER_LIB} prevail copy-verifier-headers)
 
 add_clang_format_check(${JBPF_VERIFIER_LIB} ${JBPF_VERIFIER_SOURCES})
 add_cppcheck(${JBPF_VERIFIER_LIB} ${JBPF_VERIFIER_SOURCES})

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 #pragma once
 
-extern const ebpf_platform_t g_ebpf_platform_jbpf;
+extern const prevail::ebpf_platform_t g_ebpf_platform_jbpf;
 
 /**
  * Get the platform for the JIT compiler.
  * return Pointer to the platform.
  */
-EbpfHelperPrototype
+prevail::EbpfHelperPrototype
 jbpf_verifier_get_helper_prototype(int32_t n);
 
 /**

@@ -19,22 +19,27 @@
 
 static int
 create_map_jbpf(
-    uint32_t map_type, uint32_t key_size, uint32_t value_size, uint32_t max_entries, ebpf_verifier_options_t options);
+    uint32_t map_type,
+    uint32_t key_size,
+    uint32_t value_size,
+    uint32_t max_entries,
+    prevail::ebpf_verifier_options_t options);
 
 // Allow for comma as a separator between multiple prefixes, to make
 // the preprocessor treat a prefix list as one macro argument.
 #define COMMA ,
 
-const EbpfProgramType jbpf_unspec_program_type = PTYPE("unspec", &g_jbpf_unspec_descr, JBPF_PROG_TYPE_UNSPEC, {});
+const prevail::EbpfProgramType jbpf_unspec_program_type =
+    PTYPE("unspec", &g_jbpf_unspec_descr, JBPF_PROG_TYPE_UNSPEC, {});
 
-std::vector<EbpfProgramType> jbpf_program_types = {
+std::vector<prevail::EbpfProgramType> jbpf_program_types = {
     jbpf_unspec_program_type,
     PTYPE("jbpf_generic", &g_jbpf_generic_descr, JBPF_PROG_TYPE_GENERIC, {"jbpf_generic"}),
     PTYPE("jbpf_stats", &g_jbpf_stats_descr, JBPF_PROG_TYPE_STATS, {"jbpf_stats"}),
 };
 
 void
-jbpf_verifier_register_program_type(int prog_type_id, EbpfProgramType program_type)
+jbpf_verifier_register_program_type(int prog_type_id, prevail::EbpfProgramType program_type)
 {
     if (prog_type_id >= jbpf_program_types.size()) {
         jbpf_program_types.resize(prog_type_id + 1);
@@ -42,10 +47,10 @@ jbpf_verifier_register_program_type(int prog_type_id, EbpfProgramType program_ty
     jbpf_program_types[prog_type_id] = program_type;
 }
 
-static EbpfProgramType
+static prevail::EbpfProgramType
 jbpf_verifier_get_program_type(const std::string& section, const std::string& path)
 {
-    for (const EbpfProgramType& t : jbpf_program_types) {
+    for (const prevail::EbpfProgramType& t : jbpf_program_types) {
         auto it =
             std::find_if(t.section_prefixes.begin(), t.section_prefixes.end(), [&section](const std::string& prefix) {
                 return section.find(prefix) == 0;
@@ -64,7 +69,7 @@ jbpf_verifier_get_program_type(const std::string& section, const std::string& pa
 #define JBPF_MAP_TYPE(x) 0, #x
 #endif
 
-std::vector<EbpfMapType> jbpf_map_types = {
+std::vector<prevail::EbpfMapType> jbpf_map_types = {
     {JBPF_MAP_TYPE(UNSPEC)},
     {JBPF_MAP_TYPE(ARRAY), true}, // True means that key is integer in range [0, max_entries-1]
     {JBPF_MAP_TYPE(HASHMAP)},
@@ -76,10 +81,10 @@ std::vector<EbpfMapType> jbpf_map_types = {
 };
 
 int
-jbpf_verifier_register_map_type(int map_id, EbpfMapType map_type)
+jbpf_verifier_register_map_type(int map_id, prevail::EbpfMapType map_type)
 {
     // EbpfMapValueType::PROGRAM is not currently supported
-    if (map_type.value_type == EbpfMapValueType::PROGRAM) {
+    if (map_type.value_type == prevail::EbpfMapValueType::PROGRAM) {
         return -1;
     }
 
@@ -90,14 +95,14 @@ jbpf_verifier_register_map_type(int map_id, EbpfMapType map_type)
     return 0;
 }
 
-EbpfMapType
+prevail::EbpfMapType
 jbpf_verifier_get_map_type(uint32_t platform_specific_type)
 {
     uint32_t index = platform_specific_type;
     if ((index == 0) || (index >= jbpf_map_types.size())) {
         return jbpf_map_types[0];
     }
-    EbpfMapType type = jbpf_map_types[index];
+    prevail::EbpfMapType type = jbpf_map_types[index];
 #ifdef __linux__
     assert(type.platform_specific_type == platform_specific_type);
 #else
@@ -108,12 +113,12 @@ jbpf_verifier_get_map_type(uint32_t platform_specific_type)
 
 void
 jbpf_verifier_parse_maps_section(
-    std::vector<EbpfMapDescriptor>& map_descriptors,
+    std::vector<prevail::EbpfMapDescriptor>& map_descriptors,
     const char* data,
     size_t map_def_size,
     int map_count,
-    const ebpf_platform_t* platform,
-    ebpf_verifier_options_t options)
+    const prevail::ebpf_platform_t* platform,
+    prevail::ebpf_verifier_options_t options)
 {
     auto mapdefs = std::vector<jbpf_load_map_def>();
     for (int i = 0; i < map_count; i++) {
@@ -122,8 +127,8 @@ jbpf_verifier_parse_maps_section(
         mapdefs.emplace_back(def);
     }
     for (auto const& s : mapdefs) {
-        EbpfMapType type = jbpf_verifier_get_map_type(s.type);
-        map_descriptors.emplace_back(EbpfMapDescriptor{
+        prevail::EbpfMapType type = jbpf_verifier_get_map_type(s.type);
+        map_descriptors.emplace_back(prevail::EbpfMapDescriptor{
             .original_fd = create_map_jbpf(s.type, s.key_size, s.value_size, s.max_entries, options),
             .type = s.type,
             .key_size = s.key_size,
@@ -141,21 +146,25 @@ jbpf_verifier_parse_maps_section(
 
 static int
 create_map_jbpf(
-    uint32_t map_type, uint32_t key_size, uint32_t value_size, uint32_t max_entries, ebpf_verifier_options_t options)
+    uint32_t map_type,
+    uint32_t key_size,
+    uint32_t value_size,
+    uint32_t max_entries,
+    prevail::ebpf_verifier_options_t options)
 {
     if (options.mock_map_fds) {
-        EbpfMapType type = jbpf_verifier_get_map_type(map_type);
-        return create_map_crab(type, key_size, value_size, max_entries, options);
+        prevail::EbpfMapType type = jbpf_verifier_get_map_type(map_type);
+        return prevail::create_map_crab(type, key_size, value_size, max_entries, options);
     } else {
         throw std::runtime_error(std::string("cannot create a Linux map"));
     }
 }
 
-EbpfMapDescriptor&
+prevail::EbpfMapDescriptor&
 jbpf_verifier_get_map_descriptor(int map_fd)
 {
     // First check if we already have the map descriptor cached.
-    EbpfMapDescriptor* map = find_map_descriptor(map_fd);
+    prevail::EbpfMapDescriptor* map = prevail::find_map_descriptor(map_fd);
     if (map != nullptr) {
         return *map;
     }
@@ -169,7 +178,7 @@ jbpf_verifier_get_map_descriptor(int map_fd)
     throw std::runtime_error(std::string("map_fd not found"));
 }
 
-const ebpf_platform_t g_ebpf_platform_jbpf = {
+const prevail::ebpf_platform_t g_ebpf_platform_jbpf = {
     jbpf_verifier_get_program_type,
     jbpf_verifier_get_helper_prototype,
     jbpf_verifier_is_helper_usable,

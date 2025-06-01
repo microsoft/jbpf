@@ -15,10 +15,10 @@ option(CLANG_FORMAT_CHECK "Enable clang-format check" OFF)
 option(CPP_CHECK "Enable cppcheck" OFF)
 option(BUILD_TESTING "Enable tests" ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-SET(CMAKE_CXX_FLAGS "-std=c++17")
+SET(CMAKE_CXX_FLAGS "-std=c++20")
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -236,27 +236,22 @@ add_dependencies(libubpf ubpf)
 ################ prevail verifier ################
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
-add_subdirectory(3p/ebpf-verifier)
-set_target_properties(conformance_check PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(bpf_conformance PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(check PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(bpf_conformance_runner PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(run_yaml PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set(EBPF_VERIFIER_HEADERS ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/src
-                          ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/src/main
-                          ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/external)
+add_subdirectory(3p/prevail)
 
-add_custom_target(copy-verifier-headers ALL DEPENDS ebpfverifier)
+set(EBPF_VERIFIER_HEADERS ${PROJECT_SOURCE_DIR}/3p/prevail/src
+                          ${PROJECT_SOURCE_DIR}/3p/prevail/src/main
+                          ${PROJECT_SOURCE_DIR}/3p/prevail/external)
+
+add_custom_target(copy-verifier-headers ALL DEPENDS prevail)
 
 add_custom_command(TARGET copy-verifier-headers POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_DIR}/inc/ 
-                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/src/platform.hpp ${OUTPUT_DIR}/inc/
-                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/src/config.hpp ${OUTPUT_DIR}/inc/
-                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/src/ebpf_base.h ${OUTPUT_DIR}/inc/
-                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/src/ebpf_vm_isa.hpp ${OUTPUT_DIR}/inc/
-                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/src/helpers.hpp ${OUTPUT_DIR}/inc/
-                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/ebpf-verifier/src/spec_type_descriptors.hpp ${OUTPUT_DIR}/inc/  
+                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/prevail/src/platform.hpp ${OUTPUT_DIR}/inc/
+                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/prevail/src/config.hpp ${OUTPUT_DIR}/inc/
+                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/prevail/src/ebpf_base.h ${OUTPUT_DIR}/inc/
+                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/prevail/src/ebpf_vm_isa.hpp ${OUTPUT_DIR}/inc/
+                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/prevail/src/helpers.hpp ${OUTPUT_DIR}/inc/
+                    COMMAND ${CMAKE_COMMAND} -E copy  ${PROJECT_SOURCE_DIR}/3p/prevail/src/spec_type_descriptors.hpp ${OUTPUT_DIR}/inc/  
 )
 
 ################ Generation of jbpf version info ################                     
@@ -410,7 +405,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     "--exclude-directories='3p'"
     "--exclude='.*libck-jbpf.*'"
     "--exclude='.*jbpf_lookup3.*'"
-    "--exclude='.*3p/ebpf-verifier.*'"
+    "--exclude='.*3p/prevail.*'"
     "--exclude='.*tools/lcm_cli/.*'"
     "--exclude='.*src/verifier/jbpf_verifier_cli.cpp'"
   )

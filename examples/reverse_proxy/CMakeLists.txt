@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.16)
 project(ProxyProject LANGUAGES CXX)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-SET(CMAKE_CXX_FLAGS "-std=c++17")
+SET(CMAKE_CXX_FLAGS "-std=c++20")
 
 # Binary name
 set(BINARY_NAME proxy)
@@ -21,7 +21,7 @@ include_directories(
     $ENV{JBPF_PATH}/src/mem_mgmt
     $ENV{JBPF_PATH}/tools/lcm_cli
     $ENV{JBPF_PATH}/src/verifier
-    $ENV{JBPF_PATH}/3p/ebpf-verifier/src
+    $ENV{JBPF_PATH}/3p/prevail/src
 )
 
 # Linker flags

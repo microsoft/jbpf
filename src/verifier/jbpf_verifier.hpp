@@ -3,6 +3,8 @@
 
 #include "platform.hpp"
 
+using namespace prevail;
+
 #define ERROR_MSG_LEN 1024
 
 #ifdef __cplusplus
@@ -22,7 +24,7 @@ extern "C"
     {
         bool verification_pass;
         float runtime_seconds;
-        unsigned long max_instruction_count;
+        unsigned long max_loop_count;
         char err_msg[ERROR_MSG_LEN];
     } jbpf_verifier_result_t;
 
@@ -62,7 +64,7 @@ jbpf_verifier_register_helper(int helper_id, struct EbpfHelperPrototype prototyp
  * @ingroup verifier
  */
 void
-jbpf_verifier_register_program_type(int prog_type_id, EbpfProgramType program_type);
+jbpf_verifier_register_program_type(int prog_type_id, prevail::EbpfProgramType program_type);
 
 /**
  * @brief Register a map type.
@@ -72,4 +74,4 @@ jbpf_verifier_register_program_type(int prog_type_id, EbpfProgramType program_ty
  * @ingroup verifier
  */
 int
-jbpf_verifier_register_map_type(int map_id, EbpfMapType map_type);
+jbpf_verifier_register_map_type(int map_id, prevail::EbpfMapType map_type);
