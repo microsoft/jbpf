@@ -14,7 +14,7 @@ main(int argc, char** argv)
     app.add_option("path", filename, "Elf file to analyze")->required()->type_name("FILE");
 
     std::string desired_section;
-    app.add_option("section", desired_section, "Section to analyze")->type_name("SECTION");
+    app.add_option("--section,section", desired_section, "Section to analyze")->type_name("SECTION");
 
     std::string asmfile;
     app.add_option("--asm", asmfile, "Print disassembly to FILE")->type_name("FILE");

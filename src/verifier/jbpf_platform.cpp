@@ -10,6 +10,7 @@
         name, descr, native_type, prefixes, true             \
     }
 
+#include "asm_files.hpp"
 #include "crab_verifier.hpp"
 #include "helpers.hpp"
 #include "platform.hpp"
@@ -126,20 +127,28 @@ jbpf_verifier_parse_maps_section(
         memcpy(&def, data + i * map_def_size, std::min(map_def_size, sizeof(def)));
         mapdefs.emplace_back(def);
     }
-    for (auto const& s : mapdefs) {
+    for (const auto& s : mapdefs) {
         prevail::EbpfMapType type = jbpf_verifier_get_map_type(s.type);
         map_descriptors.emplace_back(prevail::EbpfMapDescriptor{
             .original_fd = create_map_jbpf(s.type, s.key_size, s.value_size, s.max_entries, options),
             .type = s.type,
             .key_size = s.key_size,
             .value_size = s.value_size,
-            .max_entries = s.max_entries});
+            .max_entries = s.max_entries,
+            .inner_map_fd = s.inner_map_idx});
     }
-    for (size_t i = 0; i < mapdefs.size(); i++) {
-        unsigned int inner = mapdefs[i].inner_map_idx;
-        if (inner >= map_descriptors.size())
-            throw std::runtime_error(
-                std::string("bad inner map index ") + std::to_string(inner) + " for map " + std::to_string(i));
+}
+
+// Initialize the inner_map_fd in each map descriptor.
+void
+jbpf_verifier_resolve_map_references(std::vector<prevail::EbpfMapDescriptor>& map_descriptors)
+{
+    for (size_t i = 0; i < map_descriptors.size(); i++) {
+        const unsigned int inner = map_descriptors[i].inner_map_fd; // Get the inner_map_idx back.
+        if (inner >= map_descriptors.size()) {
+            throw prevail::UnmarshalError(
+                "bad inner map index " + std::to_string(inner) + " for map " + std::to_string(i));
+        }
         map_descriptors[i].inner_map_fd = map_descriptors.at(inner).original_fd;
     }
 }
@@ -186,4 +195,5 @@ const prevail::ebpf_platform_t g_ebpf_platform_jbpf = {
     jbpf_verifier_parse_maps_section,
     jbpf_verifier_get_map_descriptor,
     jbpf_verifier_get_map_type,
-};
+    jbpf_verifier_resolve_map_references,
+    bpf_conformance_groups_t::default_groups | bpf_conformance_groups_t::packet};

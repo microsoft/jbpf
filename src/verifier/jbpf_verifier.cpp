@@ -16,6 +16,35 @@ using std::vector;
 
 using namespace prevail;
 
+static const std::map<std::string, bpf_conformance_groups_t> _conformance_groups = {
+    {"atomic32", bpf_conformance_groups_t::atomic32},
+    {"atomic64", bpf_conformance_groups_t::atomic64},
+    {"base32", bpf_conformance_groups_t::base32},
+    {"base64", bpf_conformance_groups_t::base64},
+    {"callx", bpf_conformance_groups_t::callx},
+    {"divmul32", bpf_conformance_groups_t::divmul32},
+    {"divmul64", bpf_conformance_groups_t::divmul64},
+    {"packet", bpf_conformance_groups_t::packet}};
+
+static std::optional<bpf_conformance_groups_t>
+_get_conformance_group_by_name(const std::string& group)
+{
+    if (!_conformance_groups.contains(group)) {
+        return {};
+    }
+    return _conformance_groups.find(group)->second;
+}
+
+static std::set<std::string>
+_get_conformance_group_names()
+{
+    std::set<std::string> result;
+    for (const auto& name : _conformance_groups | std::views::keys) {
+        result.insert(name);
+    }
+    return result;
+}
+
 static size_t
 hash(const RawProgram& raw_prog)
 {
@@ -27,7 +56,6 @@ hash(const RawProgram& raw_prog)
 jbpf_verifier_result_t
 jbpf_verify(const char* objfile, const char* section, const char* asmfile)
 {
-    vector<RawProgram> raw_progs;
     std::string desired_section, asm_file;
     ebpf_verifier_options_t ebpf_verifier_options;
     jbpf_verifier_result_t result = {0};
@@ -45,10 +73,23 @@ jbpf_verify(const char* objfile, const char* section, const char* asmfile)
     ebpf_verifier_options.verbosity_opts.print_failures = true;
     ebpf_verifier_options.allow_division_by_zero = true;
 
-    const ebpf_platform_t platform = g_ebpf_platform_jbpf;
+    std::set<std::string> include_groups = _get_conformance_group_names();
+    std::set<std::string> exclude_groups;
+
+    ebpf_platform_t platform = g_ebpf_platform_jbpf;
+
+    platform.supported_conformance_groups = bpf_conformance_groups_t::default_groups;
+    for (const auto& group_name : include_groups) {
+        platform.supported_conformance_groups |= _get_conformance_group_by_name(group_name).value();
+    }
+    for (const auto& group_name : exclude_groups) {
+        platform.supported_conformance_groups &= _get_conformance_group_by_name(group_name).value();
+    }
+
+    vector<RawProgram> raw_progs;
 
     try {
-        raw_progs = read_elf(objfile, desired_section, ebpf_verifier_options, &platform);
+        raw_progs = read_elf(objfile, string(), ebpf_verifier_options, &platform);
     } catch (std::runtime_error& e) {
         result.verification_pass = false;
         std::strcpy(result.err_msg, "Could not open ELF file\n");
