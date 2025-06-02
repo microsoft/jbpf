@@ -83,6 +83,10 @@ jobs:
             test5) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
             test6) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
             test7) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test8) echo "staticBuildParam=-e JBPF_STATIC=2 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test9) echo "staticBuildParam=-e JBPF_STATIC=2" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test10) echo "staticBuildParam=-e JBPF_STATIC=2 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test11) echo "staticBuildParam=-e JBPF_STATIC=2" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
           esac
 
       - name: Display Build Parameters
