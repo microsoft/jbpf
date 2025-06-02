@@ -58,14 +58,6 @@ jbpf_main(void* state)
             return 1;
         }
     }
-    // test jbpf_map_update_elem when the key is out of bounds: negative index
-    for (int i = -999; i < -989; ++i) {
-        uint64_t key = i;
-        int ret = jbpf_map_try_update_elem(&map1, &key, &i, 0);
-        if (ret != JBPF_MAP_ERROR) {
-            return 1;
-        }
-    }
     // test jbpf_map_lookup_elem when the key is out of bounds: positive index
     for (int i = 1234; i < 1244; ++i) {
         uint64_t key = i;

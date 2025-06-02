@@ -204,8 +204,8 @@ static int (*jbpf_rand)(void) = (int (*)(void))JBPF_RAND;
  */
 #define jbpf_map_try_update_elem(map, key, value, flags)                                  \
     ({                                                                                    \
-        int result;                                                                       \
-        for (int attempt = 0; attempt < JBPF_MAP_RETRY_ATTEMPTS; attempt++) {             \
+        int16_t result;                                                                   \
+        for (volatile int attempt = 0; attempt < JBPF_MAP_RETRY_ATTEMPTS; attempt++) {    \
             if ((result = jbpf_map_update_elem(map, key, value, flags)) != JBPF_MAP_BUSY) \
                 break;                                                                    \
         }                                                                                 \

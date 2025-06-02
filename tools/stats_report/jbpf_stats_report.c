@@ -73,7 +73,7 @@ jbpf_main(void* state)
             memcpy(
                 out_hook_list->hook_perf[out_hook_list->hook_perf_count & 31].hist,
                 hook_list->perf_data[i & 63].hist,
-                NUM_HIST_BINS * sizeof(uint64_t));
+                NUM_HIST_BINS * sizeof(uint32_t));
             memcpy(
                 out_hook_list->hook_perf[out_hook_list->hook_perf_count & 31].hook_name,
                 hook_list->perf_data[i & 63].hook_name,

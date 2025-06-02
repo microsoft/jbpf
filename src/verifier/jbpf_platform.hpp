@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 #pragma once
 
+#include "helpers.hpp"
+
 extern const prevail::ebpf_platform_t g_ebpf_platform_jbpf;
 
 /**

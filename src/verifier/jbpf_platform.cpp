@@ -12,7 +12,6 @@
 
 #include "asm_files.hpp"
 #include "crab_verifier.hpp"
-#include "helpers.hpp"
 #include "platform.hpp"
 #include "jbpf_platform.hpp"
 #include "specs/spec_type_descriptors.hpp"
@@ -52,12 +51,10 @@ static prevail::EbpfProgramType
 jbpf_verifier_get_program_type(const std::string& section, const std::string& path)
 {
     for (const prevail::EbpfProgramType& t : jbpf_program_types) {
-        auto it =
-            std::find_if(t.section_prefixes.begin(), t.section_prefixes.end(), [&section](const std::string& prefix) {
-                return section.find(prefix) == 0;
-            });
-        if (it != t.section_prefixes.end()) {
-            return t;
+        for (const std::string& prefix : t.section_prefixes) {
+            if (section.find(prefix) == 0) {
+                return t;
+            }
         }
     }
 
@@ -99,7 +96,7 @@ jbpf_verifier_register_map_type(int map_id, prevail::EbpfMapType map_type)
 prevail::EbpfMapType
 jbpf_verifier_get_map_type(uint32_t platform_specific_type)
 {
-    uint32_t index = platform_specific_type;
+    const uint32_t index = platform_specific_type;
     if ((index == 0) || (index >= jbpf_map_types.size())) {
         return jbpf_map_types[0];
     }
@@ -141,7 +138,7 @@ jbpf_verifier_parse_maps_section(
 
 // Initialize the inner_map_fd in each map descriptor.
 void
-jbpf_verifier_resolve_map_references(std::vector<prevail::EbpfMapDescriptor>& map_descriptors)
+jbpf_verifier_resolve_inner_map_references(std::vector<prevail::EbpfMapDescriptor>& map_descriptors)
 {
     for (size_t i = 0; i < map_descriptors.size(); i++) {
         const unsigned int inner = map_descriptors[i].inner_map_fd; // Get the inner_map_idx back.
@@ -184,7 +181,7 @@ jbpf_verifier_get_map_descriptor(int map_fd)
     // (key size, value size) from the execution context, but this is
     // not yet supported.
 
-    throw std::runtime_error(std::string("map_fd not found"));
+    throw prevail::UnmarshalError("map_fd " + std::to_string(map_fd) + " not found");
 }
 
 const prevail::ebpf_platform_t g_ebpf_platform_jbpf = {
@@ -195,5 +192,5 @@ const prevail::ebpf_platform_t g_ebpf_platform_jbpf = {
     jbpf_verifier_parse_maps_section,
     jbpf_verifier_get_map_descriptor,
     jbpf_verifier_get_map_type,
-    jbpf_verifier_resolve_map_references,
-    bpf_conformance_groups_t::default_groups | bpf_conformance_groups_t::packet};
+    jbpf_verifier_resolve_inner_map_references,
+    bpf_conformance_groups_t::default_groups};

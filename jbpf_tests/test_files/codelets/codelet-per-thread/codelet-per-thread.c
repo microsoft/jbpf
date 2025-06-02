@@ -47,7 +47,10 @@ jbpf_main(void* state)
     }
 
     temp_value1 = *c1 + 1;
-    jbpf_map_try_update_elem(&per_thread_counter, &key, &temp_value1, 0);
+    int res = jbpf_map_try_update_elem(&per_thread_counter, &key, &temp_value1, 0);
+    if (res != JBPF_MAP_SUCCESS) {
+        return 1;
+    }
 
     data->counter_a = temp_value1; // For the array
 
@@ -55,7 +58,11 @@ jbpf_main(void* state)
     uint32_t* c2 = jbpf_map_lookup_elem(&per_thread_counter_hashmap, &key);
     if (!c2) {
         value = 0;
-        jbpf_map_try_update_elem(&per_thread_counter_hashmap, &key, &value, 0);
+        res = jbpf_map_try_update_elem(&per_thread_counter_hashmap, &key, &value, 0);
+        if (res != JBPF_MAP_SUCCESS) {
+            return 1;
+        }
+        // Re-lookup after initialization
         c2 = jbpf_map_lookup_elem(&per_thread_counter_hashmap, &key);
         if (!c2) {
             return 3; // Prevent null pointer dereference
@@ -63,7 +70,11 @@ jbpf_main(void* state)
     }
 
     temp_value2 = *c2 + 1;
-    jbpf_map_try_update_elem(&per_thread_counter_hashmap, &key, &temp_value2, 0);
+    res = jbpf_map_try_update_elem(&per_thread_counter_hashmap, &key, &temp_value2, 0);
+
+    if (res != JBPF_MAP_SUCCESS) {
+        return 1;
+    }
 
     data->counter_b = temp_value2; // For the hashmap
 

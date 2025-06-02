@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 #include "platform.hpp"
-#include <bits/stdint-uintn.h>
 #include "spec_type_descriptors.hpp"
 
 using namespace prevail;
@@ -17,6 +16,7 @@ const ebpf_context_descriptor_t g_jbpf_stats_descr = jbpf_stats_descr;
 
 static const struct EbpfHelperPrototype jbpf_unspec_proto = {
     .name = "unspec",
+    .return_type = EBPF_RETURN_TYPE_UNSUPPORTED,
 };
 
 /* Always built-in helper functions. */

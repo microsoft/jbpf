@@ -144,7 +144,7 @@ jbpf_verify(const char* objfile, const char* section, const char* asmfile)
             result.verification_pass = false;
         }
 
-        result.max_loop_count = verifier_stats.max_loop_count;
+        result.max_loop_count = invariants.max_loop_count();
         result.runtime_seconds = seconds;
         return result;
 
