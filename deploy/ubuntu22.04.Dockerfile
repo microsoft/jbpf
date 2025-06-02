@@ -11,7 +11,7 @@ RUN apt-get clean && apt-get update && \
     apt-get install -y --no-install-recommends \
         cmake build-essential libboost-dev libboost-program-options-dev \
         git gcovr doxygen libboost-filesystem-dev libasan6 python3 pkg-config \
-        clang-format cppcheck clang libyaml-cpp-dev && \
+        clang-format cppcheck clang libyaml-cpp-dev python3-dev python3-pip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
     
 RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
@@ -21,7 +21,6 @@ RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
   fi
 
 ## Emulator
-RUN apt install -y python3-dev python3-pip
 RUN pip3 install ctypesgen ruamel.yaml
 
 WORKDIR /jbpf
