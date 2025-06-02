@@ -71,6 +71,8 @@ jbpf_verify(const char* objfile, const char* section, const char* asmfile)
     // Set jbpf default options
     ebpf_verifier_options.cfg_opts.check_for_termination = true;
     ebpf_verifier_options.verbosity_opts.print_failures = true;
+    ebpf_verifier_options.verbosity_opts.print_line_info = true;
+
     ebpf_verifier_options.allow_division_by_zero = true;
 
     std::set<std::string> include_groups = _get_conformance_group_names();
@@ -134,17 +136,21 @@ jbpf_verify(const char* objfile, const char* section, const char* asmfile)
         }
 
         auto report = invariants.check_assertions(prog);
-        print_warnings(std::cout, report);
+        std::ostringstream warnings_stream;
+        print_warnings(warnings_stream, report);
+        std::string warnings = warnings_stream.str();
+        strncpy(result.err_msg, warnings.c_str(), sizeof(result.err_msg) - 1);
+        result.err_msg[sizeof(result.err_msg) - 1] = '\0';
         bool pass = report.verified();
 
         ebpf_verifier_stats_t verifier_stats;
         if (pass) {
             result.verification_pass = true;
+            result.max_loop_count = invariants.max_loop_count();
         } else {
             result.verification_pass = false;
         }
 
-        result.max_loop_count = invariants.max_loop_count();
         result.runtime_seconds = seconds;
         return result;
 

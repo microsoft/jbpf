@@ -36,13 +36,15 @@ main(int argc, char** argv)
     result = jbpf_verify(filename.c_str(), section, asm_file);
 
     int res;
+
+    std::cout << result.err_msg << std::endl;
+
     if (result.verification_pass) {
         res = 1;
         std::cout << result.verification_pass << "," << result.runtime_seconds << std::endl;
         std::cout << "Program terminates within " << result.max_loop_count << " loop iterations\n";
     } else {
         res = 0;
-        std::cout << "Failure: " << result.err_msg << std::endl;
     }
 
     return !res;

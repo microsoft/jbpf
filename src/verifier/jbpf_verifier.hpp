@@ -5,7 +5,7 @@
 
 using namespace prevail;
 
-#define ERROR_MSG_LEN 1024
+#define ERROR_MSG_LEN 4096
 
 #ifdef __cplusplus
 extern "C"
