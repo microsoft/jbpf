@@ -58,35 +58,25 @@ jbpf_measure_stop_time(void)
 __attribute__((always_inline)) static uint64_t inline jbpf_get_time_diff_ns(uint64_t start_time, uint64_t end_time)
 {
 
-    uint64_t et;
+    if (start_time == end_time)
+        return 0;
+
+    uint64_t elapsed_time_calc =
+        (end_time >= start_time) ? (end_time - start_time) : (0xFFFFFFFFFFFFFFFF - start_time + end_time + 1);
 
 #ifdef JBPF_PERF_OPT
-    double elapsed_time;
-    uint64_t elapsed_time_ticks;
-    if (start_time == end_time) {
-        return 0;
-    } else if (start_time < end_time) {
-        elapsed_time_ticks = end_time - start_time;
-    } else { /* Wrap around of time */
-        elapsed_time_ticks = 0xFFFFFFFFFFFFFFFF - start_time + end_time;
-    }
+#if defined(__x86_64__)
+    double elapsed_time = (double)elapsed_time_calc / g_jbpf_ticks_per_ns;
+    return (uint64_t)elapsed_time;
 
-    elapsed_time = (double)elapsed_time_ticks / g_jbpf_ticks_per_ns;
-    et = (uint64_t)elapsed_time;
-
-#else
-
-    if (start_time == end_time) {
-        return 0;
-    } else if (start_time < end_time) {
-        et = (end_time - start_time);
-    } else { /* Wrap around of time */
-        et = 0xFFFFFFFFFFFFFFFF - start_time + end_time;
-    }
-
+#elif defined(__aarch64__)
+    uint64_t freq;
+    asm volatile("mrs %0, cntfrq_el0" : "=r"(freq));
+    return (elapsed_time_calc * 1000000000ULL) / freq;
+#endif
 #endif
 
-    return et;
+    return elapsed_time_calc;
 }
 
 static inline void
@@ -118,8 +108,11 @@ extern "C"
 
         et = jbpf_get_time_diff_ns(start_time, end_time);
 
+        if (et == 0)
+            return -1;
+
         // bin_idx = et / JBPF_NSECS_PER_BIN;
-        bin_idx = 63 - __builtin_clzll(et);
+        bin_idx = JBPF_NUM_HIST_BINS - 1 - __builtin_clzll(et);
         /* Any value that is spilling should go to the last bin */
         if (bin_idx >= JBPF_NUM_HIST_BINS)
             bin_idx = JBPF_NUM_HIST_BINS - 1;

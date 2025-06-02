@@ -1,0 +1,167 @@
+name: JBPF Docker Build and Tests (ARM64)
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+env:
+  ACR: jbpfpipeline
+  IMAGE_TAG: ${{ github.run_id }}-${{ github.sha }}
+
+jobs:
+  build-and-test:
+    runs-on: [ self-hosted, 1ES.Pool=jbpf-arm-pipeline ]
+    strategy:
+      matrix:
+        dockerType: [ "mariner", "ubuntu22.04", "ubuntu24.04" ]
+        testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
+
+    steps:
+      - name: Wait for dpkg lock (self-hosted only)
+        if: runner.os == 'Linux' && runner.arch == 'ARM64' # optional
+        run: |
+          sudo systemctl disable --now unattended-upgrades
+          while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+            echo "Another apt/dpkg process is running. Waiting..."
+            sleep 5
+          done
+
+      - name: Update apt and install prerequisites (with 5 retries)
+        run: |
+          for i in {1..5}; do
+            sudo apt-get update && break || sleep 5
+          done
+          for i in {1..5}; do
+            sudo apt-get install -y \
+            apt-transport-https \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release \
+            git || sleep 5
+          done
+
+      - name: Add Docker's official GPG key and repo
+        run: |
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          echo \
+            "deb [arch=arm64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+      - name: Install Docker Engine (with 5 retries)
+        run: |
+          for i in {1..5}; do
+            sudo apt-get update && break || sleep 5
+          done
+          for i in {1..5}; do
+            sudo apt-get install -y docker-ce docker-ce-cli containerd.io || sleep 5
+          done
+
+      - name: Verify Docker
+        run: docker --version
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Build Parameters
+        id: set_params
+        run: |
+          case "${{ matrix.testCase }}" in
+            test0) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test1) echo "staticBuildParam=-e JBPF_STATIC=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+            test2) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test3) echo "staticBuildParam=-e JBPF_STATIC=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test4) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
+            test5) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e SANITIZER=1" >> "$GITHUB_ENV";;
+            test6) echo "staticBuildParam=" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=-e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV";;
+            test7) echo "staticBuildParam=-e JBPF_STATIC=1 -e JBPF_EXPERIMENTAL_FEATURES=1" >> "$GITHUB_ENV"; echo "sanitizerBuildParam=" >> "$GITHUB_ENV";;
+          esac
+
+      - name: Display Build Parameters
+        run: |
+          echo "Docker Type: ${{ matrix.dockerType }}"
+          echo "Test Case: ${{ matrix.testCase }}"
+          echo "Static Build Param: ${{ env.staticBuildParam }}"
+          echo "Sanitizer Build Param: ${{ env.sanitizerBuildParam }}"
+
+      - name: Build Docker Image
+        run: |
+          sudo docker build \
+            -t ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} \
+            -f deploy/${{ matrix.dockerType }}.Dockerfile .
+          sudo docker tag ${{ env.ACR }}/jbpf-lib-${{ matrix.dockerType }}:${{ env.IMAGE_TAG }} jbpf_lib
+
+      - name: Run Container to Build JBPF
+        run: |
+          set -ex
+          source setup_jbpf_env.sh
+          ./init_and_patch_submodules.sh
+          sudo docker run \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            -v "$(pwd)":/jbpf_out_lib \
+            -e INITIALIZE_SUBMODULES=0 \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} jbpf_lib
+
+      - name: Build codelets /jbpf_tests/test_files
+        run: |
+          set -ex
+          source setup_jbpf_env.sh
+          sudo docker run \
+            -e JBPF_PATH=/jbpf \
+            -v "$(pwd)":/jbpf_out_lib \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            --entrypoint=/bin/bash jbpf_lib -c "cd /jbpf/jbpf_tests/test_files/codelets/ && make clean && make"
+
+      - name: Build codelets /tools/stats_report
+        run: |
+          set -ex
+          source setup_jbpf_env.sh
+          sudo docker run \
+            -e JBPF_PATH=/jbpf \
+            -v "$(pwd)":/jbpf_out_lib \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            --entrypoint=/bin/bash jbpf_lib -c "cd /jbpf/tools/stats_report/ && make clean && make"
+
+      - name: Run Tests
+        run: |
+          set -x
+          source setup_jbpf_env.sh
+          sudo docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
+            --mount type=tmpfs,destination=/dev/shm \
+            -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            -e JBPF_PATH=/jbpf \
+            -e INITIALIZE_SUBMODULES=0 \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            -e RUN_TESTS=1 jbpf_lib
+
+          TEST_OUTCOME=$?
+          mkdir -p ${{ github.workspace }}/artifacts
+          cp ./build/Testing/Temporary/LastTest.log ${{ github.workspace }}/artifacts/ || true
+          cp "$(pwd)"/out/jbpf_tests.xml ${{ github.workspace }}/artifacts/ || true
+
+          if [ "$TEST_OUTCOME" -ne 0 ]; then
+            echo "Error running tests, result code is $TEST_OUTCOME"
+            exit 1
+          fi
+
+      - name: Upload Test Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jbpf-arm64-test-artifacts-${{ matrix.dockerType }}-${{ matrix.testCase }}
+          path: ${{ github.workspace }}/artifacts
+
+      - name: Cleanup Docker
+        run: |
+          sudo docker image prune -af || true
+          sudo docker container prune -f || true

@@ -1,5 +1,13 @@
+ARCH := $(shell uname -m)
+
+ifeq ($(ARCH),aarch64)
+  SYS_INC := -I/usr/include/aarch64-linux-gnu
+else
+  SYS_INC := -I/usr/include/x86_64-linux-gnu
+endif
+
 CC = clang
-INC= -I${JBPF_PATH}/src/common -I${JBPF_PATH}/jbpf_tests/common -I${JBPF_PATH}/src/core 
+INC= -I${JBPF_PATH}/src/common -I${JBPF_PATH}/jbpf_tests/common -I${JBPF_PATH}/src/core $(SYS_INC)
 CFLAGS = -O2 -target bpf -Wall -DJBPF_DEBUG_ENABLED -D__x86_64__
 SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)

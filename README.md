@@ -1,5 +1,5 @@
 # Introduction
-[![Build Status](https://belgrade.visualstudio.com/jbpf/_apis/build/status%2Fjbpf-jbpf?repoName=microsoft%2Fjbpf&branchName=main)](https://belgrade.visualstudio.com/jbpf/_build/latest?definitionId=145&repoName=microsoft%2Fjbpf&branchName=main)
+[![Build Status](https://belgrade.visualstudio.com/jbpf/_apis/build/status%2Fjbpf-jbpf?repoName=microsoft%2Fjbpf&branchName=main)](https://belgrade.visualstudio.com/jbpf/_build/latest?definitionId=145&repoName=microsoft%2Fjbpf&branchName=main) [![JBPF Docker Build and Tests (ARM64)](https://github.com/microsoft/jbpf/actions/workflows/docker-build-and-test-arm.yaml/badge.svg)](https://github.com/microsoft/jbpf/actions/workflows/docker-build-and-test-arm.yaml) [![JBPF Docker Build and Tests (AMD64)](https://github.com/microsoft/jbpf/actions/workflows/docker_build_and_test.yaml/badge.svg)](https://github.com/microsoft/jbpf/actions/workflows/docker_build_and_test.yaml)
 
 Userspace eBPF instrumentation and control framework for deploying control and monitoring functions in a secure manner. It is part of [Project Janus](https://www.microsoft.com/en-us/research/project/programmable-ran-platform/) and provides probes for eBPF-like functionality outside of the Linux kernel.
 
@@ -41,6 +41,11 @@ make doc
 ```
 
 The documentation will be generated in the `$OUT_DIR/docs/html` directory.
+
+
+## Supported architectures
+jbpf supports both x86_64 and aarch64. However, jbpf uses ubpf to run userspace eBPF code, and ubpf does not support atomics for ARM. Therefore, users compiling for ARM should be aware that certain functionailities of jbpf will not be available.
+
 
 # Further documentation
 

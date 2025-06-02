@@ -4,7 +4,8 @@ parameters:
     default: ""
 
 steps:
-  - template: submodules.yaml
+  - checkout: self
+    submodules: recursive
 
   - template: images/build.v2.yaml@templates
     parameters:
@@ -14,4 +15,3 @@ steps:
       repository: jbpf-lib-${{ parameters.dockerType }}
       tags: |
         $(imageTag)
-
