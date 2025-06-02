@@ -9,6 +9,7 @@ add_subdirectory(hashmap)
 add_subdirectory(control_input)
 add_subdirectory(ringbuf)
 add_subdirectory(hooks)
+add_subdirectory(channel)
 
 # The ARM version of ubpf does not support atomic operations.
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
