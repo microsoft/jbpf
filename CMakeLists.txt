@@ -63,11 +63,16 @@ endif()
 ################ Definitions ################
 
 if(JBPF_THREADS_LARGE)
-add_definitions(-DJBPF_MAX_NUM_REG_THREADS=256)
+  add_definitions(-DJBPF_MAX_NUM_REG_THREADS=256)
 endif(JBPF_THREADS_LARGE)
 
 if(JBPF_STATIC_OPTION_UPPER STREQUAL "OFF")
     add_definitions(-DJBPF_SHARED_LIB)
+endif()
+
+# To build static library on ARM, disable out-of-line helpers for atomics 
+if ((JBPF_STATIC) AND (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64"))
+  add_compile_options(-mno-outline-atomics)
 endif()
 
 if(USE_JBPF_PERF_OPT)
@@ -234,6 +239,8 @@ set_target_properties(libubpf PROPERTIES
 add_dependencies(libubpf ubpf)
 
 ################ prevail verifier ################
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 add_subdirectory(3p/ebpf-verifier)
 set_target_properties(conformance_check PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
