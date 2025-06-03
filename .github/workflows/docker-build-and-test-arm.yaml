@@ -23,6 +23,32 @@ jobs:
         testCase: [ "test0", "test1", "test2", "test3", "test4", "test5", "test6", "test7" ]
 
     steps:
+      - name: System Information
+        run: |
+          echo "****************Pipeline VM Information**********"
+          echo "Running on: ${{ runner.os }}"
+          echo "****************CPU Arch**********"
+          lscpu
+          echo "****************CPU***************"
+          cat /proc/cpuinfo
+          echo "****************MEM***************"
+          cat /proc/meminfo
+          echo "****************DISK**************"
+          df -h
+          echo "****************FREE**************"
+          free -m
+          echo "****************HOST**************"
+          echo "Agent.MachineName: ${{ runner.name }}"
+          echo "Agent.Name: ${{ github.actor }}"
+          echo "System.HostType: ${{ github.event_name }}"
+          if [ -z "${{ secrets.REQUIRED_CPU_MODEL }}" ]; then
+            echo "No specific CPU model required."
+          else
+            echo "Required CPU Model: ${{ secrets.REQUIRED_CPU_MODEL }}"
+          fi
+          echo "****************CPU Model*********"
+          lscpu
+
       - name: Wait for dpkg lock (self-hosted only)
         if: runner.os == 'Linux' && runner.arch == 'ARM64' # optional
         run: |

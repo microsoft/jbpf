@@ -26,6 +26,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: System Information
+        run: |
+          echo "****************Pipeline VM Information**********"
+          echo "Running on: ${{ runner.os }}"
+          echo "****************CPU Arch**********"
+          lscpu
+          echo "****************CPU***************"
+          cat /proc/cpuinfo
+          echo "****************MEM***************"
+          cat /proc/meminfo
+          echo "****************DISK**************"
+          df -h
+          echo "****************FREE**************"
+          free -m
+          echo "****************HOST**************"
+          echo "Agent.MachineName: ${{ runner.name }}"
+          echo "Agent.Name: ${{ github.actor }}"
+          echo "System.HostType: ${{ github.event_name }}"
+          if [ -z "${{ secrets.REQUIRED_CPU_MODEL }}" ]; then
+            echo "No specific CPU model required."
+          else
+            echo "Required CPU Model: ${{ secrets.REQUIRED_CPU_MODEL }}"
+          fi
+          echo "****************CPU Model*********"
+          lscpu
+
       - name: Set Build Parameters
         id: set_params
         run: |
