@@ -1,0 +1,43 @@
+stages:
+  - stage: CoverageTests
+    displayName: CoverageTests
+    dependsOn: []
+    jobs:
+      - job: Cleanup
+        displayName: Cleanup
+        condition: always()
+        steps:
+          - template: agentpool/cleanup.yaml@templates
+      - job: BuildAndRunCoverageTests
+        dependsOn: Cleanup
+        displayName: BuildAndRunCoverageTests
+        steps:
+          - template: print-debug-info.yaml
+          - template: build-lib.yaml
+            parameters:
+              dockerType: ubuntu22.04
+          - bash: |
+              set -x
+              if ! docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g --mount type=tmpfs,destination=/dev/shm -v `pwd`:/jbpf_out_lib -v `pwd`/build:/jbpf/build -e JBPF_PATH=/jbpf -e CLANG_FORMAT_CHECK=1 -e JBPF_COVERAGE=1 -e JBPF_DEBUG=1 $(containerRegistry)/jbpf-lib-ubuntu22.04:$(imageTag); then
+                  echo ERROR Running Coverage Tests
+                  exit 1
+              fi
+              cat build/Testing/Temporary/LastTest.log
+              cp build/Testing/Temporary/LastTest.log $(Build.ArtifactStagingDirectory)
+              cp -R `pwd`/out/jbpf_coverage.xml $(Build.ArtifactStagingDirectory)
+            displayName: Run Coverage Tests
+            continueOnError: false
+          - task: PublishBuildArtifacts@1
+            condition: always()
+            inputs:
+              ArtifactName: artifacts
+          - task: UseDotNet@2
+            displayName: 'Use .NET Core sdk'
+            inputs:
+              packageType: sdk
+              version: 6.0.x
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: 'out/jbpf_coverage.xml'
