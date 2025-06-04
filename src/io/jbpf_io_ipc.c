@@ -400,7 +400,7 @@ jbpf_io_ipc_init(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ctx)
     }
 
     // Initialize local queue of channel creation requests
-    ck_ring_init(&io_ctx->primary_ctx.ipc_ctx.local_queue->req_queue, MAX_NUMBER_JBPF_IPC_LOCAL_REQS + 1);
+    ck_ring_init(&io_ctx->primary_ctx.ipc_ctx.local_queue->req_queue, MAX_NUMBER_JBPF_IPC_LOCAL_REQS);
 
     ck_epoch_init(&list_epoch);
 
