@@ -50,7 +50,7 @@ struct dipc_peer_list
 struct local_channel_req_queue
 {
     ck_ring_t req_queue;
-    ck_ring_buffer_t buffer[MAX_NUMBER_JBPF_IPC_LOCAL_REQS + 1];
+    ck_ring_buffer_t buffer[MAX_NUMBER_JBPF_IPC_LOCAL_REQS];
 };
 
 // Channel definitions
