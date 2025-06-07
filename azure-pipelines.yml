@@ -82,6 +82,8 @@ stages:
 
           - template: agentpool/cleanup.yaml@templates
 
+  - template: pipeline/coverage-tests.yaml
+
   - stage: Doxygen
     dependsOn: []
     displayName: Doxygen
