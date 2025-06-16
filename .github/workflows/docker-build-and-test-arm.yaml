@@ -35,6 +35,10 @@ on:
           - test6
           - test7
 
+### daily cron job to run the workflow
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+
 env:
   ACR: jbpfpipeline
   IMAGE_TAG: ${{ github.run_id }}-${{ github.sha }}
