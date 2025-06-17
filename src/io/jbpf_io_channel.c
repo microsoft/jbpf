@@ -524,6 +524,8 @@ jbpf_io_channel_pack_msg(struct jbpf_io_ctx* io_ctx, jbpf_channel_buf_ptr data, 
 
     if (!serde->serialize || buf_len < JBPF_IO_STREAM_ID_LEN) {
         res = -1;
+        jbpf_logger(
+            JBPF_ERROR, "Error: Serializer not found or buffer length %zu is too small for stream ID\n", buf_len);
         goto out;
     }
 
@@ -539,6 +541,7 @@ jbpf_io_channel_pack_msg(struct jbpf_io_ctx* io_ctx, jbpf_channel_buf_ptr data, 
         res = msg_size;
     } else {
         res = -2;
+        jbpf_logger(JBPF_ERROR, "Error: Serialization failed, bytes written %d\n", bytes_written);
     }
 
 out:
