@@ -83,9 +83,6 @@ if [[ "$RUN_EMULATOR_TESTS" == "1" ]]; then
     export JBPF_PATH=/jbpf
     EMULATOR_TEST_CASES="test_0 test_1 test_2 test_report_stats test_periodic_call test_time_event"
 
-    ## TOFIX: Disable ODR violation detection for the emulator tests
-    ## As the emulator tests are not built with the same flags as the rest of the project, they may trigger ODR violations
-    export ASAN_OPTIONS=detect_odr_violation=0
     export LSAN_OPTIONS="suppressions=/jbpf/lsan_agent.supp"
     for test in $EMULATOR_TEST_CASES; do
         if ! /jbpf/out/bin/jbpf_emulator /jbpf/out/emulator/test/ $test; then
