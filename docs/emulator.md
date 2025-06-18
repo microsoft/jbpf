@@ -2,14 +2,6 @@
 
 **JBPF Emulator** is a testing framework that lets you test *codelets* by writing and running Python scripts. It’s especially useful for validating your logic without deploying it into a real runtime environment.
 
-This README explains:
-- What the emulator does
-- How to build it (dummy and custom versions)
-- How to add your own hooks and helpers
-- How to run tests using the emulator
-
----
-
 ## What Is the Emulator?
 
 Think of the emulator as a standalone binary that acts like the JBPF runtime. You build it once for your project and then use Python scripts to simulate and test JBPF codelets.
