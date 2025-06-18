@@ -15,21 +15,22 @@ This README explains:
 Think of the emulator as a standalone binary that acts like the JBPF runtime. You build it once for your project and then use Python scripts to simulate and test JBPF codelets.
 
 There are two kinds of emulator builds:
-1. **Dummy Emulator**: Basic emulator with no custom logic (good for testing the build setup).
+1. **Dummy Emulator**: Basic emulator with no custom logic, which is built by `make -j jbpf_emulator`.
 2. **Custom Emulator**: Extended with your hooks and helper functions for real test scenarios.
 
 ## Workflow of Emulator
-Jbpf emulator is a C++ app that starts jbpf.
+Jbpf emulator is a C++ app that starts jbpf. When it starts, it does the following:
+- Loads the JBPF runtime.
 - Registers custom hooks.
 - Registers custom helper functions.
-- Runs python code which users can load codelet, unload codelet, calls hooks in the similar fashion as those in JBPF C unit tests.
-- Assertions.
+- Loads user's python code. The python code is executed and users can load codelet, unload codelet, calls hooks, make assertions in the similar fashion as those in JBPF C tests.
+- When the python code is done, the emulator exits after cleaning up the JBPF runtime.
 
 ---
 
 ## Building the Dummy Emulator
 
-The dummy emulator includes no custom hooks. It's mainly used to verify that everything builds correctly.
+The dummy emulator (in [emulator](../src/emulator/)) includes no custom hooks. It's mainly used to verify that everything builds correctly.
 
 ### Steps
 
@@ -52,7 +53,7 @@ make -j jbpf_emulator
 
 ## Building a Custom Emulator
 
-The custom emulator allows you to register your own hooks and helper functions to simulate actual JBPF behavior during tests.
+The custom emulator allows you to register your own hooks and helper functions to simulate actual JBPF behavior during tests. You can add custom hooks and helper functions to extend the emulator's functionality. The emulator files are located in the `$JBPF_OUT_DIR/emulator` directory, which is created when you build the dummy emulator.
 
 ### 1. Prepare Environment
 
@@ -151,16 +152,100 @@ $JBPF_OUT_DIR/bin/jbpf_emulator $JBPF_OUT_DIR/emulator/test test_1
 
 If successful, the emulator exits with code `0`.
 
-## Emulated Time Events
-The emulator emulates the time events via the following function:
+## Emulator APIs
+
+This section documents the high-level API flow when using the JBPF Emulator in Python.
+
+### Load Codeletset
+
+To load a codeletset into the emulator:
 
 ```python
-jbpf_helpers.jbpf_add_time_event(time)
+codeletset_req = emulator_utils.create_codeletset_load_req(codelet_descriptor)  
+res = jbpf_helpers.jbpf_codeletset_load(codeletset_req)  
+if res != 0:  
+  print("Failed to load codeletset")  
+  sys.exit(-1)
+```
+
+The `codelet_descriptor` should define:  
+- `codeletset_id`  
+- One or more `codelet_descriptor` entries, each specifying:  
+  - `codelet_name`, `hook_name`, `codelet_path`  
+  - Input/output IO channels with `stream_id`  
+  - Optional `priority`, `runtime_threshold`, etc.
+
+---
+
+### Unload Codeletset
+
+Unload the codeletset, you would provide the `codeletset_id`:
+
+```python
+res = emulator_utils.jbpf_codeletset_unload(codeletset_req.codeletset_id)  
+if res != 0:  
+  print("Failed to unload codeletset")  
+  sys.exit(-1)
+```
+
+### Send Input Message
+Send messages to the input stream:
+```python
+p = jbpf_test_def.struct__custom_api()  
+for i in range(5):  
+  p.command = i**2  
+  emulator_utils.jbpf_send_input_msg(stream_id_c1, p)
+```
+
+This simulates a stream of input to your codelet.
+
+### Call Hook
+
+Call the registered hook to trigger the codelet's logic, for example:
+
+```python
+p = jbpf_test_def.struct_packet()
+for _ in range(10):
+  jbpf_hooks.hook_test1(p, 1)
+```
+
+The hooks should be defined in [hooks.h](../src/emulator/hooks.h).
+
+### Handle Output Buffers via Callback
+
+To check the outputs sent by the codelet, you can register a callback function that processes the output buffers:
+
+```python
+def io_channel_check_output(bufs, num_bufs, ctx):  
+  for i in range(num_bufs):  
+    buf_capsule = bufs[i]  
+    buf_pointer = emulator_utils.decode_capsule(buf_capsule, b"void*")  
+    buffer_array = ctypes.cast(buf_pointer, ctypes.POINTER(ctypes.c_int * 1))  
+    print(f"data received: {buffer_array.contents[0]}")  
+
+count = emulator_utils.jbpf_handle_out_bufs(  
+  stream_id_c1,    ## stream id for output channel
+  io_channel_check_output,  ## callback function
+  num_of_messages=5,  ## number of messages to wait for
+  timeout=3 * (10**9),   ## max wait time in nanoseconds
+  debug=True,  ## enable debug output
+)  
+assert count == 5
+```
+
+You pass in the stream ID, a callback, expected message count, and timeout (in nanoseconds).
+
+---
+
+### Emulated Time Events
+
+To simulate time advancement in your tests:
+
+```python
+jbpf_helpers.jbpf_add_time_event(time_ns)
 ```
 
 where `time` is type of integer. You can push the time events and then in your codelet, the `jbpf_time_get_ns` function will return the time you pushed.
-
----
 
 ## Summary
 
@@ -173,5 +258,9 @@ where `time` is type of integer. You can push the time events and then in your c
 | Add helpers | `helper_functions.hpp` |
 | Build custom emulator | `cmake && make` in `/out/emulator/build` |
 | Run test | `jbpf_emulator <dir> <script>` |
-
-
+| Emulated time event | `jbpf_helpers.jbpf_add_time_event(time)` |
+| Load codeletset | `jbpf_helpers.jbpf_codeletset_load(req)` |
+| Unload codeletset | `jbpf_helpers.jbpf_codeletset_unload(req.codeletset_id)` |
+| Send input message | `emulator_utils.jbpf_send_input_msg(stream_id, message)` |
+| Call hook | `jbpf_hooks.hook_name(args)` |
+| Handle output buffers | `emulator_utils.jbpf_handle_out_bufs(stream_id, callback, num_of_messages, timeout, debug)` |
