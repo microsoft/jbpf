@@ -10,6 +10,35 @@ on:
       - main
       - dev
 
+  # Support workflow dispatch for manual runs
+  workflow_dispatch:
+    inputs:
+      dockerType:
+        description: 'Docker Type (e.g., mariner, ubuntu22.04, ubuntu24.04)'
+        required: true
+        default: 'mariner'
+        options:
+          - mariner
+          - ubuntu22.04
+          - ubuntu24.04
+      testCase:
+        description: 'Test Case (e.g., test0, test1, test2, test3, test4, test5, test6, test7)'
+        required: true
+        default: 'test0'
+        options:
+          - test0
+          - test1
+          - test2
+          - test3
+          - test4
+          - test5
+          - test6
+          - test7
+
+### daily cron job to run the workflow
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+
 env:
   ACR: jbpfpipeline
   IMAGE_TAG: ${{ github.run_id }}-${{ github.sha }}
