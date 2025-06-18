@@ -78,6 +78,20 @@ if [[ "$RUN_TESTS" == "1" ]]; then
     fi
 fi
 
+## Test the emulator
+if [[ "$RUN_EMULATOR_TESTS" == "1" ]]; then
+    export JBPF_PATH=/jbpf
+    EMULATOR_TEST_CASES="test_0 test_1 test_2 test_report_stats test_periodic_call test_time_event"
+
+    export LSAN_OPTIONS="suppressions=/jbpf/lsan_agent.supp"
+    for test in $EMULATOR_TEST_CASES; do
+        if ! /jbpf/out/bin/jbpf_emulator /jbpf/out/emulator/test/ $test; then
+            echo "Error running emulator test $test!"
+            exit 1
+        fi
+    done
+fi
+
 ## Check that all of the libraries we link against are approved, and exit if it fails.
 CHECK_LIB_ARGS="--build-dir /jbpf/build --approved-libraries /jbpf/helper_build_files/approved_libraries.txt"
 if [[ "$JBPF_STATIC" != "1" ]]; then
