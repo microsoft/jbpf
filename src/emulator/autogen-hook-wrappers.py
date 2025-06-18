@@ -1,6 +1,6 @@
 
 ## this script is used to generate c code for jbpf hooks
-## this script reads the C header files and then generate the wrapper functions for Jbpf Emulator
+## this script reads the C header files and then generates the wrapper functions for Jbpf Emulator
 ## For example:
 ## python3 autogen-hook-wrappers.py /jbpf/api/jbpf_hooks1.h /jbpf/api/jbpf_hooks2.h | tee generated-hooks.h
 

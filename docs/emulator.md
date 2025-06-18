@@ -151,6 +151,15 @@ $JBPF_OUT_DIR/bin/jbpf_emulator $JBPF_OUT_DIR/emulator/test test_1
 
 If successful, the emulator exits with code `0`.
 
+## Emulated Time Events
+The emulator emulates the time events via the following function:
+
+```python
+jbpf_helpers.jbpf_add_time_event(time)
+```
+
+where `time` is type of integer. You can push the time events and then in your codelet, the `jbpf_time_get_ns` function will return the time you pushed.
+
 ---
 
 ## Summary
