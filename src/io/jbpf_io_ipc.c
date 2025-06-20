@@ -702,6 +702,7 @@ jbpf_io_ipc_handle_ch_create_req(int sock_fd, struct jbpf_io_ctx* io_ctx, struct
 
     peer_ctx = _jbpf_io_ipc_get_ctx(io_ctx->primary_ctx.ipc_ctx.dipc_peer_list, sock_fd);
     if (!peer_ctx) {
+        jbpf_logger(JBPF_ERROR, "Could not find peer context for fd %d\n", sock_fd);
         chan_resp->status = JBPF_IO_IPC_CHAN_FAIL;
         res = -1;
         goto out;
@@ -711,6 +712,7 @@ jbpf_io_ipc_handle_ch_create_req(int sock_fd, struct jbpf_io_ctx* io_ctx, struct
         &io_ctx->primary_ctx.io_channels, &chan_req->chan_request, peer_ctx->peer_shm_ctx.mem_ctx);
 
     if (!chan_resp->io_channel) {
+        jbpf_logger(JBPF_ERROR, "Error creating channel for fd %d\n", sock_fd);
         chan_resp->status = JBPF_IO_IPC_CHAN_FAIL;
     } else {
         chan_resp->status = JBPF_IO_IPC_CHAN_SUCCESS;
@@ -761,6 +763,7 @@ jbpf_io_ipc_handle_ch_find_req(int sock_fd, struct jbpf_io_ctx* io_ctx, struct j
     peer_ctx = _jbpf_io_ipc_get_ctx(io_ctx->primary_ctx.ipc_ctx.dipc_peer_list, sock_fd);
     if (!peer_ctx) {
         find_resp->io_channel = NULL;
+        jbpf_logger(JBPF_ERROR, "Could not find peer context for fd %d\n", sock_fd);
         res = -1;
     }
 
@@ -822,6 +825,7 @@ jbpf_io_ipc_handle_ch_destroy(int sock_fd, struct jbpf_io_ctx* io_ctx, struct jb
 
     if (!peer_ctx) {
         ck_epoch_end(local_list_epoch_record, NULL);
+        jbpf_logger(JBPF_ERROR, "Could not find peer context for fd %d\n", sock_fd);
         return;
     }
 
@@ -872,6 +876,11 @@ jbpf_io_ipc_reg_init(
 
     if (num_peers >= MAX_NUM_JBPF_IO_IPC_PEERS) {
         ck_epoch_end(local_list_epoch_record, NULL);
+        jbpf_logger(
+            JBPF_ERROR,
+            "The number of peers %d reached %d. Cannot register new peer\n",
+            num_peers,
+            MAX_NUM_JBPF_IO_IPC_PEERS);
         return -1;
     }
 
@@ -879,6 +888,7 @@ jbpf_io_ipc_reg_init(
 
     if (!peer_ctx) {
         ck_epoch_end(local_list_epoch_record, NULL);
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for peer context\n");
         return -1;
     }
 
@@ -1024,6 +1034,7 @@ jbpf_io_ipc_reg_neg(
                 res = -1;
                 num_unused_mmaped_regions = peer_ctx->reg_ctx.num_reg_attempts - 1;
                 release_shm = true;
+                jbpf_logger(JBPF_ERROR, "Error creating shared memory for fd %d\n", sock_fd);
                 goto free_unused_mapped_regions;
             }
 
@@ -1068,8 +1079,10 @@ jbpf_io_ipc_shm_create(char* meta_path_name, char* mem_name, size_t size, struct
 
     addr = jbpf_allocate_memory(size, meta_path_name, mem_name, mmap_info, flags);
 
-    if (!addr)
+    if (!addr) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for shared memory %s\n", mem_name);
         return -1;
+    }
 
     return 0;
 }
@@ -1242,8 +1255,10 @@ jbpf_io_ipc_deregister(struct jbpf_io_ctx* io_ctx)
 
     struct jbpf_io_ipc_msg ipc_dereg_req = {0}, ipc_dereg_resp = {0};
 
-    if (io_ctx == NULL)
+    if (io_ctx == NULL) {
+        jbpf_logger(JBPF_ERROR, "Cannot deregister a NULL context\n");
         return;
+    }
 
     if (ptype != JBPF_IO_IPC_SECONDARY) {
         jbpf_logger(JBPF_ERROR, "Cannot deregister a primary process\n");
@@ -1343,10 +1358,12 @@ jbpf_io_ipc_req_create_channel(
     struct jbpf_io_channel* io_channel;
 
     if (!io_ctx) {
+        jbpf_logger(JBPF_ERROR, "Invalid io_ctx for channel creation request\n");
         return NULL;
     }
 
     if (io_ctx->io_type != JBPF_IO_IPC_SECONDARY && ptype != JBPF_IO_IPC_SECONDARY) {
+        jbpf_logger(JBPF_ERROR, "Not in secondary mode\n");
         return NULL;
     }
 
@@ -1369,22 +1386,30 @@ jbpf_io_ipc_req_create_channel(
 
     jbpf_logger(
         JBPF_INFO, "Requesting the creation of new channel for peer %d\n", io_ctx->secondary_ctx.ipc_sec_desc.sock_fd);
-    if (send_all(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_create_req, sizeof(struct jbpf_io_ipc_msg), 0) !=
-        sizeof(struct jbpf_io_ipc_msg)) {
+    int res =
+        send_all(io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_create_req, sizeof(struct jbpf_io_ipc_msg), 0);
+    if (res != sizeof(struct jbpf_io_ipc_msg)) {
+        jbpf_logger(
+            JBPF_ERROR,
+            "Error while sending channel creation request %d: %d\n",
+            res,
+            (int)sizeof(struct jbpf_io_ipc_msg));
         return NULL;
     }
 
-    if (recv_all(
-            io_ctx->secondary_ctx.ipc_sec_desc.sock_fd,
-            &ipc_ch_create_resp,
-            sizeof(struct jbpf_io_ipc_msg),
-            MSG_WAITALL) != sizeof(struct jbpf_io_ipc_msg)) {
-        jbpf_logger(JBPF_ERROR, "Something went wrong\n");
+    res = recv_all(
+        io_ctx->secondary_ctx.ipc_sec_desc.sock_fd, &ipc_ch_create_resp, sizeof(struct jbpf_io_ipc_msg), MSG_WAITALL);
+    if (res != sizeof(struct jbpf_io_ipc_msg)) {
+        jbpf_logger(
+            JBPF_ERROR,
+            "Error while receiving channel creation response %d: %d\n",
+            res,
+            (int)sizeof(struct jbpf_io_ipc_msg));
         return NULL;
     }
 
     if (ipc_ch_create_resp.msg_type != JBPF_IO_IPC_CH_CREATE_RESP) {
-        jbpf_logger(JBPF_ERROR, "Received wrong message type\n");
+        jbpf_logger(JBPF_ERROR, "Received wrong message type %d\n", ipc_ch_create_resp.msg_type);
         return NULL;
     }
 
