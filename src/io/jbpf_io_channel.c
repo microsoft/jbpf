@@ -102,19 +102,27 @@ jbpf_io_channel_list_init(struct jbpf_io_ctx* io_ctx)
 
     unsigned int mode = CK_HT_MODE_BYTESTRING | CK_HT_WORKLOAD_DELETE;
 
-    if (!io_ctx)
+    if (!io_ctx) {
+        jbpf_logger(JBPF_ERROR, "Error: io_ctx is NULL\n");
         return -1;
+    }
 
-    if (io_ctx->io_type != JBPF_IO_IPC_PRIMARY && io_ctx->io_type != JBPF_IO_LOCAL_PRIMARY)
+    if (io_ctx->io_type != JBPF_IO_IPC_PRIMARY && io_ctx->io_type != JBPF_IO_LOCAL_PRIMARY) {
+        jbpf_logger(JBPF_ERROR, "Error: Invalid io_type %d for channel list initialization\n", io_ctx->io_type);
         return -1;
+    }
 
     io_ctx->primary_ctx.io_channels.in_channel_list = calloc(1, sizeof(struct jbpf_io_in_channel_list));
-    if (!io_ctx->primary_ctx.io_channels.in_channel_list)
+    if (!io_ctx->primary_ctx.io_channels.in_channel_list) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for in channel list\n");
         return -1;
+    }
 
     io_ctx->primary_ctx.io_channels.out_channel_list = calloc(1, sizeof(struct jbpf_io_out_channel_list));
-    if (!io_ctx->primary_ctx.io_channels.out_channel_list)
+    if (!io_ctx->primary_ctx.io_channels.out_channel_list) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for out channel list\n");
         goto free_in_channel;
+    }
 
     // Initialize channels
     if (ck_ht_init(
@@ -161,11 +169,15 @@ free_in_channel:
 int
 jbpf_io_channel_list_destroy(struct jbpf_io_ctx* io_ctx)
 {
-    if (!io_ctx)
+    if (!io_ctx) {
+        jbpf_logger(JBPF_WARN, "io_ctx is NULL\n");
         return -1;
+    }
 
-    if (io_ctx->io_type != JBPF_IO_IPC_PRIMARY && io_ctx->io_type != JBPF_IO_LOCAL_PRIMARY)
+    if (io_ctx->io_type != JBPF_IO_IPC_PRIMARY && io_ctx->io_type != JBPF_IO_LOCAL_PRIMARY) {
+        jbpf_logger(JBPF_WARN, "Invalid io_type %d for channel list destruction\n", io_ctx->io_type);
         return -1;
+    }
 
     ck_ht_destroy(&io_ctx->primary_ctx.io_channels.out_channel_list->out_ht);
     ck_ht_destroy(&io_ctx->primary_ctx.io_channels.in_channel_list->in_ht);
@@ -186,6 +198,7 @@ jbpf_io_channel_exists(struct jbpf_io_channel_list* channel_list, struct jbpf_io
     bool channel_exists;
 
     if (!channel_list || !stream_id) {
+        jbpf_logger(JBPF_INFO, "channel_list or stream_id is NULL\n");
         return NULL;
     }
 
@@ -225,6 +238,7 @@ _jbpf_io_load_serde(struct jbpf_io_serde* serde, struct jbpf_io_stream_id* strea
         _jbpf_io_tohex_str(stream_id->id, JBPF_IO_STREAM_ID_LEN, sname, JBPF_IO_STREAM_ID_LEN * 3);
 
         if (snprintf(serde->name, JBPF_IO_CHANNEL_NAME_LEN, "serde_memfd_%s", sname) < 0) {
+            jbpf_logger(JBPF_ERROR, "Error creating serde name for stream id %s\n", sname);
             return false;
         }
 
@@ -295,10 +309,16 @@ _jbpf_io_create_channel(
         num_channels = channel_list->out_channel_list->num_out_channels;
         is_output = true;
     } else {
+        jbpf_logger(JBPF_WARN, "Invalid channel direction %d\n", chan_req->direction);
         return NULL;
     }
 
     if (num_channels >= JBPF_IO_MAX_NUM_CHANNELS) {
+        jbpf_logger(
+            JBPF_ERROR,
+            "Error. Maximum number of channels %d (max %d) reached\n",
+            num_channels,
+            JBPF_IO_MAX_NUM_CHANNELS);
         goto error_exit;
     }
 
@@ -311,6 +331,7 @@ _jbpf_io_create_channel(
     io_channel = jbpf_calloc_ctx(mem_ctx, 1, sizeof(struct jbpf_io_channel));
 
     if (!io_channel) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for channel %s\n", name_lib);
         goto error_exit;
     }
 
@@ -327,6 +348,7 @@ _jbpf_io_create_channel(
 
         io_channel->type = JBPF_IO_CHANNEL_QUEUE;
         if (!io_channel->channel_ptr) {
+            jbpf_logger(JBPF_ERROR, "Error jbpf_io_queue_create queue for channel %s\n", name_lib);
             goto free_io_channel;
         }
     } else {
@@ -336,6 +358,7 @@ _jbpf_io_create_channel(
 
     if (!_jbpf_io_load_serde(
             &io_channel->primary_serde, &chan_req->stream_id, chan_req->descriptor, chan_req->descriptor_size)) {
+        jbpf_logger(JBPF_ERROR, "Error loading serde for channel %s\n", name_lib);
         goto mem_error;
     }
 
@@ -419,7 +442,11 @@ jbpf_io_destroy_out_channel(struct jbpf_io_channel_list* channel_list, struct jb
     ck_epoch_end(local_out_channel_list_epoch_record, NULL);
     ck_epoch_call(local_out_channel_list_epoch_record, &io_channel->epoch_entry, io_channel_destructor);
     ck_epoch_barrier(local_out_channel_list_epoch_record);
-    jbpf_logger(JBPF_INFO, "Barrier reached and channel %p was destroyed\n", io_channel);
+    jbpf_logger(
+        JBPF_INFO,
+        "Barrier reached and channel %p was destroyed (stream id %s)\n",
+        io_channel,
+        io_channel->stream_id.id);
 }
 
 void
@@ -648,8 +675,10 @@ jbpf_io_channel_send_data(struct jbpf_io_channel* channel, void* data, size_t si
         }
 
         jbpf_channel_buf_ptr data_buf = jbpf_io_channel_reserve_buf(channel);
-        if (!data_buf)
+        if (!data_buf) {
+            jbpf_logger(JBPF_ERROR, "Error reserving buffer for channel %s\n", channel->stream_id.id);
             return -1;
+        }
         memcpy(data_buf, data, size);
         return jbpf_io_channel_submit_buf(channel);
 
@@ -748,8 +777,10 @@ jbpf_io_channel_recv_data(struct jbpf_io_channel* channel, jbpf_channel_buf_ptr*
     jbpf_io_channel_elem_t* elem;
     int num_collected = 0;
 
-    if (!channel || !data_ptrs)
+    if (!channel || !data_ptrs) {
+        jbpf_logger(JBPF_ERROR, "Error: channel or data_ptrs is NULL\n");
         return -1;
+    }
 
     if (channel->type == JBPF_IO_CHANNEL_QUEUE) {
         for (num_collected = 0; num_collected < batch_size; num_collected++) {
@@ -762,6 +793,7 @@ jbpf_io_channel_recv_data(struct jbpf_io_channel* channel, jbpf_channel_buf_ptr*
 
     } else if (channel->type == JBPF_IO_CHANNEL_RINGBUF) {
         // TODO
+        jbpf_logger(JBPF_WARN, "Ring buffer channel type not implemented for recv_data\n");
         return -1;
     }
 
@@ -776,19 +808,23 @@ jbpf_io_channel_recv_data_copy(struct jbpf_io_channel* channel, void* buf, size_
     jbpf_io_channel_elem_t* elem;
     int data_size = 0;
 
-    if (!channel || !buf || (channel->type != JBPF_IO_CHANNEL_RINGBUF && channel->type != JBPF_IO_CHANNEL_QUEUE))
+    if (!channel || !buf || (channel->type != JBPF_IO_CHANNEL_RINGBUF && channel->type != JBPF_IO_CHANNEL_QUEUE)) {
+        jbpf_logger(JBPF_ERROR, "Error: channel or buf is NULL or invalid channel type %d\n", channel->type);
         return -1;
+    }
 
     data_size = channel->elem_size;
     elem = jbpf_io_queue_dequeue(channel->channel_ptr);
 
     if (!elem) {
+        jbpf_logger(JBPF_DEBUG, "No data available in channel %s\n", channel->stream_id.id);
         return -1;
     }
 
     data = elem->data;
 
     if (!data || data_size > buf_size) {
+        jbpf_logger(JBPF_ERROR, "Data is NULL or Data size %d is larger than buffer size %zu\n", data_size, buf_size);
         return -1;
     }
 
@@ -802,6 +838,7 @@ jbpf_io_channel_share_data_ptr(jbpf_channel_buf_ptr data_ptr)
     jbpf_io_channel_elem_t* elem;
 
     if (!data_ptr) {
+        jbpf_logger(JBPF_ERROR, "Error: data_ptr is NULL\n");
         return NULL;
     }
 

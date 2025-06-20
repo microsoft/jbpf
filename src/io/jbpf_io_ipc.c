@@ -915,8 +915,10 @@ jbpf_io_ipc_reg_init(
     shm_res = jbpf_io_ipc_shm_create(
         io_ctx->jbpf_io_path, dipc_reg_resp->mem_name, dipc_reg_req->alloc_size, &peer_ctx->peer_shm_ctx.mmap_info);
 
-    if (shm_res < 0)
+    if (shm_res < 0) {
+        jbpf_logger(JBPF_ERROR, "Error creating shared memory for fd %d\n", sock_fd);
         goto error;
+    }
 
     peer_ctx->peer_shm_ctx.tmp_mmap[peer_ctx->reg_ctx.num_reg_attempts - 1] = peer_ctx->peer_shm_ctx.mmap_info;
     dipc_reg_resp->base_addr = peer_ctx->peer_shm_ctx.mmap_info.addr;
@@ -1155,8 +1157,14 @@ jbpf_io_ipc_register(struct jbpf_io_ipc_cfg* dipc_cfg, struct jbpf_io_ctx* io_ct
     }
 
     if (ipc_reg_resp.msg_type != JBPF_IO_IPC_REG_RESP ||
-        ipc_reg_resp.msg.dipc_reg_resp.status != JBPF_IO_IPC_REG_NEG_MMAP)
+        ipc_reg_resp.msg.dipc_reg_resp.status != JBPF_IO_IPC_REG_NEG_MMAP) {
+        jbpf_logger(
+            JBPF_ERROR,
+            "Unexpected registration response type %d or status %d\n",
+            ipc_reg_resp.msg_type,
+            ipc_reg_resp.msg.dipc_reg_resp.status);
         goto sock_close;
+    }
 
     jbpf_logger(JBPF_INFO, "Received registration response with status %d\n", ipc_reg_resp.msg.dipc_reg_resp.status);
 
@@ -1395,14 +1403,17 @@ void
 jbpf_io_ipc_local_req_destroy_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_channel* io_channel)
 {
     if (!io_ctx || !io_channel) {
+        jbpf_logger(JBPF_ERROR, "Invalid parameters for local channel destroy request\n");
         return;
     }
 
     char sname[JBPF_IO_STREAM_ID_LEN * 3];
     _jbpf_io_tohex_str(io_channel->stream_id.id, JBPF_IO_STREAM_ID_LEN, sname, JBPF_IO_STREAM_ID_LEN * 3);
 
-    if (io_ctx->io_type != JBPF_IO_IPC_PRIMARY)
+    if (io_ctx->io_type != JBPF_IO_IPC_PRIMARY) {
+        jbpf_logger(JBPF_ERROR, "Not in primary mode\n");
         return;
+    }
 
     local_req_resp_t req_resp = {0};
     req_resp.request_pending = true;
@@ -1446,12 +1457,14 @@ jbpf_io_ipc_req_destroy_channel(jbpf_io_ctx_t* io_ctx, struct jbpf_io_channel* i
     char sname[JBPF_IO_STREAM_ID_LEN * 3];
 
     if (!io_ctx || !io_channel) {
+        jbpf_logger(JBPF_ERROR, "Invalid parameters for channel destroy request\n");
         return;
     }
 
     _jbpf_io_tohex_str(io_channel->stream_id.id, JBPF_IO_STREAM_ID_LEN, sname, JBPF_IO_STREAM_ID_LEN * 3);
 
     if (io_ctx->io_type != JBPF_IO_IPC_SECONDARY && ptype != JBPF_IO_IPC_SECONDARY) {
+        jbpf_logger(JBPF_ERROR, "Not in secondary mode\n");
         return;
     }
 
