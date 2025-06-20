@@ -33,8 +33,10 @@ jbpf_init_mempool_ctx(jbpf_mem_ctx_t* mem_ctx, uint32_t n_elems, size_t elem_siz
     else
         mempool_ctx = jbpf_calloc_ctx(mem_ctx, 1, sizeof(struct jbpf_mempool));
 
-    if (!mempool_ctx)
+    if (!mempool_ctx) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for mempool context\n");
         return NULL;
+    }
 
     mempool_ctx->type = mempool_type;
 
@@ -50,6 +52,7 @@ jbpf_init_mempool_ctx(jbpf_mem_ctx_t* mem_ctx, uint32_t n_elems, size_t elem_siz
     }
 
     if (!mempool_ctx->data_array) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for mempool data array\n");
         jbpf_free(mempool_ctx);
         return NULL;
     }
@@ -75,6 +78,7 @@ jbpf_init_mempool_ctx(jbpf_mem_ctx_t* mem_ctx, uint32_t n_elems, size_t elem_siz
     }
 
     if (!mempool_ctx->ring_destroy.buf) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for ring destroy buffer\n");
         jbpf_free(mempool_ctx->ring.buf);
         jbpf_free(mempool_ctx->data_array);
         jbpf_free(mempool_ctx);
@@ -96,6 +100,7 @@ jbpf_init_mempool_ctx(jbpf_mem_ctx_t* mem_ctx, uint32_t n_elems, size_t elem_siz
     }
 
     if (!mempool_ctx->ring_marker) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for ring marker\n");
         jbpf_free(mempool_ctx->ring.buf);
         jbpf_free(mempool_ctx->ring_destroy.buf);
         jbpf_free(mempool_ctx->data_array);
@@ -137,8 +142,10 @@ void
 jbpf_destroy_mempool(jbpf_mempool_t* mempool)
 {
 
-    if (!mempool)
+    if (!mempool) {
+        jbpf_logger(JBPF_ERROR, "Invalid mempool context for destruction\n");
         return;
+    }
 
     // Do not allow any thread to allocate memory from this point on.
     // Just wait for all the memory to return to the original ring, so that
@@ -168,10 +175,12 @@ jbpf_mbuf_alloc(jbpf_mempool_t* mempool)
     jbpf_mbuf_t* mb;
 
     if (!mempool) {
+        jbpf_logger(JBPF_ERROR, "Invalid mempool context for allocation\n");
         return NULL;
     }
 
     if (!ck_ring_dequeue_mpmc(&mempool->ring_alloc->ring, mempool->ring_alloc->buf, &mb)) {
+        jbpf_logger(JBPF_ERROR, "Error dequeuing memory from the mempool\n");
         return NULL;
     }
 
@@ -188,8 +197,10 @@ void
 jbpf_mbuf_free_from_data_ptr(void* data_ptr, bool reset)
 {
 
-    if (!data_ptr)
+    if (!data_ptr) {
+        jbpf_logger(JBPF_ERROR, "Invalid data pointer for freeing memory\n");
         return;
+    }
 
     struct jbpf_mbuf* mb = (struct jbpf_mbuf*)((uint8_t*)data_ptr - offsetof(struct jbpf_mbuf, data));
     jbpf_mbuf_free(mb, reset);
@@ -203,6 +214,7 @@ jbpf_mbuf_free(jbpf_mbuf_t* mbuf, bool reset)
     size_t ref_cnt;
 
     if (!mbuf) {
+        jbpf_logger(JBPF_ERROR, "Invalid mbuf pointer for freeing memory\n");
         return;
     }
 
@@ -237,8 +249,10 @@ jbpf_mbuf_t*
 jbpf_mbuf_share(jbpf_mbuf_t* mbuf)
 {
 
-    if (!mbuf)
+    if (!mbuf) {
+        jbpf_logger(JBPF_ERROR, "Invalid mbuf pointer for sharing memory\n");
         return NULL;
+    }
 
     atomic_fetch_add(&mbuf->ref_cnt, 1);
     return mbuf;
@@ -259,8 +273,10 @@ jbpf_mbuf_share_data_ptr(void* data_ptr)
 int
 jbpf_get_mempool_capacity(jbpf_mempool_t* mempool)
 {
-    if (!mempool)
+    if (!mempool) {
+        jbpf_logger(JBPF_ERROR, "Invalid mempool context for getting capacity\n");
         return -1;
+    }
 
     return mempool->num_elems;
 }
@@ -268,8 +284,10 @@ jbpf_get_mempool_capacity(jbpf_mempool_t* mempool)
 int
 jbpf_get_mempool_size(jbpf_mempool_t* mempool)
 {
-    if (!mempool)
+    if (!mempool) {
+        jbpf_logger(JBPF_ERROR, "Invalid mempool context for getting size\n");
         return -1;
+    }
 
     return ck_ring_size(&mempool->ring_alloc->ring);
 }
