@@ -196,14 +196,10 @@ jbpf_io_queue_dequeue(jbpf_io_queue_ctx_t* ioq_ctx)
 
     if (ioq_ctx->type == JBPF_IO_CHANNEL_OUTPUT) {
         if (!ck_ring_dequeue_mpsc(&ioq_ctx->ring, ioq_ctx->ringbuffer, &data_ptr)) {
-            // Uncomment this will cause a lot of printings in the logs
-            // jbpf_logger(JBPF_WARN, "Error dequeuing data from the IO queue: JBPF_IO_CHANNEL_OUTPUT\n");
             return NULL;
         }
     } else {
         if (!ck_ring_dequeue_mpmc(&ioq_ctx->ring, ioq_ctx->ringbuffer, &data_ptr)) {
-            // Uncomment this will cause a lot of printings in the logs
-            // jbpf_logger(JBPF_WARN, "Error dequeuing data from the IO queue type %d\n", ioq_ctx->type);
             return NULL;
         }
     }
