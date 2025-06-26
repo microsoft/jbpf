@@ -138,7 +138,6 @@ jbpf_io_queue_reserve(jbpf_io_queue_ctx_t* ioq_ctx)
     mb = jbpf_mbuf_alloc(ioq_ctx->mempool);
 
     if (!mb) {
-        jbpf_logger(JBPF_ERROR, "Error allocating memory for IO queue buffer\n");
         return NULL;
     }
 
@@ -172,12 +171,10 @@ jbpf_io_queue_enqueue(jbpf_io_queue_ctx_t* ioq_ctx)
 
     if (ioq_ctx->type == JBPF_IO_CHANNEL_OUTPUT) {
         if (!ck_ring_enqueue_mpsc(&ioq_ctx->ring, ioq_ctx->ringbuffer, mb->data)) {
-            jbpf_logger(JBPF_ERROR, "Error enqueuing data to the IO queue type %d\n", ioq_ctx->type);
             return -1;
         }
     } else {
         if (!ck_ring_enqueue_mpmc(&ioq_ctx->ring, ioq_ctx->ringbuffer, mb->data)) {
-            jbpf_logger(JBPF_ERROR, "Error enqueuing data to the IO queue type %d\n", ioq_ctx->type);
             return -1;
         }
     }

@@ -551,8 +551,6 @@ jbpf_io_channel_pack_msg(struct jbpf_io_ctx* io_ctx, jbpf_channel_buf_ptr data, 
 
     if (!serde->serialize || buf_len < JBPF_IO_STREAM_ID_LEN) {
         res = -1;
-        jbpf_logger(
-            JBPF_ERROR, "Error: Serializer not found or buffer length %zu is too small for stream ID\n", buf_len);
         goto out;
     }
 
@@ -568,7 +566,6 @@ jbpf_io_channel_pack_msg(struct jbpf_io_ctx* io_ctx, jbpf_channel_buf_ptr data, 
         res = msg_size;
     } else {
         res = -2;
-        jbpf_logger(JBPF_ERROR, "Error: Serialization failed, bytes written %d\n", bytes_written);
     }
 
 out:
@@ -817,7 +814,6 @@ jbpf_io_channel_recv_data_copy(struct jbpf_io_channel* channel, void* buf, size_
     elem = jbpf_io_queue_dequeue(channel->channel_ptr);
 
     if (!elem) {
-        jbpf_logger(JBPF_DEBUG, "No data available in channel %s\n", channel->stream_id.id);
         return -1;
     }
 
@@ -838,7 +834,6 @@ jbpf_io_channel_share_data_ptr(jbpf_channel_buf_ptr data_ptr)
     jbpf_io_channel_elem_t* elem;
 
     if (!data_ptr) {
-        jbpf_logger(JBPF_ERROR, "Error: data_ptr is NULL\n");
         return NULL;
     }
 
