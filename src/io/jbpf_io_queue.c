@@ -20,8 +20,10 @@ jbpf_io_queue_create(int max_entries, int elem_size, int type, jbpf_mem_ctx_t* m
 
     ioq_ctx = jbpf_calloc_ctx(mem_ctx, 1, sizeof(struct jbpf_io_queue_ctx));
 
-    if (!ioq_ctx)
+    if (!ioq_ctx) {
+        jbpf_logger(JBPF_ERROR, "Error allocating memory for IO queue context\n");
         goto out;
+    }
 
     for (int i = 0; i < JBPF_IO_MAX_NUM_THREADS; i++) {
         ioq_ctx->alloc_ptr[i] = NULL;
@@ -74,8 +76,10 @@ out:
 void
 jbpf_io_queue_free(jbpf_io_queue_ctx_t* ioq_ctx)
 {
-    if (!ioq_ctx)
+    if (!ioq_ctx) {
+        jbpf_logger(JBPF_ERROR, "Invalid IO queue context for freeing\n");
         return;
+    }
 
     void* data_ptr;
 
@@ -94,8 +98,10 @@ jbpf_io_queue_release_all(jbpf_io_queue_ctx_t* ioq_ctx)
     int thread_id;
     jbpf_mbuf_t* mb;
 
-    if (!ioq_ctx)
+    if (!ioq_ctx) {
+        jbpf_logger(JBPF_ERROR, "Invalid IO queue context for releasing all buffers\n");
         return;
+    }
 
     for (thread_id = 0; thread_id < JBPF_IO_MAX_NUM_THREADS; thread_id++) {
         if (ioq_ctx->alloc_ptr[thread_id]) {
@@ -112,13 +118,17 @@ jbpf_io_queue_reserve(jbpf_io_queue_ctx_t* ioq_ctx)
     int thread_id;
     jbpf_mbuf_t* mb;
 
-    if (!ioq_ctx)
+    if (!ioq_ctx) {
+        jbpf_logger(JBPF_ERROR, "Invalid IO queue context for reservation\n");
         return NULL;
+    }
 
     thread_id = jbpf_io_get_thread_id();
 
-    if (thread_id < 0)
+    if (thread_id < 0) {
+        jbpf_logger(JBPF_ERROR, "Invalid thread ID for IO queue reservation\n");
         return NULL;
+    }
 
     if (ioq_ctx->alloc_ptr[thread_id]) {
         mb = ioq_ctx->alloc_ptr[thread_id];
@@ -127,8 +137,9 @@ jbpf_io_queue_reserve(jbpf_io_queue_ctx_t* ioq_ctx)
 
     mb = jbpf_mbuf_alloc(ioq_ctx->mempool);
 
-    if (!mb)
+    if (!mb) {
         return NULL;
+    }
 
     ioq_ctx->alloc_ptr[thread_id] = mb;
 
@@ -138,8 +149,10 @@ jbpf_io_queue_reserve(jbpf_io_queue_ctx_t* ioq_ctx)
 void
 jbpf_io_queue_release(void* iobuf, bool clean)
 {
-    if (!iobuf)
+    if (!iobuf) {
+        jbpf_logger(JBPF_ERROR, "Invalid IO buffer for release\n");
         return;
+    }
 
     jbpf_mbuf_free_from_data_ptr(iobuf, clean);
 }
@@ -149,17 +162,21 @@ jbpf_io_queue_enqueue(jbpf_io_queue_ctx_t* ioq_ctx)
 {
     int thread_id = jbpf_io_get_thread_id();
 
-    if (thread_id < 0 || !ioq_ctx || !ioq_ctx->alloc_ptr[thread_id])
+    if (thread_id < 0 || !ioq_ctx || !ioq_ctx->alloc_ptr[thread_id]) {
+        jbpf_logger(JBPF_ERROR, "Invalid thread ID or IO queue context for enqueue\n");
         return -2;
+    }
 
     jbpf_mbuf_t* mb = ioq_ctx->alloc_ptr[thread_id];
 
     if (ioq_ctx->type == JBPF_IO_CHANNEL_OUTPUT) {
-        if (!ck_ring_enqueue_mpsc(&ioq_ctx->ring, ioq_ctx->ringbuffer, mb->data))
+        if (!ck_ring_enqueue_mpsc(&ioq_ctx->ring, ioq_ctx->ringbuffer, mb->data)) {
             return -1;
+        }
     } else {
-        if (!ck_ring_enqueue_mpmc(&ioq_ctx->ring, ioq_ctx->ringbuffer, mb->data))
+        if (!ck_ring_enqueue_mpmc(&ioq_ctx->ring, ioq_ctx->ringbuffer, mb->data)) {
             return -1;
+        }
     }
 
     ioq_ctx->alloc_ptr[thread_id] = NULL;
@@ -175,11 +192,13 @@ jbpf_io_queue_dequeue(jbpf_io_queue_ctx_t* ioq_ctx)
         return NULL;
 
     if (ioq_ctx->type == JBPF_IO_CHANNEL_OUTPUT) {
-        if (!ck_ring_dequeue_mpsc(&ioq_ctx->ring, ioq_ctx->ringbuffer, &data_ptr))
+        if (!ck_ring_dequeue_mpsc(&ioq_ctx->ring, ioq_ctx->ringbuffer, &data_ptr)) {
             return NULL;
+        }
     } else {
-        if (!ck_ring_dequeue_mpmc(&ioq_ctx->ring, ioq_ctx->ringbuffer, &data_ptr))
+        if (!ck_ring_dequeue_mpmc(&ioq_ctx->ring, ioq_ctx->ringbuffer, &data_ptr)) {
             return NULL;
+        }
     }
 
     return data_ptr;
@@ -188,8 +207,10 @@ jbpf_io_queue_dequeue(jbpf_io_queue_ctx_t* ioq_ctx)
 int
 jbpf_io_queue_get_elem_size(jbpf_io_queue_ctx_t* ioq_ctx)
 {
-    if (!ioq_ctx)
+    if (!ioq_ctx) {
+        jbpf_logger(JBPF_ERROR, "Invalid IO queue context for getting element size\n");
         return -1;
+    }
 
     return ioq_ctx->elem_size;
 }
@@ -197,8 +218,10 @@ jbpf_io_queue_get_elem_size(jbpf_io_queue_ctx_t* ioq_ctx)
 int
 jbpf_io_queue_get_num_elems(jbpf_io_queue_ctx_t* ioq_ctx)
 {
-    if (!ioq_ctx)
+    if (!ioq_ctx) {
+        jbpf_logger(JBPF_ERROR, "Invalid IO queue context for getting number of elements\n");
         return -1;
+    }
 
     return ioq_ctx->num_elems;
 }
