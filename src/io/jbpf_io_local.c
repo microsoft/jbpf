@@ -14,8 +14,10 @@ jbpf_io_local_init(struct jbpf_io_local_cfg* local_cfg, struct jbpf_io_ctx* io_c
 
     int res = 0;
 
-    if (!local_cfg || !io_ctx)
+    if (!local_cfg || !io_ctx) {
+        jbpf_logger(JBPF_ERROR, "Invalid parameters for local IO initialization\n");
         return -1;
+    }
 
     jbpf_logger(JBPF_INFO, "Allocating memory for IO\n");
     // For now we use mi-malloc for the allocation in this case. Might revisit in the future
@@ -29,8 +31,10 @@ void
 jbpf_io_local_destroy(struct jbpf_io_ctx* io_ctx)
 {
 
-    if (!io_ctx)
+    if (!io_ctx) {
+        jbpf_logger(JBPF_ERROR, "Invalid io_ctx for local IO destruction\n");
         return;
+    }
 
     jbpf_logger(JBPF_INFO, "Destroying local IO interface\n");
     jbpf_destroy_memory();
