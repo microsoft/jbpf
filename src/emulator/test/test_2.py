@@ -83,12 +83,13 @@ codelet_descriptor = {
 
 codeletset_req_c1 = emulator_utils.create_codeletset_load_req(codelet_descriptor)
 
+print("Loading codeletset", flush=True)
 if jbpf_helpers.jbpf_codeletset_load(codeletset_req_c1) != 0:
-    print("Failed to load codeletset")
+    print("Failed to load codeletset", flush=True)
     sys.exit(-1)
 
 ## call send_input_message
-print("sending input message")
+print("sending input message", flush=True)
 p = jbpf_test_def.struct__custom_api()
 for i in range(5):
     p.command = i**2
