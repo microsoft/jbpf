@@ -93,10 +93,11 @@ print("sending input message", flush=True)
 p = jbpf_test_def.struct__custom_api()
 for i in range(5):
     p.command = i**2
-    print(f"Sending input message with command: {p.command}")
+    print(f"Sending input message with command: {p.command}", flush=True)
     emulator_utils.jbpf_send_input_msg(stream_id_c1, p)
 
 ## calling the hook
+print("Calling hook test1", flush=True)
 p = jbpf_test_def.struct_packet()
 for _ in range(10):
     jbpf_hooks.hook_test1(p, 1)
