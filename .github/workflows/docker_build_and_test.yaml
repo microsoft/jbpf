@@ -55,6 +55,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: System Information
+        run: |
+          echo "****************Pipeline VM Information**********"
+          echo "Running on: ${{ runner.os }}"
+          echo "****************CPU Arch**********"
+          lscpu
+          echo "****************CPU***************"
+          cat /proc/cpuinfo
+          echo "****************MEM***************"
+          cat /proc/meminfo
+          echo "****************DISK**************"
+          df -h
+          echo "****************FREE**************"
+          free -m
+          echo "****************HOST**************"
+          echo "Agent.MachineName: ${{ runner.name }}"
+          echo "Agent.Name: ${{ github.actor }}"
+          echo "System.HostType: ${{ github.event_name }}"
+          if [ -z "${{ secrets.REQUIRED_CPU_MODEL }}" ]; then
+            echo "No specific CPU model required."
+          else
+            echo "Required CPU Model: ${{ secrets.REQUIRED_CPU_MODEL }}"
+          fi
+          echo "****************CPU Model*********"
+          lscpu
+
       - name: Set Build Parameters
         id: set_params
         run: |
@@ -142,6 +168,23 @@ jobs:
             echo "Error running tests, result code is $TEST_OUTCOME"
             exit 1
           fi
+
+      - name: JBPF Emulator Tests
+        run: |
+          set -x
+          source setup_jbpf_env.sh
+          if [[ -z "${{ env.staticBuildParam }}" ]]; then
+            echo "The emulator doesn't work on dynamic builds: the hook_report_stats and hook_periodic_call tests fail. Skipping emulator tests."
+            exit 0
+          fi
+          docker run --init --privileged --network host --cap-add=SYS_ADMIN --shm-size=1g \
+            --mount type=tmpfs,destination=/dev/shm \
+            -v "$(pwd)":/jbpf_out_lib -v "$(pwd)"/build:/jbpf/build \
+            -v "$(pwd)"/3p:/jbpf/3p \
+            -e JBPF_PATH=/jbpf \
+            -e INITIALIZE_SUBMODULES=0 \
+            ${{ env.staticBuildParam }} ${{ env.sanitizerBuildParam }} \
+            -e RUN_EMULATOR_TESTS=1 jbpf_lib
 
       - name: Upload Test Artifacts
         uses: actions/upload-artifact@v4
