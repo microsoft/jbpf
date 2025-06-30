@@ -20,9 +20,7 @@ jbpf_main(void* state)
     custom_api api = {0};
     int* output;
 
-    jbpf_printf_debug("jbpf_main called with state %p\n", state);
     if (jbpf_control_input_receive(&input_map, &api, sizeof(custom_api)) > 0) {
-        jbpf_printf_debug("Received command: %u\n", api.command);
         output = jbpf_get_output_buf(&output_map);
 
         if (!output) {
@@ -30,7 +28,6 @@ jbpf_main(void* state)
         }
         *output = api.command;
 
-        jbpf_printf_debug("Sending output: %d\n", *output);
         if (jbpf_send_output(&output_map) < 0) {
             return 1;
         }
