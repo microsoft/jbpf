@@ -442,11 +442,11 @@ jbpf_io_destroy_out_channel(struct jbpf_io_channel_list* channel_list, struct jb
     ck_epoch_end(local_out_channel_list_epoch_record, NULL);
     ck_epoch_call(local_out_channel_list_epoch_record, &io_channel->epoch_entry, io_channel_destructor);
     ck_epoch_barrier(local_out_channel_list_epoch_record);
-    jbpf_logger(
-        JBPF_INFO,
-        "Barrier reached and channel %p was destroyed (stream id %s)\n",
-        io_channel,
-        io_channel->stream_id.id);
+    // jbpf_logger(
+    //     JBPF_INFO,
+    //     "Barrier reached and channel %p was destroyed (stream id %s)\n",
+    //     io_channel,
+    //     io_channel->stream_id.id);
 }
 
 void
