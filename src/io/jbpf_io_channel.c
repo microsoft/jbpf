@@ -442,11 +442,9 @@ jbpf_io_destroy_out_channel(struct jbpf_io_channel_list* channel_list, struct jb
     ck_epoch_end(local_out_channel_list_epoch_record, NULL);
     ck_epoch_call(local_out_channel_list_epoch_record, &io_channel->epoch_entry, io_channel_destructor);
     ck_epoch_barrier(local_out_channel_list_epoch_record);
-    // jbpf_logger(
-    //     JBPF_INFO,
-    //     "Barrier reached and channel %p was destroyed (stream id %s)\n",
-    //     io_channel,
-    //     io_channel->stream_id.id);
+    char sname[JBPF_IO_STREAM_ID_LEN * 3];
+    _jbpf_io_tohex_str(io_channel->stream_id.id, JBPF_IO_STREAM_ID_LEN, sname, JBPF_IO_STREAM_ID_LEN * 3);
+    jbpf_logger(JBPF_INFO, "Barrier reached and channel %p was destroyed (stream id %s)\n", io_channel, sname);
 }
 
 void
@@ -673,7 +671,9 @@ jbpf_io_channel_send_data(struct jbpf_io_channel* channel, void* data, size_t si
 
         jbpf_channel_buf_ptr data_buf = jbpf_io_channel_reserve_buf(channel);
         if (!data_buf) {
-            jbpf_logger(JBPF_ERROR, "Error reserving buffer for channel %s\n", channel->stream_id.id);
+            char sname[JBPF_IO_STREAM_ID_LEN * 3];
+            _jbpf_io_tohex_str(channel->stream_id.id, JBPF_IO_STREAM_ID_LEN, sname, JBPF_IO_STREAM_ID_LEN * 3);
+            jbpf_logger(JBPF_ERROR, "Error reserving buffer for channel %s\n", sname);
             return -1;
         }
         memcpy(data_buf, data, size);
