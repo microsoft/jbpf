@@ -11,6 +11,8 @@
 #include "jbpf_int.h"
 #include "jbpf_helper_impl.h"
 #include <sys/queue.h>
+#include <mutex>
+#include <memory>
 
 // this only works when the emulator is statically linked to libjbpf.a
 #include "jbpf_agent_hooks.h"
@@ -64,7 +66,23 @@ typedef struct message_t
     void* ctx;
 } message_t;
 
-static std::queue<message_t*> message_queue;
+struct MessageDeleter
+{
+    void
+    operator()(message_t* m) const
+    {
+        if (!m)
+            return;
+        if (m->stream_id)
+            free(m->stream_id);
+        if (m->data)
+            free(m->data);
+        delete m;
+    }
+};
+
+static std::queue<std::unique_ptr<message_t, MessageDeleter>> message_queue;
+static std::mutex message_mutex;
 
 // user input
 #include "hooks.h"
@@ -148,35 +166,24 @@ PyInit_helper_functions(void)
 static void
 io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_bufs, void* ctx)
 {
-    // Allocate memory for the message
-    message_t* message = static_cast<message_t*>(malloc(sizeof(message_t)));
-    if (!message) {
-        jbpf_logger(JBPF_ERROR, "Memory allocation failed for message\n");
-        return; // Handle memory allocation failure
-    }
+    auto message = std::unique_ptr<message_t, MessageDeleter>(new message_t);
     message->stream_id = static_cast<jbpf_io_stream_id_t*>(malloc(sizeof(jbpf_io_stream_id_t)));
     if (!message->stream_id) {
         jbpf_logger(JBPF_ERROR, "Memory allocation failed for stream_id\n");
-        free(message); // Avoid memory leak
-        return;        // Handle memory allocation failure
+        return; // Handle memory allocation failure
     }
     memcpy(message->stream_id, stream_id, sizeof(jbpf_io_stream_id_t));
-
-    // Allocate memory for the data pointers
     message->data = static_cast<void**>(malloc(num_bufs * sizeof(void*)));
-    if (message->data == NULL) {
-        jbpf_logger(JBPF_ERROR, "Memory allocation failed for message data pointers\n");
-        free(message); // Avoid memory leak
-        return;        // Handle memory allocation failure
+    if (!message->data) {
+        jbpf_logger(JBPF_ERROR, "Memory allocation failed for data buffers\n");
+        return;
     }
-
-    // Copy the pointers from bufs to message->data
     memcpy(message->data, bufs, num_bufs * sizeof(void*));
     message->nbuf = num_bufs;
     message->ctx = ctx;
 
-    // Push the message to the queue
-    message_queue.push(message);
+    std::lock_guard<std::mutex> lock(message_mutex);
+    message_queue.push(std::move(message));
 }
 
 static PyModuleDef jbpfHookModule = {
@@ -272,8 +279,14 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, uint64_t
 
         // Pop out all the messages from the queue and re-construct stream_id, buf, nbuf, and ctx
         while (!message_queue.empty()) {
-            message_t* message = message_queue.front();
-            message_queue.pop();
+            std::unique_ptr<message_t, MessageDeleter> message;
+            {
+                std::lock_guard<std::mutex> lock(message_mutex);
+                if (message_queue.empty())
+                    break;
+                message = std::move(message_queue.front());
+                message_queue.pop();
+            }
 
             PyObject* py_stream_id = PyCapsule_New(static_cast<void*>(message->stream_id), "jbpf_io_stream_id_t", NULL);
 
@@ -308,11 +321,6 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, uint64_t
 
             num_of_messages -= message->nbuf;
             count += message->nbuf;
-
-            // Free dynamically allocated memory
-            free(message->data);      // Free the buffer pointers array
-            free(message->stream_id); // Free the stream_id
-            free(message);            // Free the message itself
         }
     }
 
@@ -565,12 +573,11 @@ print_list_of_helper_functions()
 void
 cleanup()
 {
-    // Free the memory allocated for the messages
-    while (!message_queue.empty()) {
-        message_t* message = message_queue.front();
-        message_queue.pop();
-        free(message->data);
-        free(message);
+    {
+        std::lock_guard<std::mutex> lock(message_mutex);
+        while (!message_queue.empty()) {
+            message_queue.pop();
+        }
     }
 
     // Free time events
