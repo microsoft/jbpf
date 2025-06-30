@@ -150,11 +150,22 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
 {
     // Allocate memory for the message
     message_t* message = static_cast<message_t*>(malloc(sizeof(message_t)));
-    message->stream_id = stream_id;
+    if (!message) {
+        jbpf_logger(JBPF_ERROR, "Memory allocation failed for message\n");
+        return; // Handle memory allocation failure
+    }
+    message->stream_id = static_cast<jbpf_io_stream_id_t*>(malloc(sizeof(jbpf_io_stream_id_t)));
+    if (!message->stream_id) {
+        jbpf_logger(JBPF_ERROR, "Memory allocation failed for stream_id\n");
+        free(message); // Avoid memory leak
+        return;        // Handle memory allocation failure
+    }
+    memcpy(message->stream_id, stream_id, sizeof(jbpf_io_stream_id_t));
 
     // Allocate memory for the data pointers
     message->data = static_cast<void**>(malloc(num_bufs * sizeof(void*)));
     if (message->data == NULL) {
+        jbpf_logger(JBPF_ERROR, "Memory allocation failed for message data pointers\n");
         free(message); // Avoid memory leak
         return;        // Handle memory allocation failure
     }
@@ -299,8 +310,9 @@ c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, uint64_t
             count += message->nbuf;
 
             // Free dynamically allocated memory
-            free(message->data); // Free the buffer pointers array
-            free(message);       // Free the message itself
+            free(message->data);      // Free the buffer pointers array
+            free(message->stream_id); // Free the stream_id
+            free(message);            // Free the message itself
         }
     }
 

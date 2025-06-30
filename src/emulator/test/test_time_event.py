@@ -19,6 +19,7 @@ import jbpf_hooks
 output_data = []
 
 def io_channel_check_output(bufs, num_bufs, ctx):
+    print(f"io_channel_check_output called with {num_bufs} bufs", flush=True)
     for i in range(num_bufs):
         # Get each buffer pointer from the void ** array
         buf_capsule = bufs[i]
@@ -54,22 +55,22 @@ if jbpf_helpers.jbpf_codeletset_load(codeletset_req_c1) != 0:
     print("Failed to load codeletset")
     sys.exit(-1)
 
-print("Emulated time events")
+print("Emulated time events", flush=True)
 TOTAL_TIME_EVENTS = 10
 # Push 100 time events of 1s difference
 for i in range(TOTAL_TIME_EVENTS):
     jbpf_helpers.jbpf_add_time_event(i)
 
-print("calling hook test1")
+print("calling hook test1", flush=True)
 p = jbpf_test_def.struct_packet()
 for i in range(TOTAL_TIME_EVENTS):
     res = jbpf_hooks.hook_test1(p, 3)
     if res != 0:
-        print(f"hook_test1 returned {res}")
+        print(f"hook_test1 returned {res}", flush=True)
         sys.exit(-1)    
 
 ## handle output bufs
-print(f"stream_id_c1: {list(stream_id_c1.id)}")
+print(f"stream_id_c1: {list(stream_id_c1.id)}", flush=True)
 count = emulator_utils.jbpf_handle_out_bufs(
     stream_id_c1,
     io_channel_check_output,
@@ -77,9 +78,10 @@ count = emulator_utils.jbpf_handle_out_bufs(
     timeout=3 * emulator_utils.SEC_TO_NS,
     debug=True,
 )
-print(f"Received {count} messages.")
+print(f"Received {count} messages.", flush=True)
 assert count == TOTAL_TIME_EVENTS
 
+print("Output data:", output_data, flush=True)
 assert(len(output_data) == TOTAL_TIME_EVENTS)
 for i in range(TOTAL_TIME_EVENTS):
     assert(output_data[i] == i)
