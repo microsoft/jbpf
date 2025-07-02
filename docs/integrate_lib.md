@@ -36,9 +36,9 @@ sudo -E docker run -v $DEST_PATH:/jbpf_out_lib \
 The `$DEST_PATH` should be set to the absolute path of the directory where you want the output to be stored.
 
 ### Available Build Options:
-When building the library, you can pass various options using the -e OPTION_NAME={0,1} format. Here are some available options:
+When building the library, you can pass various options using the -e OPTION_NAME={0,1} format where 0 is disabled and 1 is enabled. Here are some available options:
 
-* JBPF_STATIC - Build jbpf as a static library (**default: disabled**)
+* JBPF_STATIC - Build jbpf as a static library (**default: disabled**). With this, we can also set to value 2 which means to build the jbpf in both `libjbpf.so` and `libjbpf.a`.
 * USE_NATIVE - Enable/disable `-march=native` compilation flag (**default: enabled**)
 * USE_JBPF_PERF_OPT - Performance optimizations that assume threads calling jbpf codelets are pinned to a certain core (**default: enabled**)
 * USE_JBPF_PRINTF_HELPER - Disable the use of the helper function jbpf_printf_debug() (**default: enabled**)
