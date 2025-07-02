@@ -11,7 +11,7 @@ RUN apt-get clean && apt-get update && \
     apt-get install -y --no-install-recommends \
         cmake build-essential libboost-dev libboost-program-options-dev \
         git gcovr doxygen libboost-filesystem-dev libasan6 python3 pkg-config \
-        clang-format cppcheck clang libyaml-cpp-dev python3-dev python3-pip && \
+        clang-format cppcheck clang libyaml-cpp-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
     
 RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
@@ -19,9 +19,6 @@ RUN if [ "$TARGET_ARCHITECTURE" = "amd64" ]; then \
   elif [ "$TARGET_ARCHITECTURE" = "arm64" ]; then \
     apt-get install -y libc6-dev; \
   fi
-
-## Emulator
-RUN pip3 install ctypesgen ruamel.yaml
 
 WORKDIR /jbpf
 COPY . /jbpf
