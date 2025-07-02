@@ -9,16 +9,11 @@ option(USE_JBPF_PERF_OPT "Assume CPU affinity when running jbpf hooks and use rd
 option(USE_JBPF_PRINTF_HELPER "Enable printing from codelets using jbpf_printf_debug() helper function" ON)
 option(JBPF_THREADS_LARGE "Allow more threads to be registered by jbpf and the IO lib" OFF)
 option(ENABLE_POISONING "Enable ASAN poisoning. Should not be used for IPC mode tests and must be used in conjunction with ASAN" OFF)
+option(JBPF_STATIC "Build jbpf as static library" OFF)
 option(JBPF_EXPERIMENTAL_FEATURES "Enable experimental features of jbpf" OFF)
 option(CLANG_FORMAT_CHECK "Enable clang-format check" OFF)
 option(CPP_CHECK "Enable cppcheck" OFF)
 option(BUILD_TESTING "Enable tests" ON)
-
-# Define the JBPF_STATIC option with three states: ON, OFF, BOTH
-# Default is BOTH, which means both static and shared libraries will be built
-set(JBPF_STATIC "BOTH" CACHE STRING "Build jbpf as static library: ON, OFF, or BOTH")
-set_property(CACHE JBPF_STATIC PROPERTY STRINGS ON OFF BOTH)
-string(TOUPPER "${JBPF_STATIC}" JBPF_STATIC_OPTION_UPPER)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,9 +61,9 @@ if(JBPF_THREADS_LARGE)
   add_definitions(-DJBPF_MAX_NUM_REG_THREADS=256)
 endif(JBPF_THREADS_LARGE)
 
-if(JBPF_STATIC_OPTION_UPPER STREQUAL "OFF")
-    add_definitions(-DJBPF_SHARED_LIB)
-endif()
+if(NOT JBPF_STATIC)
+  add_definitions(-DJBPF_SHARED_LIB)
+endif(NOT JBPF_STATIC)
 
 # To build static library on ARM, disable out-of-line helpers for atomics 
 if ((JBPF_STATIC) AND (${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64"))

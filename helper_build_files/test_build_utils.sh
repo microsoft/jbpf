@@ -91,13 +91,8 @@ if ! test_flags "-DJBPF_STATIC=off" "When JBPF_STATIC=0 flags should contain -DJ
     exit 1
 fi
 
-JBPF_STATIC=2
-if ! test_flags "-DJBPF_STATIC=both" "When JBPF_STATIC=2 flags should contain -DJBPF_STATIC=both"; then
-    exit 1
-fi
-
 JBPF_STATIC=
-if ! test_flags "-DJBPF_STATIC=both" "When JBPF_STATIC is unset flags should contain -DJBPF_STATIC=both"; then
+if ! test_flags "-DJBPF_STATIC=off" "When JBPF_STATIC is unset flags should contain -DJBPF_STATIC=off"; then
     exit 1
 fi
 

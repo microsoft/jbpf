@@ -27,4 +27,3 @@ add_subdirectory(stress_tests)
 add_subdirectory(concurrency)
 
 set(JBPF_TESTS ${JBPF_TESTS} PARENT_SCOPE)
-set(JBPF_STATIC_OPTION_UPPER ${JBPF_STATIC_OPTION_UPPER} PARENT_SCOPE)
