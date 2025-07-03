@@ -173,6 +173,10 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
         dest->runtime_threshold = runtime_threshold.get().get_value<uint32_t>();
 
     auto in_io_channel = pt.get_child_optional("in_io_channel");
+    vector<string> stream_elements_in_io_channel = codelet_elems;
+    stream_elements_in_io_channel.emplace_back(codelet_name);
+    stream_elements_in_io_channel.emplace_back(hook_name);
+    stream_elements_in_io_channel.emplace_back("input");
     if (in_io_channel) {
         auto idx = 0;
         BOOST_FOREACH (const ptree::value_type& child, in_io_channel.value()) {
@@ -180,12 +184,8 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
                 cout << "Too many in_io_channel entries (max " << JBPF_MAX_IO_CHANNEL << ")\n";
                 return JBPF_LCM_PARSE_REQ_FAILED;
             }
-            vector<string> stream_elems = codelet_elems;
-            stream_elems.push_back(codelet_name);
-            stream_elems.push_back(hook_name);
-            stream_elems.push_back("input");
-            auto ret =
-                parse_jbpf_io_channel_desc(child.second, "in_io_channel", &dest->in_io_channel[idx], stream_elems);
+            auto ret = parse_jbpf_io_channel_desc(
+                child.second, "in_io_channel", &dest->in_io_channel[idx], stream_elements_in_io_channel);
             if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
                 return ret;
             idx++;
@@ -194,6 +194,10 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
     }
 
     auto out_io_channel = pt.get_child_optional("out_io_channel");
+    vector<string> stream_elements_out_io_channel = codelet_elems;
+    stream_elements_out_io_channel.emplace_back(codelet_name);
+    stream_elements_out_io_channel.emplace_back(hook_name);
+    stream_elements_out_io_channel.emplace_back("output");
     if (out_io_channel) {
         auto idx = 0;
         BOOST_FOREACH (const ptree::value_type& child, out_io_channel.value()) {
@@ -201,12 +205,8 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
                 cout << "Too many out_io_channel entries (max " << JBPF_MAX_IO_CHANNEL << ")\n";
                 return JBPF_LCM_PARSE_REQ_FAILED;
             }
-            vector<string> stream_elems = codelet_elems;
-            stream_elems.push_back(codelet_name);
-            stream_elems.push_back(hook_name);
-            stream_elems.push_back("output");
-            auto ret =
-                parse_jbpf_io_channel_desc(child.second, "out_io_channel", &dest->out_io_channel[idx], stream_elems);
+            auto ret = parse_jbpf_io_channel_desc(
+                child.second, "out_io_channel", &dest->out_io_channel[idx], stream_elements_out_io_channel);
             if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
                 return ret;
             idx++;
