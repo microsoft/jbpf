@@ -26,7 +26,8 @@ auto_expand_environment_variables(string& text)
 }
 
 parse_req_outcome
-parse_jbpf_io_channel_desc(YAML::Node cfg, const string path, jbpf_io_channel_desc_s* dest, vector<string> stream_elems)
+parse_jbpf_io_channel_desc(
+    YAML::Node cfg, const string path, jbpf_io_channel_desc_s* dest, const vector<string>& stream_elems)
 {
     if (!cfg.IsDefined() || !cfg["name"].IsDefined())
         return JBPF_LCM_PARSE_REQ_FAILED;
@@ -105,7 +106,7 @@ parse_jbpf_linked_map_descriptor(YAML::Node cfg, jbpf_linked_map_descriptor_s* d
 }
 
 parse_req_outcome
-parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, vector<string> codelet_elems)
+parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, const vector<string>& codelet_elems)
 {
     if (!cfg.IsDefined() || !cfg["codelet_name"].IsDefined() || !cfg["hook_name"].IsDefined() ||
         !cfg["codelet_path"].IsDefined())
@@ -210,7 +211,7 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, v
 } // namespace internal
 
 parse_req_outcome
-parse_jbpf_codeletset_load_req(YAML::Node cfg, jbpf_codeletset_load_req* dest, vector<string> codeletset_elems)
+parse_jbpf_codeletset_load_req(YAML::Node cfg, jbpf_codeletset_load_req* dest, const vector<string>& codeletset_elems)
 {
     // Validate presence and types of required YAML fields
     if (!cfg.IsDefined() || !cfg["codeletset_id"].IsDefined() || !cfg["codelet_descriptor"].IsDefined() ||

@@ -37,7 +37,8 @@ auto_expand_environment_variables(string& text)
 }
 
 parse_req_outcome
-parse_jbpf_io_channel_desc(const ptree pt, const string path, jbpf_io_channel_desc_s* dest, vector<string> stream_elems)
+parse_jbpf_io_channel_desc(
+    const ptree pt, const string path, jbpf_io_channel_desc_s* dest, const vector<string>& stream_elems)
 {
     auto name = pt.get_child("name").get_value<string>();
     if (name.length() > JBPF_IO_CHANNEL_NAME_LEN - 1) {
@@ -112,7 +113,7 @@ parse_jbpf_linked_map_descriptor(const ptree pt, jbpf_linked_map_descriptor_s* d
 }
 
 parse_req_outcome
-parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, vector<string> codelet_elems)
+parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, const vector<string>& codelet_elems)
 {
     auto codelet_name_opt = pt.get_child_optional("codelet_name");
     if (!codelet_name_opt) {
@@ -237,7 +238,7 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
 jbpf_verify_func_t verifier_func = NULL;
 
 parse_req_outcome
-parse_jbpf_codeletset_load_req(const ptree pt, jbpf_codeletset_load_req* dest, vector<string> codeletset_elems)
+parse_jbpf_codeletset_load_req(const ptree pt, jbpf_codeletset_load_req* dest, const vector<string>& codeletset_elems)
 {
     auto name = pt.get_child("codeletset_id").get_value<string>();
     if (name.length() > JBPF_CODELETSET_NAME_LEN - 1) {
