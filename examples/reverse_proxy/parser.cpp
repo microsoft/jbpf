@@ -41,8 +41,7 @@ parse_jbpf_io_channel_desc(const ptree pt, const string path, jbpf_io_channel_de
 {
     auto name = pt.get_child("name").get_value<string>();
     if (name.length() > JBPF_IO_CHANNEL_NAME_LEN - 1) {
-    std:
-        cerr << "codelet_descriptor[]." << path << "[].name length must be at most " << JBPF_IO_CHANNEL_NAME_LEN - 1
+        cout << "codelet_descriptor[]." << path << "[].name length must be at most " << JBPF_IO_CHANNEL_NAME_LEN - 1
              << endl;
         return JBPF_LCM_PARSE_REQ_FAILED;
     }
