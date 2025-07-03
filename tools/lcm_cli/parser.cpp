@@ -109,8 +109,10 @@ parse_req_outcome
 parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, const vector<string>& codelet_elems)
 {
     if (!cfg.IsDefined() || !cfg["codelet_name"].IsDefined() || !cfg["hook_name"].IsDefined() ||
-        !cfg["codelet_path"].IsDefined())
+        !cfg["codelet_path"].IsDefined()) {
+        cout << "Missing required fields: codelet_name, hook_name, or codelet_path\n";
         return JBPF_LCM_PARSE_REQ_FAILED;
+    }
 
     auto codelet_name = cfg["codelet_name"].as<string>();
     if (codelet_name.length() > JBPF_CODELET_NAME_LEN - 1) {
