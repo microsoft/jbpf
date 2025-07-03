@@ -161,6 +161,11 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, c
         }
 
         dest->num_in_io_channel = cfg["in_io_channel"].size();
+        if (dest->num_in_io_channel > JBPF_MAX_IO_CHANNEL) {
+            cout << "codelet_descriptor[].in_io_channel exceeds maximum number of input channels: "
+                 << JBPF_MAX_IO_CHANNEL << endl;
+            return JBPF_LCM_PARSE_REQ_FAILED;
+        }
         vector<string> stream_elems_in = codelet_elems;
         stream_elems_in.emplace_back(codelet_name);
         stream_elems_in.emplace_back(hook_name);
@@ -181,6 +186,11 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, c
         }
 
         dest->num_out_io_channel = cfg["out_io_channel"].size();
+        if (dest->num_out_io_channel > JBPF_MAX_IO_CHANNEL) {
+            cout << "codelet_descriptor[].out_io_channel exceeds maximum number of output channels: "
+                 << JBPF_MAX_IO_CHANNEL << endl;
+            return JBPF_LCM_PARSE_REQ_FAILED;
+        }
         vector<string> stream_elems_out = codelet_elems;
         stream_elems_out.emplace_back(codelet_name);
         stream_elems_out.emplace_back(hook_name);
