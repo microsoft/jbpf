@@ -247,13 +247,17 @@ parse_jbpf_codeletset_load_req(const ptree pt, jbpf_codeletset_load_req* dest, v
     name.copy(dest->codeletset_id.name, JBPF_CODELETSET_NAME_LEN - 1);
     dest->codeletset_id.name[name.length()] = '\0';
 
-    auto idx = 0;
+    vector<string> codelet_elems_with_name = codeletset_elems;
+    codelet_elems_with_name.emplace_back(name);
+
+    int idx = 0;
     BOOST_FOREACH (const ptree::value_type& child, pt.get_child("codelet_descriptor")) {
-        vector<string> codelet_elems;
-        for (auto elem : codeletset_elems)
-            codelet_elems.push_back(elem);
-        codelet_elems.push_back(name);
-        auto ret = internal::parse_jbpf_codelet_descriptor(child.second, &dest->codelet_descriptor[idx], codelet_elems);
+        if (idx >= JBPF_MAX_CODELETS_IN_CODELETSET) {
+            cout << "Too many codelet_descriptors (max " << JBPF_MAX_CODELETS_IN_CODELETSET << ")\n";
+            return JBPF_LCM_PARSE_REQ_FAILED;
+        }
+        auto ret = internal::parse_jbpf_codelet_descriptor(
+            child.second, &dest->codelet_descriptor[idx], codelet_elems_with_name);
         if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
             return ret;
         idx++;
