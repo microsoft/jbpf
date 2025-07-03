@@ -54,12 +54,8 @@ parse_jbpf_io_channel_desc(
         if (jbpf_lcm_cli::stream_id::from_hex(stream_id.value().get_value<string>(), &dest->stream_id))
             return JBPF_LCM_PARSE_REQ_FAILED;
     } else {
-        vector<string> map_elems;
-
-        for (auto elem : stream_elems)
-            map_elems.push_back(elem);
-
-        map_elems.push_back(name);
+        vector<string> map_elems = stream_elems;
+        map_elems.emplace_back(name);
 
         if (jbpf_lcm_cli::stream_id::generate_from_strings(map_elems, &dest->stream_id))
             return JBPF_LCM_PARSE_REQ_FAILED;
