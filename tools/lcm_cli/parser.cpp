@@ -44,9 +44,8 @@ parse_jbpf_io_channel_desc(YAML::Node cfg, const string path, jbpf_io_channel_de
         if (jbpf_lcm_cli::stream_id::from_hex(stream_id, &dest->stream_id))
             return JBPF_LCM_PARSE_REQ_FAILED;
     } else {
-        vector<string> map_elems;
-        map_elems.insert(map_elems.end(), stream_elems.begin(), stream_elems.end());
-        map_elems.push_back(name);
+        vector<string> map_elems = stream_elems;
+        map_elems.emplace_back(name);
 
         if (jbpf_lcm_cli::stream_id::generate_from_strings(map_elems, &dest->stream_id))
             return JBPF_LCM_PARSE_REQ_FAILED;
@@ -159,16 +158,16 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, v
         }
 
         dest->num_in_io_channel = cfg["in_io_channel"].size();
+        vector<string> stream_elems_in = codelet_elems;
+        stream_elems_in.emplace_back(codelet_name);
+        stream_elems_in.emplace_back(hook_name);
+        stream_elems_in.emplace_back("input");
         for (int idx = 0; idx < dest->num_in_io_channel; idx++) {
-            vector<string> stream_elems;
-            stream_elems.insert(stream_elems.end(), codelet_elems.begin(), codelet_elems.end());
-            stream_elems.push_back(codelet_name);
-            stream_elems.push_back(hook_name);
-            stream_elems.push_back("input");
             auto ret = parse_jbpf_io_channel_desc(
-                cfg["in_io_channel"][idx], "in_io_channel", &dest->in_io_channel[idx], stream_elems);
-            if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
+                cfg["in_io_channel"][idx], "in_io_channel", &dest->in_io_channel[idx], stream_elems_in);
+            if (ret != JBPF_LCM_PARSE_REQ_SUCCESS) {
                 return ret;
+            }
         }
     }
 
@@ -179,14 +178,13 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, v
         }
 
         dest->num_out_io_channel = cfg["out_io_channel"].size();
+        vector<string> stream_elems_out = codelet_elems;
+        stream_elems_out.emplace_back(codelet_name);
+        stream_elems_out.emplace_back(hook_name);
+        stream_elems_out.emplace_back("output");
         for (int idx = 0; idx < dest->num_out_io_channel; idx++) {
-            vector<string> stream_elems;
-            stream_elems.insert(stream_elems.end(), codelet_elems.begin(), codelet_elems.end());
-            stream_elems.push_back(codelet_name);
-            stream_elems.push_back(hook_name);
-            stream_elems.push_back("output");
             auto ret = parse_jbpf_io_channel_desc(
-                cfg["out_io_channel"][idx], "out_io_channel", &dest->out_io_channel[idx], stream_elems);
+                cfg["out_io_channel"][idx], "out_io_channel", &dest->out_io_channel[idx], stream_elems_out);
             if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
                 return ret;
         }
@@ -239,10 +237,12 @@ parse_jbpf_codeletset_load_req(YAML::Node cfg, jbpf_codeletset_load_req* dest, v
     }
 
     dest->num_codelet_descriptors = static_cast<int>(num_descriptors);
+    if (dest->num_codelet_descriptors == 0) {
+        cout << "No codelet descriptors provided.\n";
+    }
+    std::vector<std::string> codelet_elems = codeletset_elems;
+    codelet_elems.emplace_back(name);
     for (size_t i = 0; i < dest->num_codelet_descriptors; i++) {
-        std::vector<std::string> codelet_elems = codeletset_elems;
-        codelet_elems.emplace_back(name);
-
         auto ret = internal::parse_jbpf_codelet_descriptor(
             cfg["codelet_descriptor"][i], &dest->codelet_descriptor[i], codelet_elems);
 

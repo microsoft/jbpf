@@ -173,11 +173,11 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
         dest->runtime_threshold = runtime_threshold.get().get_value<uint32_t>();
 
     auto in_io_channel = pt.get_child_optional("in_io_channel");
-    vector<string> stream_elements_in_io_channel = codelet_elems;
-    stream_elements_in_io_channel.emplace_back(codelet_name);
-    stream_elements_in_io_channel.emplace_back(hook_name);
-    stream_elements_in_io_channel.emplace_back("input");
     if (in_io_channel) {
+        vector<string> stream_elements_in_io_channel = codelet_elems;
+        stream_elements_in_io_channel.emplace_back(codelet_name);
+        stream_elements_in_io_channel.emplace_back(hook_name);
+        stream_elements_in_io_channel.emplace_back("input");
         auto idx = 0;
         BOOST_FOREACH (const ptree::value_type& child, in_io_channel.value()) {
             if (idx >= JBPF_MAX_IO_CHANNEL) {
@@ -194,11 +194,11 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
     }
 
     auto out_io_channel = pt.get_child_optional("out_io_channel");
-    vector<string> stream_elements_out_io_channel = codelet_elems;
-    stream_elements_out_io_channel.emplace_back(codelet_name);
-    stream_elements_out_io_channel.emplace_back(hook_name);
-    stream_elements_out_io_channel.emplace_back("output");
     if (out_io_channel) {
+        vector<string> stream_elements_out_io_channel = codelet_elems;
+        stream_elements_out_io_channel.emplace_back(codelet_name);
+        stream_elements_out_io_channel.emplace_back(hook_name);
+        stream_elements_out_io_channel.emplace_back("output");
         auto idx = 0;
         BOOST_FOREACH (const ptree::value_type& child, out_io_channel.value()) {
             if (idx >= JBPF_MAX_IO_CHANNEL) {
