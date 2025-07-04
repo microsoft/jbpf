@@ -26,7 +26,8 @@ auto_expand_environment_variables(string& text)
 }
 
 parse_req_outcome
-parse_jbpf_io_channel_desc(YAML::Node cfg, const string path, jbpf_io_channel_desc_s* dest, vector<string> stream_elems)
+parse_jbpf_io_channel_desc(
+    YAML::Node cfg, const string path, jbpf_io_channel_desc_s* dest, const vector<string>& stream_elems)
 {
     if (!cfg.IsDefined() || !cfg["name"].IsDefined())
         return JBPF_LCM_PARSE_REQ_FAILED;
@@ -44,9 +45,8 @@ parse_jbpf_io_channel_desc(YAML::Node cfg, const string path, jbpf_io_channel_de
         if (jbpf_lcm_cli::stream_id::from_hex(stream_id, &dest->stream_id))
             return JBPF_LCM_PARSE_REQ_FAILED;
     } else {
-        vector<string> map_elems;
-        map_elems.insert(map_elems.end(), stream_elems.begin(), stream_elems.end());
-        map_elems.push_back(name);
+        vector<string> map_elems = stream_elems;
+        map_elems.emplace_back(name);
 
         if (jbpf_lcm_cli::stream_id::generate_from_strings(map_elems, &dest->stream_id))
             return JBPF_LCM_PARSE_REQ_FAILED;
@@ -106,11 +106,13 @@ parse_jbpf_linked_map_descriptor(YAML::Node cfg, jbpf_linked_map_descriptor_s* d
 }
 
 parse_req_outcome
-parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, vector<string> codelet_elems)
+parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, const vector<string>& codelet_elems)
 {
     if (!cfg.IsDefined() || !cfg["codelet_name"].IsDefined() || !cfg["hook_name"].IsDefined() ||
-        !cfg["codelet_path"].IsDefined())
+        !cfg["codelet_path"].IsDefined()) {
+        cout << "Missing required fields: codelet_name, hook_name, or codelet_path\n";
         return JBPF_LCM_PARSE_REQ_FAILED;
+    }
 
     auto codelet_name = cfg["codelet_name"].as<string>();
     if (codelet_name.length() > JBPF_CODELET_NAME_LEN - 1) {
@@ -159,16 +161,21 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, v
         }
 
         dest->num_in_io_channel = cfg["in_io_channel"].size();
+        if (dest->num_in_io_channel > JBPF_MAX_IO_CHANNEL) {
+            cout << "codelet_descriptor[].in_io_channel exceeds maximum number of input channels: "
+                 << JBPF_MAX_IO_CHANNEL << endl;
+            return JBPF_LCM_PARSE_REQ_FAILED;
+        }
+        vector<string> stream_elems_in = codelet_elems;
+        stream_elems_in.emplace_back(codelet_name);
+        stream_elems_in.emplace_back(hook_name);
+        stream_elems_in.emplace_back("input");
         for (int idx = 0; idx < dest->num_in_io_channel; idx++) {
-            vector<string> stream_elems;
-            stream_elems.insert(stream_elems.end(), codelet_elems.begin(), codelet_elems.end());
-            stream_elems.push_back(codelet_name);
-            stream_elems.push_back(hook_name);
-            stream_elems.push_back("input");
             auto ret = parse_jbpf_io_channel_desc(
-                cfg["in_io_channel"][idx], "in_io_channel", &dest->in_io_channel[idx], stream_elems);
-            if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
+                cfg["in_io_channel"][idx], "in_io_channel", &dest->in_io_channel[idx], stream_elems_in);
+            if (ret != JBPF_LCM_PARSE_REQ_SUCCESS) {
                 return ret;
+            }
         }
     }
 
@@ -179,14 +186,18 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, v
         }
 
         dest->num_out_io_channel = cfg["out_io_channel"].size();
+        if (dest->num_out_io_channel > JBPF_MAX_IO_CHANNEL) {
+            cout << "codelet_descriptor[].out_io_channel exceeds maximum number of output channels: "
+                 << JBPF_MAX_IO_CHANNEL << endl;
+            return JBPF_LCM_PARSE_REQ_FAILED;
+        }
+        vector<string> stream_elems_out = codelet_elems;
+        stream_elems_out.emplace_back(codelet_name);
+        stream_elems_out.emplace_back(hook_name);
+        stream_elems_out.emplace_back("output");
         for (int idx = 0; idx < dest->num_out_io_channel; idx++) {
-            vector<string> stream_elems;
-            stream_elems.insert(stream_elems.end(), codelet_elems.begin(), codelet_elems.end());
-            stream_elems.push_back(codelet_name);
-            stream_elems.push_back(hook_name);
-            stream_elems.push_back("output");
             auto ret = parse_jbpf_io_channel_desc(
-                cfg["out_io_channel"][idx], "out_io_channel", &dest->out_io_channel[idx], stream_elems);
+                cfg["out_io_channel"][idx], "out_io_channel", &dest->out_io_channel[idx], stream_elems_out);
             if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
                 return ret;
         }
@@ -201,8 +212,9 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, v
         dest->num_linked_maps = cfg["linked_maps"].size();
         for (int idx = 0; idx < dest->num_linked_maps; idx++) {
             auto ret = parse_jbpf_linked_map_descriptor(cfg["linked_maps"][idx], &dest->linked_maps[idx]);
-            if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
+            if (ret != JBPF_LCM_PARSE_REQ_SUCCESS) {
                 return ret;
+            }
         }
     }
 
@@ -211,30 +223,46 @@ parse_jbpf_codelet_descriptor(YAML::Node cfg, jbpf_codelet_descriptor_s* dest, v
 } // namespace internal
 
 parse_req_outcome
-parse_jbpf_codeletset_load_req(YAML::Node cfg, jbpf_codeletset_load_req* dest, vector<string> codeletset_elems)
+parse_jbpf_codeletset_load_req(YAML::Node cfg, jbpf_codeletset_load_req* dest, const vector<string>& codeletset_elems)
 {
+    // Validate presence and types of required YAML fields
     if (!cfg.IsDefined() || !cfg["codeletset_id"].IsDefined() || !cfg["codelet_descriptor"].IsDefined() ||
-        !cfg["codelet_descriptor"].IsSequence())
-        return JBPF_LCM_PARSE_REQ_FAILED;
-
-    auto name = cfg["codeletset_id"].as<string>();
-    if (name.length() > JBPF_CODELETSET_NAME_LEN - 1 || name.empty()) {
-        cout << "codeletset_id length must be between 1 and " << JBPF_CODELETSET_NAME_LEN - 1 << " characters long."
-             << endl;
+        !cfg["codelet_descriptor"].IsSequence()) {
+        cout << "Missing or invalid 'codeletset_id' or 'codelet_descriptor' fields in YAML.\n";
         return JBPF_LCM_PARSE_REQ_FAILED;
     }
+
+    // Parse and validate codeletset_id
+    auto name = cfg["codeletset_id"].as<std::string>();
+    if (name.empty() || name.length() > JBPF_CODELETSET_NAME_LEN - 1) {
+        cout << "codeletset_id length must be between 1 and " << JBPF_CODELETSET_NAME_LEN - 1 << " characters long.\n";
+        return JBPF_LCM_PARSE_REQ_FAILED;
+    }
+
     name.copy(dest->codeletset_id.name, JBPF_CODELETSET_NAME_LEN - 1);
     dest->codeletset_id.name[name.length()] = '\0';
 
-    dest->num_codelet_descriptors = cfg["codelet_descriptor"].size();
-    for (int i = 0; i < dest->num_codelet_descriptors; i++) {
-        vector<string> codelet_elems;
-        codelet_elems.insert(codelet_elems.end(), codeletset_elems.begin(), codeletset_elems.end());
-        codelet_elems.push_back(name);
+    // Validate number of descriptors
+    std::size_t num_descriptors = cfg["codelet_descriptor"].size();
+    if (num_descriptors > JBPF_MAX_CODELETS_IN_CODELETSET) {
+        cout << "Too many codelet descriptors: max allowed is " << JBPF_MAX_CODELETS_IN_CODELETSET << "\n";
+        return JBPF_LCM_PARSE_REQ_FAILED;
+    }
+
+    dest->num_codelet_descriptors = static_cast<int>(num_descriptors);
+    if (dest->num_codelet_descriptors == 0) {
+        cout << "No codelet descriptors provided.\n";
+    }
+    std::vector<std::string> codelet_elems = codeletset_elems;
+    codelet_elems.emplace_back(name);
+    for (size_t i = 0; i < dest->num_codelet_descriptors; i++) {
         auto ret = internal::parse_jbpf_codelet_descriptor(
             cfg["codelet_descriptor"][i], &dest->codelet_descriptor[i], codelet_elems);
-        if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
+
+        if (ret != JBPF_LCM_PARSE_REQ_SUCCESS) {
+            cout << "Failed to parse codelet_descriptor at index " << i << "\n";
             return ret;
+        }
     }
 
     return JBPF_LCM_PARSE_REQ_SUCCESS;
@@ -243,14 +271,22 @@ parse_jbpf_codeletset_load_req(YAML::Node cfg, jbpf_codeletset_load_req* dest, v
 parse_req_outcome
 parse_jbpf_codeletset_unload_req(YAML::Node cfg, jbpf_codeletset_unload_req* dest)
 {
-    if (!cfg.IsDefined() || !cfg["codeletset_id"].IsDefined())
-        return JBPF_LCM_PARSE_REQ_FAILED;
-    auto name = cfg["codeletset_id"].as<string>();
-    if (name.length() > JBPF_CODELETSET_NAME_LEN - 1 || name.empty()) {
-        cout << "codeletset_id length must be between 1 and " << JBPF_CODELETSET_NAME_LEN - 1 << " characters long."
-             << endl;
+    if (!cfg.IsDefined() || !cfg["codeletset_id"].IsDefined()) {
+        cout << "Missing required 'codeletset_id' field in YAML config.\n";
         return JBPF_LCM_PARSE_REQ_FAILED;
     }
+
+    std::string name = cfg["codeletset_id"].as<std::string>();
+
+    if (name.empty()) {
+        cout << "codeletset_id cannot be empty.\n";
+        return JBPF_LCM_PARSE_REQ_FAILED;
+    }
+    if (name.length() > JBPF_CODELETSET_NAME_LEN - 1) {
+        cout << "codeletset_id exceeds maximum length of " << JBPF_CODELETSET_NAME_LEN - 1 << " characters.\n";
+        return JBPF_LCM_PARSE_REQ_FAILED;
+    }
+
     name.copy(dest->codeletset_id.name, JBPF_CODELETSET_NAME_LEN - 1);
     dest->codeletset_id.name[name.length()] = '\0';
 

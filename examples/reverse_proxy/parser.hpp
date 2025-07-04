@@ -24,7 +24,9 @@ parser_jbpf_set_verify_func(jbpf_verify_func_t func);
 
 parse_req_outcome
 parse_jbpf_codeletset_load_req(
-    const boost::property_tree::ptree pt, jbpf_codeletset_load_req* dest, std::vector<std::string> codeletset_elems);
+    const boost::property_tree::ptree pt,
+    jbpf_codeletset_load_req* dest,
+    const std::vector<std::string>& codeletset_elems);
 parse_req_outcome
 parse_jbpf_codeletset_unload_req(const boost::property_tree::ptree pt, jbpf_codeletset_unload_req* dest);
 std::string
