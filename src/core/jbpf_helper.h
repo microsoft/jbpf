@@ -220,8 +220,8 @@ static int (*jbpf_rand)(void) = (int (*)(void))JBPF_RAND;
  */
 #define jbpf_map_try_delete_elem(map, key)                                    \
     ({                                                                        \
-        int result;                                                           \
-        for (int attempt = 0; attempt < JBPF_MAP_RETRY_ATTEMPTS; attempt++) { \
+        int16_t result;                                                           \
+        for (volatile int attempt = 0; attempt < JBPF_MAP_RETRY_ATTEMPTS; attempt++) { \
             if ((result = jbpf_map_delete_elem(map, key)) != JBPF_MAP_BUSY)   \
                 break;                                                        \
         }                                                                     \
@@ -236,8 +236,8 @@ static int (*jbpf_rand)(void) = (int (*)(void))JBPF_RAND;
  */
 #define jbpf_map_try_clear(map)                                               \
     ({                                                                        \
-        int result;                                                           \
-        for (int attempt = 0; attempt < JBPF_MAP_RETRY_ATTEMPTS; attempt++) { \
+        int16_t result;                                                           \
+        for (volatile int attempt = 0; attempt < JBPF_MAP_RETRY_ATTEMPTS; attempt++) { \
             if ((result = jbpf_map_clear(map)) != JBPF_MAP_BUSY)              \
                 break;                                                        \
         }                                                                     \
@@ -255,8 +255,8 @@ static int (*jbpf_rand)(void) = (int (*)(void))JBPF_RAND;
  */
 #define jbpf_map_try_dump(map, data, max_size, flags)                                  \
     ({                                                                                 \
-        int result;                                                                    \
-        for (int attempt = 0; attempt < JBPF_MAP_RETRY_ATTEMPTS; attempt++) {          \
+        int16_t result;                                                                    \
+        for (volatile int attempt = 0; attempt < JBPF_MAP_RETRY_ATTEMPTS; attempt++) {          \
             if ((result = jbpf_map_dump(map, data, max_size, flags)) != JBPF_MAP_BUSY) \
                 break;                                                                 \
         }                                                                              \
