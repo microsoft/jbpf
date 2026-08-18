@@ -18,6 +18,11 @@ foreach(TEST_FILE ${IO_TESTS_SOURCES})
   # Add the test to the list of tests to be executed
   add_test(NAME io/${TEST_NAME} COMMAND ${TEST_NAME} $<TARGET_FILE:jbpf::test_serde> $<TARGET_FILE:jbpf::test_serde2> ${RUNTIME_OUTPUT_DIRECTORY})
 
+  if(TEST_NAME STREQUAL "jbpf_io_ipc_test")
+    add_test(NAME io/${TEST_NAME}_missing_serde COMMAND ${TEST_NAME})
+    set_tests_properties(io/${TEST_NAME}_missing_serde PROPERTIES WILL_FAIL TRUE)
+  endif()
+
   # Test coverage
   list(APPEND JBPF_TESTS io/${TEST_NAME})
   add_clang_format_check(${TEST_NAME} ${TEST_FILE})

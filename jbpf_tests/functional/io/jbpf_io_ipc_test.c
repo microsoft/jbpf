@@ -470,6 +470,10 @@ run_secondary(char* serde1, char* serde2)
 int
 main(int argc, char* argv[])
 {
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <serde-lib> <serde2-lib>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
     pid_t child_pid;
     int secondary_status;
