@@ -274,7 +274,6 @@ validate_string_param(char* param_name, char* param, uint32_t param_maxlen, jbpf
 static int
 validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_load_error_s* err)
 {
-
     if (!load_req) {
         char msg[JBPF_MAX_ERR_MSG_SIZE];
         sprintf(msg, "load_req is NULL\n");
@@ -286,7 +285,7 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
     }
 
     if (validate_string_param("codeletset_id.name", load_req->codeletset_id.name, JBPF_CODELETSET_NAME_LEN, err) != 1) {
-        return JBPF_CODELET_PARAM_INVALID;
+        goto err;
     }
 
     if (load_req->num_codelet_descriptors == 0) {
@@ -296,7 +295,7 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
         if (err) {
             strcpy(err->err_msg, msg);
         }
-        return JBPF_CODELET_PARAM_INVALID;
+        goto err;
     }
 
     if (load_req->num_codelet_descriptors > JBPF_MAX_CODELETS_IN_CODELETSET) {
@@ -306,7 +305,7 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
         if (err) {
             strcpy(err->err_msg, msg);
         }
-        return JBPF_CODELET_PARAM_INVALID;
+        goto err;
     }
 
     for (int i = 0; i < load_req->num_codelet_descriptors; ++i) {
@@ -314,31 +313,31 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
         // validate codelet_name
         if (validate_string_param(
                 "codelet_name", load_req->codelet_descriptor[i].codelet_name, JBPF_CODELET_NAME_LEN, err) != 1) {
-            return JBPF_CODELET_PARAM_INVALID;
+            goto err;
         }
 
         // validate hook_name
         if (validate_string_param("hook_name", load_req->codelet_descriptor[i].hook_name, JBPF_HOOK_NAME_LEN, err) !=
             1) {
-            return JBPF_CODELET_PARAM_INVALID;
+            goto err;
         }
 
         // validate codelet_path
         if (validate_string_param("codelet_path", load_req->codelet_descriptor[i].codelet_path, JBPF_PATH_LEN, err) !=
             1) {
-            return JBPF_CODELET_PARAM_INVALID;
+            goto err;
         }
 
         // validate in_io_channel
         for (int ch = 0; ch < load_req->codelet_descriptor[i].num_in_io_channel; ch++) {
             jbpf_io_channel_desc_s* chan = &load_req->codelet_descriptor[i].in_io_channel[ch];
-            if (validate_string_param("in_io_channel.name ", chan->name, JBPF_IO_CHANNEL_NAME_LEN, err) != 1) {
-                return JBPF_CODELET_PARAM_INVALID;
+            if (validate_string_param("in_io_channel.name", chan->name, JBPF_IO_CHANNEL_NAME_LEN, err) != 1) {
+                goto err;
             }
 #ifdef JBPF_EXPERIMENTAL_FEATURES
             if (chan->has_serde) {
                 if (validate_string_param("in_io_channel.serde ", chan->serde.file_path, JBPF_PATH_LEN, err) != 1) {
-                    return JBPF_CODELET_PARAM_INVALID;
+                    goto err;
                 }
                 // check Serde file exists
                 FILE* file = fopen(chan->serde.file_path, "rb");
@@ -349,7 +348,7 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
                     if (err) {
                         strcpy(err->err_msg, msg);
                     }
-                    return JBPF_CODELET_PARAM_INVALID;
+                    goto err;
                 }
                 fclose(file);
             }
@@ -359,13 +358,13 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
         // validate out_io_channel
         for (int ch = 0; ch < load_req->codelet_descriptor[i].num_out_io_channel; ch++) {
             jbpf_io_channel_desc_s* chan = &load_req->codelet_descriptor[i].out_io_channel[ch];
-            if (validate_string_param("out_io_channel.name ", chan->name, JBPF_IO_CHANNEL_NAME_LEN, err) != 1) {
-                return JBPF_CODELET_PARAM_INVALID;
+            if (validate_string_param("out_io_channel.name", chan->name, JBPF_IO_CHANNEL_NAME_LEN, err) != 1) {
+                goto err;
             }
 #ifdef JBPF_EXPERIMENTAL_FEATURES
             if (chan->has_serde) {
                 if (validate_string_param("out_io_channel.serde ", chan->serde.file_path, JBPF_PATH_LEN, err) != 1) {
-                    return JBPF_CODELET_PARAM_INVALID;
+                    goto err;
                 }
                 // check Serde file exists
                 FILE* file = fopen(chan->serde.file_path, "rb");
@@ -376,7 +375,7 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
                     if (err) {
                         strcpy(err->err_msg, msg);
                     }
-                    return JBPF_CODELET_PARAM_INVALID;
+                    goto err;
                 }
                 fclose(file);
             }
@@ -386,17 +385,17 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
         // validate linked_maps
         for (int m = 0; m < load_req->codelet_descriptor[i].num_linked_maps; m++) {
             jbpf_linked_map_descriptor_s* map = &load_req->codelet_descriptor[i].linked_maps[m];
-            if (validate_string_param("linked_maps.map_name ", map->map_name, JBPF_MAP_NAME_LEN, err) != 1) {
-                return JBPF_CODELET_PARAM_INVALID;
+            if (validate_string_param("linked_maps.map_name", map->map_name, JBPF_MAP_NAME_LEN, err) != 1) {
+                goto err;
             }
             if (validate_string_param(
-                    "linked_maps.linked_codelet_name ", map->linked_codelet_name, JBPF_CODELET_NAME_LEN, err) != 1) {
-                return JBPF_CODELET_PARAM_INVALID;
+                    "linked_maps.linked_codelet_name", map->linked_codelet_name, JBPF_CODELET_NAME_LEN, err) != 1) {
+                goto err;
             }
 
-            if (validate_string_param("linked_maps.linked_map_name ", map->linked_map_name, JBPF_MAP_NAME_LEN, err) !=
+            if (validate_string_param("linked_maps.linked_map_name", map->linked_map_name, JBPF_MAP_NAME_LEN, err) !=
                 1) {
-                return JBPF_CODELET_PARAM_INVALID;
+                goto err;
             }
         }
         // check that a codelet does not link to itself
@@ -415,7 +414,7 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
                 if (err) {
                     strcpy(err->err_msg, msg);
                 }
-                return JBPF_CODELET_PARAM_INVALID;
+                goto err;
             }
         }
         // check that map_name is unique
@@ -431,7 +430,7 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
                     if (err) {
                         strcpy(err->err_msg, msg);
                     }
-                    return JBPF_CODELET_PARAM_INVALID;
+                    goto err;
                 }
             }
         }
@@ -454,7 +453,7 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
                     if (err) {
                         strcpy(err->err_msg, msg);
                     }
-                    return JBPF_CODELET_PARAM_INVALID;
+                    goto err;
                 }
             }
         }
@@ -468,19 +467,23 @@ validate_codeletset(struct jbpf_codeletset_load_req* load_req, jbpf_codeletset_l
                 char msg[JBPF_MAX_ERR_MSG_SIZE];
                 sprintf(
                     msg,
-                    "codelet_name %s is not unique. Unloading codeletset %s\n",
+                    "codelet_name %s is not unique (codeletset %s)\n",
                     load_req->codelet_descriptor[i].codelet_name,
                     load_req->codeletset_id.name);
                 jbpf_logger(JBPF_ERROR, "%s", msg);
                 if (err) {
                     strcpy(err->err_msg, msg);
                 }
-                return JBPF_CODELET_PARAM_INVALID;
+                goto err;
             }
         }
     }
 
     return JBPF_CODELET_LOAD_SUCCESS;
+
+err:
+    jbpf_logger(JBPF_ERROR, "Codeletset %s validation failed.\n", load_req->codeletset_id.name);
+    return JBPF_CODELET_PARAM_INVALID;
 }
 
 static void*

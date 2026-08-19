@@ -132,6 +132,7 @@ main(int argc, char** argv)
 
     // Load the codeletset
     assert(jbpf_codeletset_load(&codeletset_req_c1, &err_msg) == JBPF_CODELET_PARAM_INVALID);
+    assert(strlen(err_msg.err_msg) > 0);
 
     // Stop
     jbpf_stop();

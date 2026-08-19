@@ -37,7 +37,8 @@ auto_expand_environment_variables(string& text)
 }
 
 parse_req_outcome
-parse_jbpf_io_channel_desc(const ptree pt, const string path, jbpf_io_channel_desc_s* dest, vector<string> stream_elems)
+parse_jbpf_io_channel_desc(
+    const ptree pt, const string path, jbpf_io_channel_desc_s* dest, const vector<string>& stream_elems)
 {
     auto name = pt.get_child("name").get_value<string>();
     if (name.length() > JBPF_IO_CHANNEL_NAME_LEN - 1) {
@@ -53,12 +54,8 @@ parse_jbpf_io_channel_desc(const ptree pt, const string path, jbpf_io_channel_de
         if (jbpf_lcm_cli::stream_id::from_hex(stream_id.value().get_value<string>(), &dest->stream_id))
             return JBPF_LCM_PARSE_REQ_FAILED;
     } else {
-        vector<string> map_elems;
-
-        for (auto elem : stream_elems)
-            map_elems.push_back(elem);
-
-        map_elems.push_back(name);
+        vector<string> map_elems = stream_elems;
+        map_elems.emplace_back(name);
 
         if (jbpf_lcm_cli::stream_id::generate_from_strings(map_elems, &dest->stream_id))
             return JBPF_LCM_PARSE_REQ_FAILED;
@@ -112,9 +109,14 @@ parse_jbpf_linked_map_descriptor(const ptree pt, jbpf_linked_map_descriptor_s* d
 }
 
 parse_req_outcome
-parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, vector<string> codelet_elems)
+parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, const vector<string>& codelet_elems)
 {
-    auto codelet_name = pt.get_child("codelet_name").get_value<string>();
+    auto codelet_name_opt = pt.get_child_optional("codelet_name");
+    if (!codelet_name_opt) {
+        cout << "Missing required field: codelet_name\n";
+        return JBPF_LCM_PARSE_REQ_FAILED;
+    }
+    auto codelet_name = codelet_name_opt->get_value<string>();
     if (codelet_name.length() > JBPF_CODELET_NAME_LEN - 1) {
         cout << "codelet_descriptor[].codelet_name length must be at most " << JBPF_CODELET_NAME_LEN - 1 << endl;
         return JBPF_LCM_PARSE_REQ_FAILED;
@@ -122,7 +124,12 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
     codelet_name.copy(dest->codelet_name, JBPF_CODELET_NAME_LEN - 1);
     dest->codelet_name[codelet_name.length()] = '\0';
 
-    auto hook_name = pt.get_child("hook_name").get_value<string>();
+    auto hook_name_opt = pt.get_child_optional("hook_name");
+    if (!hook_name_opt) {
+        cout << "Missing required field: hook_name\n";
+        return JBPF_LCM_PARSE_REQ_FAILED;
+    }
+    auto hook_name = hook_name_opt->get_value<string>();
     if (hook_name.length() > JBPF_HOOK_NAME_LEN - 1) {
         cout << "codelet_descriptor[].hook_name length must be at most " << JBPF_HOOK_NAME_LEN - 1 << endl;
         return JBPF_LCM_PARSE_REQ_FAILED;
@@ -130,7 +137,12 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
     hook_name.copy(dest->hook_name, JBPF_HOOK_NAME_LEN - 1);
     dest->hook_name[hook_name.length()] = '\0';
 
-    auto codelet_path = pt.get_child("codelet_path").get_value<string>();
+    auto codelet_path_opt = pt.get_child_optional("codelet_path");
+    if (!codelet_path_opt) {
+        cout << "Missing required field: codelet_path\n";
+        return JBPF_LCM_PARSE_REQ_FAILED;
+    }
+    auto codelet_path = codelet_path_opt->get_value<string>();
     auto_expand_environment_variables(codelet_path);
     if (codelet_path.length() > JBPF_PATH_LEN - 1) {
         cout << "codelet_descriptor[].codelet_path length must be at most " << JBPF_PATH_LEN - 1 << endl;
@@ -159,16 +171,18 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
 
     auto in_io_channel = pt.get_child_optional("in_io_channel");
     if (in_io_channel) {
+        vector<string> stream_elements_in_io_channel = codelet_elems;
+        stream_elements_in_io_channel.emplace_back(codelet_name);
+        stream_elements_in_io_channel.emplace_back(hook_name);
+        stream_elements_in_io_channel.emplace_back("input");
         auto idx = 0;
         BOOST_FOREACH (const ptree::value_type& child, in_io_channel.value()) {
-            vector<string> stream_elems;
-            for (auto elem : codelet_elems)
-                stream_elems.push_back(elem);
-            stream_elems.push_back(codelet_name);
-            stream_elems.push_back(hook_name);
-            stream_elems.push_back("input");
-            auto ret =
-                parse_jbpf_io_channel_desc(child.second, "in_io_channel", &dest->in_io_channel[idx], stream_elems);
+            if (idx >= JBPF_MAX_IO_CHANNEL) {
+                cout << "Too many in_io_channel entries (max " << JBPF_MAX_IO_CHANNEL << ")\n";
+                return JBPF_LCM_PARSE_REQ_FAILED;
+            }
+            auto ret = parse_jbpf_io_channel_desc(
+                child.second, "in_io_channel", &dest->in_io_channel[idx], stream_elements_in_io_channel);
             if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
                 return ret;
             idx++;
@@ -178,16 +192,18 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
 
     auto out_io_channel = pt.get_child_optional("out_io_channel");
     if (out_io_channel) {
+        vector<string> stream_elements_out_io_channel = codelet_elems;
+        stream_elements_out_io_channel.emplace_back(codelet_name);
+        stream_elements_out_io_channel.emplace_back(hook_name);
+        stream_elements_out_io_channel.emplace_back("output");
         auto idx = 0;
         BOOST_FOREACH (const ptree::value_type& child, out_io_channel.value()) {
-            vector<string> stream_elems;
-            for (auto elem : codelet_elems)
-                stream_elems.push_back(elem);
-            stream_elems.push_back(codelet_name);
-            stream_elems.push_back(hook_name);
-            stream_elems.push_back("output");
-            auto ret =
-                parse_jbpf_io_channel_desc(child.second, "out_io_channel", &dest->out_io_channel[idx], stream_elems);
+            if (idx >= JBPF_MAX_IO_CHANNEL) {
+                cout << "Too many out_io_channel entries (max " << JBPF_MAX_IO_CHANNEL << ")\n";
+                return JBPF_LCM_PARSE_REQ_FAILED;
+            }
+            auto ret = parse_jbpf_io_channel_desc(
+                child.second, "out_io_channel", &dest->out_io_channel[idx], stream_elements_out_io_channel);
             if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
                 return ret;
             idx++;
@@ -198,7 +214,11 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
     auto linked_maps = pt.get_child_optional("linked_maps");
     if (linked_maps) {
         auto idx = 0;
-        BOOST_FOREACH (const ptree::value_type& child, pt.get_child("linked_maps")) {
+        BOOST_FOREACH (const ptree::value_type& child, linked_maps.value()) {
+            if (idx >= JBPF_MAX_LINKED_MAPS) {
+                cout << "Too many linked_maps entries (max " << JBPF_MAX_LINKED_MAPS << ")\n";
+                return JBPF_LCM_PARSE_REQ_FAILED;
+            }
             auto ret = parse_jbpf_linked_map_descriptor(child.second, &dest->linked_maps[idx]);
             if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
                 return ret;
@@ -214,7 +234,7 @@ parse_jbpf_codelet_descriptor(const ptree pt, jbpf_codelet_descriptor_s* dest, v
 jbpf_verify_func_t verifier_func = NULL;
 
 parse_req_outcome
-parse_jbpf_codeletset_load_req(const ptree pt, jbpf_codeletset_load_req* dest, vector<string> codeletset_elems)
+parse_jbpf_codeletset_load_req(const ptree pt, jbpf_codeletset_load_req* dest, const vector<string>& codeletset_elems)
 {
     auto name = pt.get_child("codeletset_id").get_value<string>();
     if (name.length() > JBPF_CODELETSET_NAME_LEN - 1) {
@@ -224,13 +244,17 @@ parse_jbpf_codeletset_load_req(const ptree pt, jbpf_codeletset_load_req* dest, v
     name.copy(dest->codeletset_id.name, JBPF_CODELETSET_NAME_LEN - 1);
     dest->codeletset_id.name[name.length()] = '\0';
 
-    auto idx = 0;
+    vector<string> codelet_elems_with_name = codeletset_elems;
+    codelet_elems_with_name.emplace_back(name);
+
+    int idx = 0;
     BOOST_FOREACH (const ptree::value_type& child, pt.get_child("codelet_descriptor")) {
-        vector<string> codelet_elems;
-        for (auto elem : codeletset_elems)
-            codelet_elems.push_back(elem);
-        codelet_elems.push_back(name);
-        auto ret = internal::parse_jbpf_codelet_descriptor(child.second, &dest->codelet_descriptor[idx], codelet_elems);
+        if (idx >= JBPF_MAX_CODELETS_IN_CODELETSET) {
+            cout << "Too many codelet_descriptors (max " << JBPF_MAX_CODELETS_IN_CODELETSET << ")\n";
+            return JBPF_LCM_PARSE_REQ_FAILED;
+        }
+        auto ret = internal::parse_jbpf_codelet_descriptor(
+            child.second, &dest->codelet_descriptor[idx], codelet_elems_with_name);
         if (ret != JBPF_LCM_PARSE_REQ_SUCCESS)
             return ret;
         idx++;

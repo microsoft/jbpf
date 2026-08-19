@@ -76,6 +76,11 @@ struct jbpf_io_stream_id local_stream_id = {
 unsigned char*
 read_serde_lib(const char* filename, long* filesize)
 {
+    if (filename == NULL) {
+        fprintf(stderr, "Error: serde library path is NULL\n");
+        return NULL;
+    }
+
     FILE* file = fopen(filename, "rb"); // Open the file in binary read mode
     if (file == NULL) {
         perror("Failed to open file");
@@ -303,6 +308,13 @@ run_secondary(char* serde1, char* serde2)
 
     serde_lib = read_serde_lib(serde1, &lib_size);
     serde2_lib = read_serde_lib(serde2, &lib2_size);
+
+    // The test requires valid serde libraries to be provided
+    // If NULL was returned, report failure explicitly
+    if (serde_lib == NULL || serde2_lib == NULL) {
+        fprintf(stderr, "Error: Failed to load serde libraries\n");
+        exit(EXIT_FAILURE);
+    }
 
     // Create an output channel
     io_channel = jbpf_io_create_channel(

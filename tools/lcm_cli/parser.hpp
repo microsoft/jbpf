@@ -20,7 +20,7 @@ enum parse_req_outcome
 
 parse_req_outcome
 parse_jbpf_codeletset_load_req(
-    YAML::Node cfg, jbpf_codeletset_load_req* dest, std::vector<std::string> codeletset_elems);
+    YAML::Node cfg, jbpf_codeletset_load_req* dest, const std::vector<std::string>& codeletset_elems);
 parse_req_outcome
 parse_jbpf_codeletset_unload_req(YAML::Node cfg, jbpf_codeletset_unload_req* dest);
 std::string
