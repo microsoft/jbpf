@@ -53,7 +53,6 @@ function(create_jbpf_library LIB_NAME LIBRARY_TYPE)
         ARCHIVE_OUTPUT_DIRECTORY  "${OUTPUT_DIR}/lib"
         LIBRARY_OUTPUT_DIRECTORY  "${OUTPUT_DIR}/lib"
     )
-    add_library(jbpf::core_lib ALIAS ${LIB_NAME})
 
     target_include_directories(${LIB_NAME} PUBLIC ${JBPF_LIB_HEADER_FILES}
                                                      ${JBPF_COMMON_HEADERS}
@@ -89,7 +88,6 @@ message(STATUS "JBPF_STATIC_OPTION_UPPER: ${JBPF_STATIC_OPTION_UPPER}")
 if(JBPF_STATIC_OPTION_UPPER STREQUAL "ON")
     message(STATUS "Building static library i.e. lib${JBPF_LIB}.a")
     create_jbpf_library(${JBPF_LIB} "static")
-    add_library(jbpf::core_lib ALIAS ${JBPF_LIB})
 elseif(JBPF_STATIC_OPTION_UPPER STREQUAL "OFF")
     message(STATUS "Building shared library i.e. lib${JBPF_LIB}.so")
     create_jbpf_library(${JBPF_LIB} "shared")
@@ -97,12 +95,10 @@ elseif(JBPF_STATIC_OPTION_UPPER STREQUAL "BOTH")
     message(STATUS "Building both static and shared libraries i.e. lib${JBPF_LIB}.a and lib${JBPF_LIB}.so")
     create_jbpf_library(${JBPF_LIB} "static")
     create_jbpf_library(${JBPF_LIB}_shared "shared")
+    set_target_properties(${JBPF_LIB}_shared PROPERTIES OUTPUT_NAME ${JBPF_LIB})
 
     ## add JBPF_SHARED_LIB definition to shared library
     target_compile_definitions(${JBPF_LIB}_shared PRIVATE JBPF_SHARED_LIB)
-
-    ## move libjbpf_shared.so to libjbpf.so
-    add_custom_command(TARGET ${JBPF_LIB}_shared POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${JBPF_LIB}_shared> ${OUTPUT_DIR}/lib/lib${JBPF_LIB}.so
-    )
 endif()
+
+add_library(jbpf::core_lib ALIAS ${JBPF_LIB})

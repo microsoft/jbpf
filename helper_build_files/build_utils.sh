@@ -30,7 +30,7 @@ get_flags() {
         FLAGS="$FLAGS -DJBPF_STATIC=off"
     fi
     if [[ "$JBPF_STATIC" == "2" || "$JBPF_STATIC" == "" ]]; then
-        OUTPUT="$OUTPUT Building jbpf as a both shared and static libraries.\n"
+        OUTPUT="$OUTPUT Building jbpf as both shared and static libraries.\n"
         FLAGS="$FLAGS -DJBPF_STATIC=both"
     fi
 
