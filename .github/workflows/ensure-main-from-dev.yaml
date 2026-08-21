@@ -1,0 +1,19 @@
+## This workflow ensures that all pull requests to the main branch come from the dev branch. 
+## If a PR is opened against main from any other branch, the workflow will fail and prevent merging.
+name: Enforce PR Flow
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-source-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Only allow dev into main
+        if: github.head_ref != 'dev'
+        run: |
+          echo "PRs to main must come from dev."
+          exit 1
