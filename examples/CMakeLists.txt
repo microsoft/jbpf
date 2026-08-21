@@ -6,4 +6,8 @@ add_custom_target(examples ALL
                 
 add_dependencies(examples jbpf::core_lib)
 
+if(TARGET jbpf_shared)
+    add_dependencies(examples jbpf_shared)
+endif()
+
 add_subdirectory(reverse_proxy)
