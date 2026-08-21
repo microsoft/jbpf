@@ -1,11 +1,9 @@
 name: JBPF Docker Build and Tests (ARM64)
 
 on:
+  # This workflow executes repository code with privileged Docker on a
+  # self-hosted runner. Do not enable pull_request events here.
   push:
-    branches:
-      - main
-      - dev
-  pull_request:
     branches:
       - main
       - dev
