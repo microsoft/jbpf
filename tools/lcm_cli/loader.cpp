@@ -130,9 +130,7 @@ parseArgs(int ac, char** av, lcm_cli_config* opts)
     jbpf_lcm_cli::parser::parse_req_outcome parse_ret;
     switch ((*opts).typ) {
     case load: {
-        vector<string> codeletset_elems;
-        codeletset_elems.push_back(address);
-        parse_ret = jbpf_lcm_cli::parser::parse_jbpf_codeletset_load_req(cfg, &(*opts).req.load, codeletset_elems);
+        parse_ret = jbpf_lcm_cli::parser::parse_jbpf_codeletset_load_req(cfg, &(*opts).req.load, {address});
         break;
     }
 

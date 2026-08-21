@@ -78,9 +78,7 @@ handle_request(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& 
         read_json(is, pt);
         jbpf_codeletset_load_req load_req = {0};
 
-        std::vector<std::string> codeletset_elems;
-        codeletset_elems.push_back(address);
-        if (jbpf_reverse_proxy::parser::parse_jbpf_codeletset_load_req(pt, &load_req, codeletset_elems))
+        if (jbpf_reverse_proxy::parser::parse_jbpf_codeletset_load_req(pt, &load_req, {address}))
             return send(bad_request("Invalid JSON"));
 
         std::cout << "Loading codelet set: " << load_req.codeletset_id.name << std::endl;
