@@ -599,3 +599,15 @@ __jbpf_runtime_limit_exceeded(void)
 {
     return jbpf_runtime_limit_exceeded();
 }
+
+jbpf_helper_func_def_t*
+__get_custom_helper_functions(void)
+{
+    return helper_funcs;
+}
+
+const jbpf_helper_func_def_t*
+__get_default_helper_functions(void)
+{
+    return default_helper_funcs;
+}
