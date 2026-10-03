@@ -39,7 +39,7 @@ make -j jbpf_emulator
 - Binary: `$JBPF_PATH/out/bin/jbpf_emulator`
 - Files to create custom emulator: `$JBPF_PATH/out/emulator`
 
-> Note: If you're using static linking (`-DJBPF_STATIC=1`), the emulator links to `libjbpf.a`. Otherwise, it links to `libjbpf.so`.
+> Note: With `-DJBPF_STATIC=on` or `-DJBPF_STATIC=both`, the emulator links to `libjbpf.a`. The `both` mode also builds `libjbpf.so`. Otherwise, the emulator links to `libjbpf.so`; the `report_stats` and `periodic_call` tests require static linking.
 
 ---
 
@@ -197,6 +197,8 @@ The `codelet_descriptor` should define:
   - Input/output IO channels with `stream_id`  
   - Optional `priority`, `runtime_threshold`, etc.
 
+The low-level load and unload wrappers require buffers matching the corresponding C request structure sizes. Invalid sizes raise `ValueError`. The input-message wrapper also rejects negative sizes and sizes larger than the supplied buffer.
+
 ---
 
 ### Unload Codeletset `jbpf_codeletset_unload(codeletset_id)`
@@ -261,10 +263,14 @@ Handles output buffers for a given stream by invoking a callback.
 > - `stream_id`: Stream to listen to.
 > - `callback`: Function to process each output message.
 > - `num_of_messages`: Number of expected messages.
-> - `timeout`: Timeout in nanoseconds.
+> - `timeout`: Timeout in nanoseconds, measured with a monotonic clock. Zero waits indefinitely.
 > - `debug`: Log messages when skipping mismatched stream IDs.
 
 > **Returns:** Number of messages successfully handled.
+
+Messages rejected by the stream filter do not contribute to the returned count.
+
+Waiting for output does not busy-poll and releases the Python GIL so other Python threads can produce messages. Buffers remain valid for the duration of the callback; copy their contents to retain data afterward. Exceptions raised by the callback propagate to the caller.
 
 For example, to handle output from a stream:
 

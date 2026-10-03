@@ -13,6 +13,10 @@
 #include <sys/queue.h>
 #include <mutex>
 #include <memory>
+#include <chrono>
+#include <condition_variable>
+#include <string>
+#include "jbpf_io_channel.h"
 
 // this only works when the emulator is statically linked to libjbpf.a
 #include "jbpf_agent_hooks.h"
@@ -75,14 +79,19 @@ struct MessageDeleter
             return;
         if (m->stream_id)
             free(m->stream_id);
-        if (m->data)
+        if (m->data) {
+            for (int i = 0; i < m->nbuf; i++)
+                jbpf_io_channel_release_buf(m->data[i]);
             free(m->data);
+        }
         delete m;
     }
 };
 
 static std::queue<std::unique_ptr<message_t, MessageDeleter>> message_queue;
 static std::mutex message_mutex;
+static std::condition_variable message_available;
+static bool message_queue_stopped = false;
 
 // user input
 #include "hooks.h"
@@ -123,15 +132,15 @@ static PyObject*
 hook_report_stats_wrapper(PyObject* self, PyObject* args)
 {
     struct jbpf_perf_hook_list* hook_perfs;
-    size_t size;
+    Py_ssize_t size;
     uint32_t meas_period;
     if (!PyArg_ParseTuple(args, "y#I", &hook_perfs, &size, &meas_period)) {
         PyErr_SetString(PyExc_TypeError, "wrong argument type");
-        return Py_BuildValue("i", 1);
+        return NULL;
     }
     if (size != sizeof(struct jbpf_perf_hook_list)) {
         PyErr_SetString(PyExc_TypeError, "wrong buffer size");
-        return Py_BuildValue("i", 2);
+        return NULL;
     }
     hook_report_stats(hook_perfs, meas_period);
     return Py_BuildValue("i", 0);
@@ -143,7 +152,7 @@ hook_periodic_call_wrapper(PyObject* self, PyObject* args)
     uint32_t meas_period;
     if (!PyArg_ParseTuple(args, "I", &meas_period)) {
         PyErr_SetString(PyExc_TypeError, "wrong argument type");
-        return Py_BuildValue("i", 1);
+        return NULL;
     }
     hook_periodic_call(meas_period);
     return Py_BuildValue("i", 0);
@@ -166,7 +175,11 @@ PyInit_helper_functions(void)
 static void
 io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_bufs, void* ctx)
 {
-    auto message = std::unique_ptr<message_t, MessageDeleter>(new message_t);
+    std::lock_guard<std::mutex> lock(message_mutex);
+    if (message_queue_stopped)
+        return;
+
+    auto message = std::unique_ptr<message_t, MessageDeleter>(new message_t{});
     message->stream_id = static_cast<jbpf_io_stream_id_t*>(malloc(sizeof(jbpf_io_stream_id_t)));
     if (!message->stream_id) {
         jbpf_logger(JBPF_ERROR, "Memory allocation failed for stream_id\n");
@@ -178,12 +191,14 @@ io_channel_check_output(jbpf_io_stream_id_t* stream_id, void** bufs, int num_buf
         jbpf_logger(JBPF_ERROR, "Memory allocation failed for data buffers\n");
         return;
     }
-    memcpy(message->data, bufs, num_bufs * sizeof(void*));
+    // Keep queued buffers alive after the core releases its references.
+    for (int i = 0; i < num_bufs; i++)
+        message->data[i] = jbpf_io_channel_share_data_ptr(bufs[i]);
     message->nbuf = num_bufs;
     message->ctx = ctx;
 
-    std::lock_guard<std::mutex> lock(message_mutex);
     message_queue.push(std::move(message));
+    message_available.notify_one();
 }
 
 static PyModuleDef jbpfHookModule = {
@@ -213,7 +228,13 @@ helper_jbpf_load_codeletset(PyObject* self, PyObject* args)
 
     if (!PyArg_ParseTuple(args, "y*", &pyBuffer)) {
         PyErr_SetString(PyExc_TypeError, "Expected a bytes-like object for codeletset request");
-        return Py_BuildValue("i", 1); // Return error code
+        return NULL;
+    }
+
+    if (pyBuffer.len != sizeof(struct jbpf_codeletset_load_req)) {
+        PyBuffer_Release(&pyBuffer);
+        PyErr_SetString(PyExc_ValueError, "Invalid codeletset load request size");
+        return NULL;
     }
 
     codeletset_req_c1 = static_cast<struct jbpf_codeletset_load_req*>(pyBuffer.buf);
@@ -221,7 +242,7 @@ helper_jbpf_load_codeletset(PyObject* self, PyObject* args)
     if (!codeletset_req_c1) {
         PyErr_SetString(PyExc_TypeError, "Invalid codeletset request object");
         PyBuffer_Release(&pyBuffer);
-        return Py_BuildValue("i", 1); // Return error code
+        return NULL;
     }
 
     int res = jbpf_codeletset_load(codeletset_req_c1, &err);
@@ -238,10 +259,14 @@ helper_jbpf_unload_codeletset(PyObject* self, PyObject* args)
 {
     struct jbpf_codeletset_unload_req* codeletset_unload_req_c1;
     jbpf_codeletset_load_error_s err;
-    size_t size;
+    Py_ssize_t size;
     if (!PyArg_ParseTuple(args, "y#", &codeletset_unload_req_c1, &size)) {
         PyErr_SetString(PyExc_TypeError, "wrong argument type");
-        return Py_BuildValue("i", 1);
+        return NULL;
+    }
+    if (size != sizeof(struct jbpf_codeletset_unload_req)) {
+        PyErr_SetString(PyExc_ValueError, "Invalid codeletset unload request size");
+        return NULL;
     }
 
     // Unload the codeletset
@@ -256,75 +281,70 @@ helper_jbpf_unload_codeletset(PyObject* self, PyObject* args)
 int
 c_io_output_handler_wrapper(PyObject* py_callback, int num_of_messages, uint64_t timeout_ns)
 {
-    if (!py_callback) {
-        return 0;
-    }
-
-    // start time
-    struct timespec start;
-    clock_gettime(CLOCK_REALTIME, &start);
-
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
-
+    const auto start = std::chrono::steady_clock::now();
+    const auto timeout = std::chrono::nanoseconds(timeout_ns);
+    const auto deadline = timeout < std::chrono::steady_clock::time_point::max() - start
+                              ? start + timeout
+                              : std::chrono::steady_clock::time_point::max();
     int count = 0;
     while (num_of_messages > 0) {
-        if (timeout_ns > 0) { // unit is nano second
-            struct timespec now;
-            clock_gettime(CLOCK_REALTIME, &now);
-            if (now.tv_sec - start.tv_sec >= timeout_ns / 1000000000) {
-                break;
-            }
-        }
+        if (timeout_ns > 0 && std::chrono::steady_clock::now() >= deadline)
+            break;
 
-        // Pop out all the messages from the queue and re-construct stream_id, buf, nbuf, and ctx
-        while (!message_queue.empty()) {
-            std::unique_ptr<message_t, MessageDeleter> message;
-            {
-                std::lock_guard<std::mutex> lock(message_mutex);
-                if (message_queue.empty())
-                    break;
+        std::unique_ptr<message_t, MessageDeleter> message;
+        Py_BEGIN_ALLOW_THREADS
+        {
+            std::unique_lock<std::mutex> lock(message_mutex);
+            const auto ready = [] { return !message_queue.empty() || message_queue_stopped; };
+            if (timeout_ns == 0) {
+                message_available.wait(lock, ready);
+            } else {
+                message_available.wait_until(lock, deadline, ready);
+            }
+            if (!message_queue.empty()) {
                 message = std::move(message_queue.front());
                 message_queue.pop();
             }
+        }
+        Py_END_ALLOW_THREADS;
+        if (!message)
+            break;
 
-            PyObject* py_stream_id = PyCapsule_New(static_cast<void*>(message->stream_id), "jbpf_io_stream_id_t", NULL);
-
-            // Create a list to hold the buffer capsules
-            PyObject* py_bufs = PyList_New(message->nbuf);
+        PyObject* py_stream_id = PyCapsule_New(static_cast<void*>(message->stream_id), "jbpf_io_stream_id_t", NULL);
+        PyObject* py_bufs = PyList_New(message->nbuf);
+        PyObject* py_num_bufs = PyLong_FromLong(message->nbuf);
+        PyObject* py_ctx = message->ctx ? PyCapsule_New(message->ctx, "void*", NULL) : Py_None;
+        if (py_ctx == Py_None)
+            Py_INCREF(Py_None);
+        PyObject* result = NULL;
+        if (py_stream_id && py_bufs && py_num_bufs && py_ctx) {
             for (int i = 0; i < message->nbuf; ++i) {
                 PyObject* buf_capsule = PyCapsule_New(message->data[i], "void*", NULL);
+                if (!buf_capsule)
+                    break;
                 PyList_SetItem(py_bufs, i, buf_capsule); // PyList_SetItem takes ownership
             }
+            if (!PyErr_Occurred())
+                result = PyObject_CallFunctionObjArgs(py_callback, py_stream_id, py_bufs, py_num_bufs, py_ctx, NULL);
+        }
+        Py_XDECREF(py_stream_id);
+        Py_XDECREF(py_bufs);
+        Py_XDECREF(py_num_bufs);
+        Py_XDECREF(py_ctx);
+        if (!result) {
+            jbpf_logger(JBPF_ERROR, "Error: Python callback failed\n");
+            return -1;
+        }
+        int overflow = 0;
+        const bool ignored = PyLong_Check(result) && PyLong_AsLongAndOverflow(result, &overflow) == -1 && overflow == 0;
+        Py_DECREF(result);
 
-            PyObject* py_num_bufs = PyLong_FromLong(message->nbuf);
-            PyObject* py_ctx = message->ctx ? PyCapsule_New(message->ctx, "void*", NULL) : Py_None;
-            if (py_ctx == Py_None) {
-                Py_INCREF(Py_None);
-            }
-
-            // Call the Python callback
-            PyObject* result =
-                PyObject_CallFunctionObjArgs(py_callback, py_stream_id, py_bufs, py_num_bufs, py_ctx, NULL);
-            if (!result) {
-                PyErr_Print();
-                jbpf_logger(JBPF_ERROR, "Error: Python callback failed\n");
-                break;
-            }
-
-            // Clean up Python objects
-            Py_XDECREF(result);
-            Py_XDECREF(py_stream_id);
-            Py_XDECREF(py_bufs);
-            Py_XDECREF(py_num_bufs);
-            Py_XDECREF(py_ctx);
-
+        if (!ignored) {
             num_of_messages -= message->nbuf;
             count += message->nbuf;
         }
     }
 
-    PyGILState_Release(gstate);
     return count;
 }
 
@@ -339,12 +359,23 @@ helper_jbpf_handle_out_bufs(PyObject* self, PyObject* args)
     if (!PyArg_ParseTuple(args, "OiK", &cb, &num_of_messages, &timeout)) {
         PyErr_SetString(
             PyExc_TypeError, "Expected arguments: cb (callable), num_of_messages (int), timeout in ns (int64)");
-        return Py_BuildValue("i", 1);
+        return NULL;
     }
 
     if (!PyCallable_Check(cb)) {
         PyErr_SetString(PyExc_TypeError, "Expected a callable object (failed PyCallable_Check)");
-        return Py_BuildValue("i", 2);
+        return NULL;
+    }
+    if (num_of_messages < 0) {
+        PyErr_SetString(PyExc_ValueError, "num_of_messages must not be negative");
+        return NULL;
+    }
+    const auto max_timeout = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                 std::chrono::steady_clock::time_point::max() - std::chrono::steady_clock::now())
+                                 .count();
+    if (timeout > static_cast<uint64_t>(max_timeout)) {
+        PyErr_SetString(PyExc_ValueError, "timeout exceeds the monotonic clock range");
+        return NULL;
     }
 
     // Store the Python callback
@@ -356,6 +387,8 @@ helper_jbpf_handle_out_bufs(PyObject* self, PyObject* args)
     // Cleanup
     Py_XDECREF(cb);
 
+    if (count < 0)
+        return NULL;
     return Py_BuildValue("i", count);
 }
 
@@ -377,6 +410,10 @@ helper_jbpf_send_input_msg(PyObject* self, PyObject* args)
     // Ensure stream_id is the expected size for jbpf_io_stream_id_t (e.g., 16 bytes)
     if (stream_id_size != sizeof(jbpf_io_stream_id_t)) {
         PyErr_SetString(PyExc_ValueError, "Invalid stream_id size");
+        return NULL;
+    }
+    if (size < 0 || size > data_size) {
+        PyErr_SetString(PyExc_ValueError, "Input message size exceeds the provided buffer or is negative");
         return NULL;
     }
 
@@ -455,7 +492,7 @@ static PyMethodDef jbpfHelperMethods[] = {
     {NULL, NULL, 0, NULL}};
 
 static PyModuleDef jbpfHelperModule = {
-    PyModuleDef_HEAD_INIT, "helper_functions", NULL, -1, jbpfHelperMethods, NULL, NULL, NULL, NULL};
+    PyModuleDef_HEAD_INIT, "jbpf_helpers", NULL, -1, jbpfHelperMethods, NULL, NULL, NULL, NULL};
 
 static PyObject*
 PyInit_jbpf_helpers(void)
@@ -484,15 +521,18 @@ run_benchmark_test(char* dir, char* python_file)
         Py_DECREF(pyDir); // Decrement reference count
     }
 
-    char* jbpf_path = getenv("JBPF_PATH");
+    const char* jbpf_path = getenv("JBPF_PATH");
+    if (!jbpf_path || !*jbpf_path) {
+        jbpf_logger(JBPF_ERROR, "JBPF_PATH must be set to the jbpf directory\n");
+        return false;
+    }
     jbpf_logger(JBPF_INFO, "JBPF_PATH is %s\n", jbpf_path);
 
-    char tempPath[255];
-    sprintf(tempPath, "%s/out/", jbpf_path); // Make sure to format first
-    pyTempPath = PyUnicode_FromString(tempPath);
+    const std::string tempPath = std::string(jbpf_path) + "/out/";
+    pyTempPath = PyUnicode_FromString(tempPath.c_str());
     if (pyTempPath) {
         if (PyList_Append(sysPath, pyTempPath) == -1) {
-            jbpf_logger(JBPF_ERROR, "Error: Failed to append %s to sys.path\n", tempPath);
+            jbpf_logger(JBPF_ERROR, "Error: Failed to append %s to sys.path\n", tempPath.c_str());
             ok = false;
         }
         Py_DECREF(pyTempPath); // Decrement reference count
@@ -575,10 +615,12 @@ cleanup()
 {
     {
         std::lock_guard<std::mutex> lock(message_mutex);
+        message_queue_stopped = true;
         while (!message_queue.empty()) {
             message_queue.pop();
         }
     }
+    message_available.notify_all();
 
     // Free time events
     while (!TAILQ_EMPTY(&head)) {
@@ -664,7 +706,7 @@ main(int argc, char** argv)
     int ret = EMULATOR_RETURN_SUCC;
     char* path;
     char* python_module;
-    char tempPath[255];
+    std::string tempPath;
 
     jbpf_logger(JBPF_INFO, "Starting JBPF Emulator Test (CPP) ...\n");
 
@@ -713,9 +755,9 @@ main(int argc, char** argv)
     jbpf_logger(JBPF_INFO, "Loading the emulator %s/%s\n", path, python_module);
 
     // check if the path exists
-    sprintf(tempPath, "%s/%s.py", path, python_module);
-    if (!checkFileExists(tempPath)) {
-        jbpf_logger(JBPF_ERROR, "File %s does not exist\n", tempPath);
+    tempPath = std::string(path) + "/" + python_module + ".py";
+    if (!checkFileExists(tempPath.c_str())) {
+        jbpf_logger(JBPF_ERROR, "File %s does not exist\n", tempPath.c_str());
         ret = EMULATOR_RETURN_FILE_NOT_EXIST;
         goto cleanup;
     }
@@ -730,16 +772,16 @@ main(int argc, char** argv)
     Py_Initialize();
 
     if (run_benchmark_test(path, python_module)) {
-        jbpf_logger(JBPF_INFO, "Test %s completed successfully.\n", tempPath);
+        jbpf_logger(JBPF_INFO, "Test %s completed successfully.\n", tempPath.c_str());
     } else {
-        jbpf_logger(JBPF_ERROR, "Test %s failed.\n", tempPath);
+        jbpf_logger(JBPF_ERROR, "Test %s failed.\n", tempPath.c_str());
         ret = EMULATOR_RETURN_PYTHON_ERROR;
     }
 
 cleanup:
     // cleanup
+    cleanup();
     jbpf_stop();
     Py_Finalize();
-    cleanup();
     return ret;
 }

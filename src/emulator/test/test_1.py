@@ -4,7 +4,7 @@
 # 2. Invoke the hook three times with varying input data.
 # 3. Verify the output buffers contain the expected results after each call.
 # 4. Unload the codeletset.
-import os, sys, time, ctypes
+import os, sys, time, ctypes, threading
 
 JBPF_PATH = os.getenv("JBPF_PATH")
 sys.path.append(JBPF_PATH + "/out/lib/")
@@ -18,6 +18,8 @@ import jbpf_helpers
 import jbpf_test_def
 import jbpf_hooks
 import emulator_utils
+
+output_data = []
 
 
 def io_channel_check_output(bufs, num_bufs, ctx):
@@ -34,6 +36,7 @@ def io_channel_check_output(bufs, num_bufs, ctx):
         # Cast the void pointer to the correct type
         buffer_array = ctypes.cast(buf_pointer, int_array_type)
         print(f"data received: {buffer_array.contents[0]}")
+        output_data.append(buffer_array.contents[0])
 
 
 codelet_descriptor = emulator_utils.yaml_to_json(
@@ -81,9 +84,9 @@ for i in range(3):
     if res != 0:
         print(f"hook_test1 returned {res}")
         sys.exit(-1)
+    time.sleep(0.025)
 
 ## handle output bufs
-stream_id_c2 = emulator_utils.create_random_stream_id()
 print(f"stream_id_c1: {list(stream_id_c1.id)}")
 print(f"stream_id_c2: {list(stream_id_c2.id)}")
 count = emulator_utils.jbpf_handle_out_bufs(
@@ -94,6 +97,53 @@ count = emulator_utils.jbpf_handle_out_bufs(
     debug=True,
 )
 assert count == 3
+assert output_data == [10, 20, 30]
+
+assert jbpf_hooks.hook_test1(p, 3) == 0
+assert emulator_utils.jbpf_handle_out_bufs(
+    jbpf_lcm_api.jbpf_io_stream_id_t(),
+    io_channel_check_output,
+    num_of_messages=1,
+    timeout=100_000_000,
+) == 0
+
+
+def send_threaded_output():
+    jbpf_helpers.jbpf_register_thread()
+    try:
+        time.sleep(0.025)
+        packet = jbpf_test_def.struct_packet()
+        packet.counter_a = 40
+        assert jbpf_hooks.hook_test1(packet, 3) == 0
+    finally:
+        jbpf_helpers.jbpf_cleanup_thread()
+
+
+producer = threading.Thread(target=send_threaded_output)
+producer.start()
+assert emulator_utils.jbpf_handle_out_bufs(
+    stream_id_c1, io_channel_check_output, num_of_messages=1
+) == 1
+producer.join()
+assert output_data == [10, 20, 30, 40]
+
+
+def failing_output_callback(*args):
+    raise RuntimeError("output callback regression")
+
+
+assert jbpf_hooks.hook_test1(p, 3) == 0
+try:
+    emulator_utils.jbpf_handle_out_bufs(
+        stream_id_c1, failing_output_callback, num_of_messages=1
+    )
+except RuntimeError as error:
+    assert str(error) == "output callback regression"
+else:
+    raise AssertionError("Output callback exception was not propagated")
+
+assert jbpf_hooks.hook_test1(p, 3) == 0
+time.sleep(0.025)
 
 ## unload codeletset
 res = emulator_utils.jbpf_codeletset_unload(codeletset_req_c1.codeletset_id)

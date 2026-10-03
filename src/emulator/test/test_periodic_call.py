@@ -63,6 +63,7 @@ count = emulator_utils.jbpf_handle_out_bufs(
     debug=True,
 )
 print(count)
+assert count == 3
 
 ## unload codeletset
 res = emulator_utils.jbpf_codeletset_unload(codeletset_req_c1.codeletset_id)
